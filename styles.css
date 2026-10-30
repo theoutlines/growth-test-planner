@@ -213,11 +213,9 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 /* ---------- decision day */
 .verdict { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 22px 20px 18px; border-radius: 24px; overflow: hidden; background: var(--card); }
 .verdict.win { background: var(--orange); }
-.verdict img { position: absolute; right: 14px; top: 14px; width: 104px; filter: drop-shadow(0 14px 18px rgba(60,0,0,.35)); }
 .verdict .tag { position: relative; font-size: 14px; font-weight: 500; opacity: .85; }
 .verdict .title { position: relative; font-size: 44px; font-weight: 700; letter-spacing: -.045em; line-height: 1; }
 .verdict .vsub { position: relative; font-size: 16px; font-weight: 500; line-height: 1.4; }
-.verdict.win .title, .verdict.win .vsub, .verdict.win .tag { max-width: 230px; }
 .rb { position: relative; padding-top: 10px; }
 .rb .lbls { position: relative; height: 16px; font-size: 12px; opacity: .85; }
 .rb .lbls span { position: absolute; white-space: nowrap; }
