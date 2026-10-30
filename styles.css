@@ -237,3 +237,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .skill em { font-style: normal; font-size: 14px; font-weight: 600; padding-top: 4px; }
 .rowlink { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 12px 14px; border-radius: 12px; background: var(--card); font-size: 15px; color: var(--t85); text-align: left; width: 100%; }
 .err { color: var(--acc); font-size: 13px; }
+
+/* ---------- floating details card (desktop): bottom-left corner, stays put while the page scrolls */
+.float { position: fixed; z-index: 16; left: 40px; bottom: 24px; width: 360px; max-height: calc(var(--vh, 100vh) - 120px); overflow-y: auto; padding: 18px; border-radius: 18px; background: #2A2A2A; box-shadow: 0 24px 60px rgba(0,0,0,.55); display: flex; flex-direction: column; gap: 12px; }
