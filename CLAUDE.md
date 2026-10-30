@@ -13,4 +13,4 @@ Design source of truth: the Claude Design canvas https://claude.ai/artifact/FDAg
 - Mobile-first (390). Desktop (≥1200): the mobile column centred, controls in a 320 rail pinned to the right edge; share is a modal. Above 1440 the whole page scales (body zoom = width/1440).
 - Interface explains itself: no helper notes for obvious controls. Graphics sharp, interface soft. Icons filled.
 - Math must match the canvas reference: 50,000 views, 2.75%, 50/50 $6.99/$39.99 → 2/4/6/8 wk = 12.9/9.1/7.5/6.5%; read example A 85,700/1,180/1,177 vs B 85,620/1,050/1,380 → +13% (+5…+21%). Check with a Playwright walk before pushing.
-- Deploy: push to `main`; Cloudflare Pages publishes.
+- Deploy: push to `main`; Cloudflare Pages project `growth-test-planner` publishes (no build, output `/`), domain planner.theoutlines.xyz (CNAME → growth-test-planner.pages.dev), Web Analytics on.
