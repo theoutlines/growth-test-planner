@@ -88,7 +88,7 @@ function track(k, sm) {
 }
 const chips = (k, label) => (label ? `<span class="chips-label">${label}</span>` : '') + `<div class="chips">${CHIPS[k].map(([v, a, b]) => `<button class="chip" data-set="${k}" data-val="${v}">${a} <span>${b}</span></button>`).join('')}</div>`;
 const seg = (label, key, opts) => `<div class="seg"><span>${label}</span><div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))">${opts.map(([v, t]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(S[key]) === String(v)}">${t}</button>`).join('')}</div></div>`;
-const railSlider = (label, k) => `<div class="rs"><div class="top2"><span class="lab">${label}</span><span class="val" data-val-of="${k}">${SL[k].fmt(S[k])}${SL[k].unit || ''}</span></div>${track(k, true)}</div>`;
+const railSlider = (label, k) => `<div class="rs"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}</div>`;   // drag the track or type the number
 
 // ------------------------------------------------------------------ shared pieces
 const top = (action) => `<header class="top"><a class="brand" href="#/" aria-label="Growth Test Planner, start"><i></i>Growth Test Planner</a>${action || ''}</header>`;
@@ -423,19 +423,26 @@ app.addEventListener('input', (e) => {
     const [v, f] = t.dataset.read.split('.'); READ[v][f] = t.value.replace(/[^\d]/g, '');
     if (route().r === 'verdict' && readInputs(planOf(S))) { history.replaceState(null, '', '#/verdict?' + toQuery(true)); swapMain(verdictScreen()); }
   }
-  if (t.dataset.type) { const v = num(t.value); if (v) { S[t.dataset.type] = Math.min(SL[t.dataset.type].hi * 10, v); save(); syncTrack(t.dataset.type); } }
+  if (t.dataset.type) { const k = t.dataset.type, v = num(t.value); if (v != null && (v > 0 || SL[k].linear)) { S[k] = SL[k].linear ? Math.min(100, v) : Math.min(SL[k].hi * 10, v); save(); syncTrack(k, t); refreshMain(); } }
   if (t.dataset.num) { const v = num(t.value); if (v != null && v > 0) { S[t.dataset.num] = t.dataset.num === 'mixA' ? Math.min(100, v) : v; save(); refreshMain(); } }
 });
-app.addEventListener('change', (e) => { if (e.target.dataset.type) render(); });
+app.addEventListener('change', (e) => { if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
 app.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && UI.overlay) { UI.overlay = null; render(); return; }
   if (e.target.dataset.type && e.key === 'Enter') e.target.blur();
   const tr = e.target.closest('[data-slide]');
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
 });
-function syncTrack(k) {
+function syncTrack(k, except) {
   document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { const p = pctOf(k, S[k]); tr.querySelector('.fill').style.width = p + '%'; tr.querySelector('.handle').style.left = p + '%'; tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
   document.querySelectorAll(`[data-val-of="${k}"]`).forEach((el) => { el.textContent = SL[k].fmt(S[k]) + (SL[k].unit || ''); });
+  const txt = SL[k].fmt(S[k]);
+  document.querySelectorAll(`[data-type="${k}"]`).forEach((inp) => {
+    if (inp === except) return;                                  // never rewrite the field someone is typing in
+    inp.value = txt;
+    if ('small' in inp.dataset) inp.size = Math.max(2, txt.length);
+    else { const size = Math.min(80, Math.floor(600 / txt.length)); inp.style.fontSize = size + 'px'; inp.style.width = Math.max(2, txt.length) * size * 0.56 + 'px'; }
+  });
 }
 function refreshMain() {           // update the answer without touching the control being used
   if (route().r !== 'test') return;
@@ -455,8 +462,6 @@ function move(e) {
   const b = drag.tr.getBoundingClientRect();
   const p = Math.max(0, Math.min(100, (e.clientX - b.left) / b.width * 100));
   S[drag.k] = valOf(drag.k, p); syncTrack(drag.k);
-  const inp = document.querySelector(`[data-type="${drag.k}"]`);
-  if (inp) { const txt = SL[drag.k].fmt(S[drag.k]); const size = Math.min(80, Math.floor(600 / txt.length)); inp.value = txt; inp.style.fontSize = size + 'px'; inp.style.width = Math.max(2, txt.length) * size * 0.56 + 'px'; }
   refreshMain();
 }
 function copy(text) {
