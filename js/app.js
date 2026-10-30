@@ -72,9 +72,10 @@ const SL = {
   users: { lo: 1000, hi: 500000, l: '1k', h: '500k', fmt: n0, round: (v) => v < 10000 ? Math.round(v / 100) * 100 : Math.round(v / 1000) * 1000 },
   conv: { lo: 0.5, hi: 10, l: '0.5', h: '10', fmt: (v) => String(+v.toFixed(2)), round: (v) => Math.round(v * 20) / 20, unit: '%' },
   trialRate: { lo: 0.5, hi: 25, l: '0.5', h: '25', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
+  mixA: { lo: 0, hi: 100, l: '0', h: '100', fmt: (v) => String(Math.round(v)), round: (v) => Math.round(v), unit: '%', linear: true },   // a share: linear, not log
 };
-const pctOf = (k, v) => Math.max(0, Math.min(100, Math.log(v / SL[k].lo) / Math.log(SL[k].hi / SL[k].lo) * 100));
-const valOf = (k, pct) => SL[k].round(SL[k].lo * Math.pow(SL[k].hi / SL[k].lo, pct / 100));
+const pctOf = (k, v) => SL[k].linear ? Math.max(0, Math.min(100, (v - SL[k].lo) / (SL[k].hi - SL[k].lo) * 100)) : Math.max(0, Math.min(100, Math.log(v / SL[k].lo) / Math.log(SL[k].hi / SL[k].lo) * 100));
+const valOf = (k, pct) => SL[k].round(SL[k].linear ? SL[k].lo + (SL[k].hi - SL[k].lo) * pct / 100 : SL[k].lo * Math.pow(SL[k].hi / SL[k].lo, pct / 100));
 
 function bigValue(k) {
   const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length));
@@ -190,9 +191,9 @@ function controls() {
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>`;
 }
 function pricesCard() {
-  const f = (label, key, pre, suf) => `<label class="rr" style="gap:6px"><span>${label}</span><div style="grid-template-columns:1fr"><label><span>${pre || ''}</span><input data-num="${key}" inputmode="decimal" value="${S[key]}">${suf ? `<span>${suf}</span>` : ''}</label></div></label>`;
+  const f = (label, key, pre, suf) => `<label class="rr" style="gap:6px"><span style="font-size:14px;color:rgba(255,255,255,.75)">${label}</span><div style="grid-template-columns:1fr"><label><span>${pre || ''}</span><input data-num="${key}" inputmode="decimal" value="${S[key]}">${suf ? `<span>${suf}</span>` : ''}</label></div></label>`;
   return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:600">Prices</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  ${f('Weekly price', 'pw', '$')}${f('Annual price', 'pa', '$')}${f('Buyers who pick annual', 'mixA', '', '%')}`;
+  ${f('Weekly price', 'pw', '$')}${f('Annual price', 'pa', '$')}${railSlider('Buyers who pick annual', 'mixA')}`;   // prices are exact numbers to type; the plan mix is a share, so it slides
 }
 function testScreen() {
   const p = planOf(S);
