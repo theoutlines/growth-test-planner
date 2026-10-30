@@ -34,8 +34,15 @@ export const DEFAULTS = {
   goal: 'win',            // win | notworse
   weeks: 4,
   start: '',             // ISO date; empty = next Monday (whole weeks from a clean start)
-  pw: 6.99, pa: 39.99, mixA: 50,   // weekly price, annual price, % of buyers on annual
+  // paywall plans: type (week | month | year | once), price, share of buyers (weights, shown as %), free-trial days
+  plans: [{ t: 'week', p: 6.99, s: 50, tr: 3 }, { t: 'year', p: 39.99, s: 50, tr: 3 }],
 };
+export const PLAN_TYPES = { week: ['Week', 'weekly', 'wk'], month: ['Month', 'monthly', 'mo'], year: ['Year', 'annual', 'yr'], once: ['One-time', 'one-time', 'once'] };
+export const fresh = () => JSON.parse(JSON.stringify(DEFAULTS));   // DEFAULTS holds an array: never share it
+export const shares = (plans) => { const t = plans.reduce((a, x) => a + x.s, 0) || 1; return plans.map((x) => x.s / t); };
+export const planTrial = (x) => (x.t === 'once' ? 0 : x.tr);
+// the longest free trial among plans people actually buy: the last trials bill that many days after the test stops
+export const longestTrial = (plans) => { const w = shares(plans); return Math.max(0, ...plans.map((x, i) => (w[i] > 0 ? planTrial(x) : 0))); };
 
 function k2(versions) {                      // 2·(z₁₋α/₂ + z₁₋β)², Bonferroni for more than two versions
   const a = ALPHA / (versions - 1);
@@ -58,8 +65,8 @@ export function planOf(s) {
   if (!onb) {
     p = s.conv / 100;
     if (decide === 'money') {
-      const mix = s.mixA / 100, mu = (1 - mix) * s.pw + mix * s.pa;
-      const v = (1 - mix) * s.pw ** 2 + mix * s.pa ** 2 - mu * mu;
+      const w = shares(s.plans), mu = s.plans.reduce((a, x, i) => a + w[i] * x.p, 0);
+      const v = s.plans.reduce((a, x, i) => a + w[i] * x.p ** 2, 0) - mu * mu;
       cv2 = (v / mu ** 2 + 1) / p - 1;
       metricName = 'money per paywall view'; today = mu * p; unit = 'money';
     } else { cv2 = (1 - p) / p; metricName = 'paid conversion'; today = p; unit = 'rate'; }
@@ -71,7 +78,7 @@ export function planOf(s) {
   const mdeAt = (w) => Math.sqrt(K * cv2 / (perVersionWeek * w)) * 100;
   const options = [2, 4, 6, 8].map((w) => ({ weeks: w, thr: mdeAt(w) }));
   const payments = decide !== 'trials';
-  const wait = payments ? s.trial : 0, watch = payments ? WATCH_DAYS : 0;
+  const wait = payments ? (onb ? s.trial : longestTrial(s.plans)) : 0, watch = payments ? WATCH_DAYS : 0;
   let weeks = s.weeks, notWorse = null;
   if (s.goal === 'notworse') {
     const n = k2OneSided(s.versions) * cv2 / NOT_WORSE_MARGIN ** 2;
@@ -119,8 +126,9 @@ function z2(xA, nA, xB, nB) {
 // One version against A: the decision metric with its range, guardrails, and where the difference came from.
 function pairOf(s, plan, A, X, z, tag) {
   const out = { checks: [] };
-  const payA = A.weekly + A.annual, payX = X.weekly + X.annual;
-  const rev = (v) => { const s1 = v.weekly * s.pw + v.annual * s.pa, s2 = v.weekly * s.pw ** 2 + v.annual * s.pa ** 2, m = s1 / v.people; return [m, s2 / v.people - m * m, s1]; };
+  const P = s.plans, sum = (a) => a.reduce((t, x) => t + x, 0);
+  const payA = sum(A.paid), payX = sum(X.paid);
+  const rev = (v) => { const s1 = sum(v.paid.map((n, i) => n * P[i].p)), s2 = sum(v.paid.map((n, i) => n * P[i].p ** 2)), m = s1 / v.people; return [m, s2 / v.people - m * m, s1]; };
   const [mA, vA, revA] = rev(A), [mX, vX, revX] = rev(X);
   let lift, lo, hi;
   if (plan.decide === 'money') [lift, lo, hi] = relCI(mA, vA, A.people, mX, vX, X.people, z);
@@ -138,13 +146,14 @@ function pairOf(s, plan, A, X, z, tag) {
   if (payA && payX && revA && revX) {        // revenue per person = how many paid × what they paid
     const cA = payA / A.people, cX = payX / X.people, aA = revA / payA, aX = revX / payX;
     const lr = Math.log(mX / mA), lc = Math.log(cX / cA), la = Math.log(aX / aA);
-    out.source = { conv: cX / cA - 1, perPayer: aX / aA - 1, fromConv: lr ? lc / lr : null, fromMix: lr ? la / lr : null, annualA: A.annual / payA, annualB: X.annual / payX };
+    const top = P.reduce((b, x, i) => (x.p > P[b].p ? i : b), 0);          // the priciest plan: where a mix shift shows
+    out.source = { conv: cX / cA - 1, perPayer: aX / aA - 1, fromConv: lr ? lc / lr : null, fromMix: lr ? la / lr : null, topA: A.paid[top] / payA, topB: X.paid[top] / payX, top: PLAN_TYPES[P[top].t][1], plans: P.length };
   }
   out.guardBad = out.checks.some((c) => !c.ok);
   return out;
 }
 
-// r = { A: {people, weekly, annual, trials, refunds}, B: {...}, C?: {...}, billed: true|false }
+// r = { A: {people, paid: [n per plan], trials, refunds}, B: {...}, C?: {...}, billed: true|false }
 // With three versions each of B and C is read against A, ranges widened for two comparisons (same Bonferroni split as the plan).
 export function readOf(s, r, plan) {
   const letters = r.C ? ['A', 'B', 'C'] : ['A', 'B'];

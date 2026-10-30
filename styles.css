@@ -379,3 +379,14 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .vsbar .range { position: absolute; top: 0; height: 16px; background: #525252; transition: left var(--duration-slow) var(--ease-smooth-out), width var(--duration-slow) var(--ease-smooth-out); }
 .vsrow.lead .vsbar .range { background: var(--w); }
 .vsref { transition: left var(--duration-slow) var(--ease-smooth-out); }
+
+/* Plans editor: one block per plan (type, price, trial, share of buyers) */
+.pl { display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.plhead { display: flex; gap: 8px; align-items: center; }
+.plhead .seg { flex: 1; min-width: 0; }
+.plrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 8px; align-items: end; }
+.pl .rr > span { font-size: 14px; font-weight: 500; color: var(--t75); }
+.pl .rr { gap: 8px; }
+.icon-btn.sm { width: 44px; height: 44px; flex: none; border-radius: 10px; }
+.addplan { height: 44px; border-radius: 10px; border: 1px dashed rgba(255,255,255,.2); color: var(--t75); font-size: 14px; font-weight: 500; }
+.addplan:hover { color: var(--w); border-color: rgba(255,255,255,.4); }
