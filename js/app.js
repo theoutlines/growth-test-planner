@@ -5,7 +5,8 @@ import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL } from './data.js';
 // Nothing typed here leaves the browser. The last inputs are kept in localStorage (this browser only);
 // a shared link carries them after "#", which browsers never send to the server.
 const S = { ...DEFAULTS };
-let READ = { A: {}, B: {}, billed: true };
+let READ = { A: {}, B: {}, C: {}, billed: true };
+const LETTERS = () => (S.versions === 3 ? ['A', 'B', 'C'] : ['A', 'B']);
 let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError: '' };
 const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
@@ -15,7 +16,7 @@ function toQuery(withRead) {
   const q = new URLSearchParams();
   for (const [k, f] of Object.entries(KEYS)) if (S[f] !== DEFAULTS[f] || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
   if (withRead) {
-    for (const v of ['A', 'B']) q.set('r' + v.toLowerCase(), ['people', 'weekly', 'annual', 'trials', 'refunds'].map((f) => READ[v][f] ?? '').join('.'));
+    for (const v of LETTERS()) q.set('r' + v.toLowerCase(), ['people', 'weekly', 'annual', 'trials', 'refunds'].map((f) => READ[v][f] ?? '').join('.'));
     q.set('bl', READ.billed ? 1 : 0);
   }
   return q.toString();
@@ -28,7 +29,7 @@ function fromQuery(qs) {
   if (!['win', 'notworse'].includes(S.goal)) S.goal = 'win';
   if (![2, 3].includes(S.versions)) S.versions = 2;
   if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0];   // a link with only a=onboarding still has a choice picked
-  for (const v of ['A', 'B']) if (q.has('r' + v.toLowerCase())) {
+  for (const v of ['A', 'B', 'C']) if (q.has('r' + v.toLowerCase())) {
     const parts = q.get('r' + v.toLowerCase()).split('.'); READ[v] = {};
     ['people', 'weekly', 'annual', 'trials', 'refunds'].forEach((f, i) => { if (parts[i]) READ[v][f] = parts[i]; });
   }
@@ -244,7 +245,7 @@ function resultTones(p, v) {
   return {
     Short: `${cap(what)} test: ${v.title}${range}.\n${v.next}. ${link}`,
     Friendly: `Hey team, the ${what} test is in: ${v.title}.\n${v.sub}\nChecks: ${checks}.\n${v.next}. ${link}`,
-    Detailed: `${cap(what)} test result\nDecided on ${p.metricName}, as planned. ${v.sub}\nChecks: ${checks}.${v.source ? `\nWhere it came from: ${v.source}` : ''}\nNext: ${v.next}. ${v.small}\n${link}`,
+    Detailed: `${cap(what)} test result\nDecided on ${p.metricName}, as planned. ${v.sub}${v.versions ? `\n${v.versions.map((x) => `${x.v} vs A: ${sign(x.metric.lift)} (${sign(x.metric.lo)} to ${sign(x.metric.hi)})`).join('; ')}.` : ''}\nChecks: ${checks}.${v.source ? `\nWhere it came from: ${v.source}` : ''}\nNext: ${v.next}. ${v.small}\n${link}`,
   };
 }
 function shareBody(texts, title, sub) {
@@ -278,7 +279,7 @@ function readRows(p) {
 }
 function readRow([label, f, why, opt]) {
   const inp = (v) => `<label><span>${v}</span><input data-read="${v}.${f}" inputmode="numeric" placeholder="0" value="${esc(READ[v][f] ?? '')}" aria-label="${label}, version ${v}"></label>`;
-  return `<div class="rr"><span>${label}${opt ? `<small>${opt}</small>` : ''}</span><div>${inp('A')}${inp('B')}</div><p>${why}</p></div>`;
+  return `<div class="rr"><span>${label}${opt ? `<small>${opt}</small>` : ''}</span><div${LETTERS().length === 3 ? ' class="three"' : ''}>${LETTERS().map(inp).join('')}</div><p>${why}</p></div>`;
 }
 const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="noopener"><b>Test data in Amplitude or Mixpanel?</b><span>Let Claude pull it and read it for you with the free Growth Skills plugin. Nothing to type.</span><em>Get the plugin →</em></a>`;
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
@@ -287,6 +288,7 @@ function resultsScreen() {
   const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>` : '';
   const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
+  ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${readRows(p).map(readRow).join('')}
   ${p.decide !== 'trials' ? `<div class="seg"><span>Have the last free trials billed?</span><div class="opts" style="grid-template-columns:1fr 1fr"><span class="pill" data-js-style aria-hidden="true"></span><button data-billed data-val="1" aria-pressed="${READ.billed}">Yes</button><button data-billed data-val="0" aria-pressed="${!READ.billed}">Not yet</button></div></div>` : ''}
   <section class="card planacc"><button class="acc-head" data-toggle-plan aria-expanded="${UI.readPlan}"><span><small>Reading as planned</small><b>${cap(p.metricName)} · ${S.goal === 'notworse' ? 'prove not worse' : 'find a win'}</b></span>${I.down}</button>${plan}</section>
@@ -297,14 +299,14 @@ function num(x) { const v = Number(String(x ?? '').replace(/[ ,]/g, '')); return
 function readInputs(p) {
   const need = p.decide === 'trials' ? ['people', 'trials'] : ['people', 'weekly', 'annual'];
   const out = { billed: READ.billed };
-  for (const v of ['A', 'B']) {
+  for (const v of LETTERS()) {
     const o = {};
     for (const f of ['people', 'weekly', 'annual', 'trials', 'refunds']) o[f] = num(READ[v][f]);
     if (need.some((f) => o[f] == null) || !o.people) return null;
     for (const f of ['weekly', 'annual', 'trials']) o[f] = o[f] ?? 0;
     out[v] = o;
   }
-  if (p.decide !== 'trials' && (!(out.A.weekly + out.A.annual) || !(out.B.weekly + out.B.annual))) return null;
+  if (p.decide !== 'trials' && LETTERS().some((v) => !(out[v].weekly + out[v].annual))) return null;
   return out;
 }
 function verdictOf(p) {
@@ -312,28 +314,35 @@ function verdictOf(p) {
   const r = readOf(S, inp, p), m = r.metric;
   const range = `${sign(m.lo)} to ${sign(m.hi)}`;
   const tag = `Decision day · ${S.goal === 'notworse' ? 'goal: not worse than A by 5%' : (p.decide === 'money' ? 'money per paywall view' : 'decided on ' + p.metricName)}`;
+  const L = r.lead, three = r.versions.length > 1, other = three ? r.versions.find((x) => x.v !== L) : null;
+  const both = (vd) => three && r.versions.every((x) => x.verdict === vd);
+  const also = three && r.verdict.startsWith('win') && other.verdict === 'win' ? ` ${other.v} won too (${sign(other.metric.lift)}), ${L} by more.` : '';
   const V = {
-    win: [`B wins ${sign(m.lift)}`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}. Plan on ${sign(m.lo)}.`, 'Ship B and make it the new control', 'Wins usually shrink after launch, so expect the low end.'],
-    win_with_cost: [`B wins ${sign(m.lift)}, with a cost`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}. ${r.checks.filter((c) => !c.ok).map((c) => c.label).join(', ')} went the wrong way.`, 'Fix what broke before you ship', 'A win that costs refunds isn’t a win yet. Fix it and run B again.'],
-    loss: [`B loses ${sign(m.lift)}`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}.`, 'Keep A', 'B made things worse. Keep what you learned and try a different idea.'],
-    cant_tell: ['Can’t tell yet', `B looks ${sign(m.lift)} ${m.lift >= 0 ? 'better' : 'worse'}, but the real change could be anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A. Try a bolder version of B', `This test could only see changes of ${t1(p.thr)}% or more. Shipping B now is a coin toss.`],
-    not_worse: ['Safe to ship', `At worst B is ${sign(m.lo)}, inside your −5% limit. Most likely ${sign(m.lift)}.`, 'Ship B', 'You only had to show it doesn’t hurt, and it doesn’t. Don’t present it as a win: the test wasn’t sized to find one.'],
-    maybe_worse: ['Can’t rule out harm', `At worst B is ${sign(m.lo)}, past your −5% limit. Most likely ${sign(m.lift)}.`, 'Keep A, or run it longer', 'More people would narrow the range. Until then, B might cost more than 5%.'],
-    broken: ['Test broken', `The groups split ${t1(r.split.a)} / ${t1(r.split.b)} instead of 50 / 50. Something sent different people to each version.`, 'Fix the split, then rerun', 'Common causes: one version loads slower, or is shown only on some devices or app versions.'],
-    too_early: ['Too early', 'The last free trials haven’t billed, so paid numbers will still grow in both versions.', `Come back on ${day(p.decideDate)}`, 'Reading now anchors on a number that will change.'],
+    win: [`${L} wins ${sign(m.lift)}`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}. Plan on ${sign(m.lo)}.${also}`, `Ship ${L} and make it the new control`, 'Wins usually shrink after launch, so expect the low end.'],
+    win_with_cost: [`${L} wins ${sign(m.lift)}, with a cost`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}. ${r.checks.filter((c) => !c.ok).map((c) => c.label).join(', ')} went the wrong way.`, 'Fix what broke before you ship', `A win that costs refunds isn’t a win yet. Fix it and run ${L} again.`],
+    loss: three ? ['B and C both lose', `Best of them, ${L}, is most likely between ${sign(m.lo)} and ${sign(m.hi)}.`, 'Keep A', 'Both made things worse. Keep what you learned and try a different idea.']
+      : [`B loses ${sign(m.lift)}`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}.`, 'Keep A', 'B made things worse. Keep what you learned and try a different idea.'],
+    cant_tell: three ? ['Can’t tell yet', `Neither B nor C clearly beats A. Best guess: ${L} ${sign(m.lift)}, but anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, `Keep A. Try a bolder version of ${L}`, `This test could only see changes of ${t1(p.thr)}% or more. Shipping either now is a coin toss.`]
+      : ['Can’t tell yet', `B looks ${sign(m.lift)} ${m.lift >= 0 ? 'better' : 'worse'}, but the real change could be anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A. Try a bolder version of B', `This test could only see changes of ${t1(p.thr)}% or more. Shipping B now is a coin toss.`],
+    not_worse: both('not_worse') ? ['Both safe to ship', `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, both inside your −5% limit.`, 'Ship the one you prefer', 'You only had to show they don’t hurt, and they don’t. Don’t present either as a win: the test wasn’t sized to find one.']
+      : [three ? `${L} is safe to ship` : 'Safe to ship', `At worst ${L} is ${sign(m.lo)}, inside your −5% limit. Most likely ${sign(m.lift)}.${three ? ` ${other.v} can’t rule out harm (at worst ${sign(other.metric.lo)}).` : ''}`, `Ship ${L}`, 'You only had to show it doesn’t hurt, and it doesn’t. Don’t present it as a win: the test wasn’t sized to find one.'],
+    maybe_worse: ['Can’t rule out harm', three ? `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, past your −5% limit.` : `At worst B is ${sign(m.lo)}, past your −5% limit. Most likely ${sign(m.lift)}.`, 'Keep A, or run it longer', `More people would narrow the range. Until then, ${three ? 'either' : 'B'} might cost more than 5%.`],
+    broken: ['Test broken', `The groups split ${r.split.all.map((x) => t1(x)).join(' / ')} instead of ${three ? 'even thirds' : '50 / 50'}. Something sent different people to each version.`, 'Fix the split, then rerun', 'Common causes: one version loads slower, or is shown only on some devices or app versions.'],
+    too_early: ['Too early', `The last free trials haven’t billed, so paid numbers will still grow in ${three ? 'every version' : 'both versions'}.`, `Come back on ${day(p.decideDate)}`, 'Reading now anchors on a number that will change.'],
   }[r.verdict];
   let source = '';
   if (r.source && !['broken', 'too_early'].includes(r.verdict) && p.decide !== 'trials') {
     const s = r.source, a = Math.round(s.annualA * 100), b = Math.round(s.annualB * 100);
-    if (p.decide === 'money' && s.fromMix != null && s.fromMix > 0.5 && s.fromMix <= 1) source = `About ${Math.round(s.fromMix * 100)}% from plans: annual went from ${a}% to ${b}% of buyers. ${more(s.conv)} people paid. B ${m.lift >= 0 ? 'sold the annual plan better' : 'sold the annual plan worse'}.`;
-    else if (s.fromConv != null && s.fromConv >= 0 && s.fromMix >= 0) source = `${cap(more(s.conv))} people paid; the plan mix barely moved (annual ${a}% → ${b}%). So B changed how many people pay, not which plan they pick.`;
+    if (p.decide === 'money' && s.fromMix != null && s.fromMix > 0.5 && s.fromMix <= 1) source = `About ${Math.round(s.fromMix * 100)}% from plans: annual went from ${a}% to ${b}% of buyers. ${more(s.conv)} people paid. ${L} ${m.lift >= 0 ? 'sold the annual plan better' : 'sold the annual plan worse'}.`;
+    else if (s.fromConv != null && s.fromConv >= 0 && s.fromMix >= 0) source = `${cap(more(s.conv))} people paid; the plan mix barely moved (annual ${a}% → ${b}%). So ${L} changed how many people pay, not which plan they pick.`;
     else source = `Paid conversion ${sign(s.conv * 100)}, money per payer ${sign(s.perPayer * 100)}. They pulled in different directions; the net is their difference.`;
   }
   const note = r.verdict === 'broken' ? 'Fix this before you trust any number.' : r.checks.some((c) => !c.ok) ? 'Something went wrong. Fix it before you trust the result.'
     : r.verdict === 'cant_tell' ? 'The test is sound. It just can’t see a change this small.' : 'The test can be trusted.';
   return { r, kind: r.verdict.startsWith('win') && r.verdict === 'win' ? 'win' : 'flat', title: V[0], sub: V[1], next: V[2], small: V[3], tag, source,
     showBar: !['broken', 'too_early'].includes(r.verdict), range: ['broken', 'too_early'].includes(r.verdict) ? '' : range, note,
-    srcLabel: p.decide === 'money' && m.lift > 0 ? 'Where the money came from' : 'Where the difference came from' };
+    srcLabel: (p.decide === 'money' && m.lift > 0 ? 'Where the money came from' : 'Where the difference came from') + (three ? ` · ${L}` : ''),
+    versions: three && !['broken', 'too_early'].includes(r.verdict) ? r.versions : null };
 }
 function rangeBar(m, win, margin) {
   const lo = m.lo, hi = m.hi, dmin0 = Math.min(lo, 0, margin ?? 0), dmax0 = Math.max(hi, 0), pad = Math.max(2, (dmax0 - dmin0) * 0.18);
@@ -343,6 +352,13 @@ function rangeBar(m, win, margin) {
   const lbl = margin == null ? `<span style="left:${x(0)}%;transform:translateX(-50%)">no change</span>` : `<span style="left:${x(margin)}%;padding-left:6px;color:${ACC};font-weight:600">${sign(margin)} limit</span>`;
   return `<div class="rb" role="img" aria-label="Likely change from ${sign(lo)} to ${sign(hi)}, best guess ${sign(m.lift)}"><div class="lbls">${lbl}</div><div class="bar"><span class="base"></span>${zero}<span class="range" style="left:${x(lo)}%;width:${x(hi) - x(lo)}%"><span>${sign(lo)}</span><span>${sign(hi)}</span></span></div></div>`;
 }
+function vsPlot(versions, lead, margin) {     // A/B/C: both versions on one scale, one "no change" (or limit) line through both rows
+  const ms = versions.map((x) => x.metric), lo0 = Math.min(0, margin ?? 0, ...ms.map((m) => m.lo)), hi0 = Math.max(0, ...ms.map((m) => m.hi)), pad = Math.max(2, (hi0 - lo0) * 0.1);
+  const x = (val) => ((val - lo0 + pad) / (hi0 - lo0 + 2 * pad) * 100).toFixed(2);
+  const ref = margin ?? 0;
+  const rows = versions.map((v) => `<div class="vsrow${v.v === lead ? ' lead' : ''}"><div class="vshead"><b>${v.v}</b><span>${sign(v.metric.lift)}</span><em>${sign(v.metric.lo)} to ${sign(v.metric.hi)}</em></div><div class="vsbar"><span class="base"></span><span class="range" style="left:${x(v.metric.lo)}%;width:${x(v.metric.hi) - x(v.metric.lo)}%"></span></div></div>`).join('');
+  return `<section class="card vs"><small>Each version against A</small><div class="vsplot" role="img" aria-label="${versions.map((v) => `${v.v}: ${sign(v.metric.lo)} to ${sign(v.metric.hi)}`).join(', ')}"><span class="vsref${margin == null ? '' : ' lim'}" style="left:${x(ref)}%"><i>${margin == null ? 'no change' : sign(margin) + ' limit'}</i></span>${rows}</div><p>Wider than an A/B range: two comparisons share one 5% error budget.</p></section>`;
+}
 function verdictScreen() {
   const p = planOf(S), v = verdictOf(p);
   if (!v) return resultsScreen();
@@ -350,7 +366,8 @@ function verdictScreen() {
   const card = `<section class="verdict${win ? ' win' : ''}"><span class="tag">${v.tag}</span><span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
   const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? '' : ' bad'}" title="${esc(c.detail)}">${c.ok ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
-  const body = card + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + (wide() ? '' : `<button class="btn sec2" data-go="share-result">Share result</button>`);   // desktop: bottom-left, like Share plan
+  const vs = v.versions ? vsPlot(v.versions, v.r.lead, S.goal === 'notworse' ? -5 : null) : '';
+  const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + (wide() ? '' : `<button class="btn sec2" data-go="share-result">Share result</button>`);   // desktop: bottom-left, like Share plan
   const rail = `<aside class="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
   const share = wide() ? `<button class="share-float" data-go="share-result">${I.share}<span>Share result</span></button>` : '';
   return top() + `<main class="page" id="main">${body}</main>` + share + rail;
@@ -527,7 +544,7 @@ app.addEventListener('click', (e) => {
   if ('togglePlan' in el.dataset) { UI.readPlan = !UI.readPlan; return render(); }
   if ('readGo' in el.dataset) {
     const p = planOf(S);
-    if (!readInputs(p)) { UI.readError = p.decide === 'trials' ? 'Fill in people and trial starts for both versions.' : 'Fill in people and at least one kind of payment for both versions.'; return render(); }
+    if (!readInputs(p)) { UI.readError = p.decide === 'trials' ? 'Fill in people and trial starts for every version.' : 'Fill in people and at least one kind of payment for every version.'; return render(); }
     UI.readError = ''; return go('verdict', true);
   }
 });

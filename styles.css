@@ -244,6 +244,8 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .rr > span { display: flex; justify-content: space-between; font-size: 15px; font-weight: 500; color: var(--t85); }
 .rr > span small { font-size: 12px; font-weight: 400; color: var(--t45); }
 .rr > div { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+.rr > div.three { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.rr > div.three label { padding: 0 10px; gap: 6px; }
 .rr label { min-width: 0; display: flex; align-items: center; gap: 8px; height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; background: var(--s05); }   /* one control size: fields, sliders and segmented controls are all 44 px, radius 10, same fill */
 .rr label span { font-family: var(--mono); font-size: 11px; color: var(--t45); }
 .rr input { flex: 1; min-width: 0; background: none; border: none; outline: none; text-align: right; font-family: var(--mono); font-size: 15px; }
@@ -358,3 +360,22 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .swap-in { animation: t-swap-in var(--duration-fast) var(--ease-smooth-out) both; }
 @keyframes t-swap-in { from { opacity: 0; filter: blur(var(--blur-small, 2px)); } }
 @media (prefers-reduced-motion: reduce) { .swap-in { animation: none; } }
+
+/* A/B/C verdict: both versions on one scale, one reference line through both rows */
+.vs { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px 18px; }
+.vs > small { font-size: 13px; font-weight: 500; color: var(--t50); }
+.vs > p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--t50); }
+.vsplot { position: relative; display: flex; flex-direction: column; gap: 14px; padding-top: 22px; }
+.vsref { position: absolute; top: 20px; bottom: 0; width: 2px; margin-left: -1px; background: rgba(255,255,255,.9); }
+.vsref.lim { background: none; border-left: 2px dashed var(--acc); }
+.vsref i { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 12px; white-space: nowrap; color: rgba(255,255,255,.7); }
+.vsref.lim i { left: 6px; transform: none; color: var(--acc); font-weight: 600; }
+.vshead { position: relative; z-index: 1; display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.vshead b { font-size: 17px; font-weight: 600; }
+.vshead span { font-size: 15px; font-weight: 500; }
+.vshead em { margin-left: auto; font-style: normal; font-size: 13px; color: var(--t50); }
+.vsbar { position: relative; height: 16px; }
+.vsbar .base { position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: rgba(255,255,255,.18); }
+.vsbar .range { position: absolute; top: 0; height: 16px; background: #525252; transition: left var(--duration-slow) var(--ease-smooth-out), width var(--duration-slow) var(--ease-smooth-out); }
+.vsrow.lead .vsbar .range { background: var(--w); }
+.vsref { transition: left var(--duration-slow) var(--ease-smooth-out); }
