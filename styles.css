@@ -248,7 +248,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .rr > div.three label { padding: 0 10px; gap: 6px; }
 .rr label { min-width: 0; display: flex; align-items: center; gap: 8px; height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; background: var(--s05); }   /* one control size: fields, sliders and segmented controls are all 44 px, radius 10, same fill */
 .rr label span { font-family: var(--mono); font-size: 11px; color: var(--t45); }
-.rr input { flex: 1; min-width: 0; background: none; border: none; outline: none; text-align: right; font-family: var(--mono); font-size: 15px; }
+.rr input { flex: 1; min-width: 0; background: none; border: none; outline: none; text-align: right; font-family: var(--mono); font-size: 16px; }   /* 16 px: iOS zooms the page into any field smaller than that, and the page then sits wider than the screen */
 .rr input::placeholder { color: rgba(255,255,255,.3); }
 .rr p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--t50); }
 .skill { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
@@ -286,7 +286,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .rows .rowbtn { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: calc(100% + 16px); margin: 2px -8px 0; padding: 8px; border-radius: 10px; font-size: 14px; text-align: left; background: rgba(255,255,255,.05); }
 .rows .rowbtn span:first-child { color: var(--t60); }
 .rows .rowbtn span:last-child { display: flex; align-items: center; gap: 4px; font-weight: 500; }
-.rs.small .val { font-size: 15px; font-weight: 500; letter-spacing: 0; }
+.rs.small .val { font-size: 16px; font-weight: 500; letter-spacing: 0; }
 .rs.small .u { font-size: 13px; font-weight: 500; }
 .rs.small .valbox { padding: 4px 8px; }
 
