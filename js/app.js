@@ -399,6 +399,10 @@ function vsPlot(versions, lead, margin) {     // A/B/C: both versions on one sca
   const rows = versions.map((v) => `<div class="vsrow${v.v === lead ? ' lead' : ''}"><div class="vshead"><b>${v.v}</b><span>${sign(v.metric.lift)}</span><em>${sign(v.metric.lo)} to ${sign(v.metric.hi)}</em></div><div class="vsbar"><span class="base"></span><span class="range" style="left:${x(v.metric.lo)}%;width:${x(v.metric.hi) - x(v.metric.lo)}%"></span></div></div>`).join('');
   return `<section class="card vs"><small>Each version against A</small><div class="vsplot" role="img" aria-label="${versions.map((v) => `${v.v}: ${sign(v.metric.lo)} to ${sign(v.metric.hi)}`).join(', ')}"><span class="vsref${margin == null ? '' : ' lim'}" style="left:${x(ref)}%"><i>${margin == null ? 'no change' : sign(margin) + ' limit'}</i></span>${rows}</div><p>Wider than an A/B range: two comparisons share one 5% error budget.</p></section>`;
 }
+function numbersRow() {
+  const pe = LETTERS().map((v) => `${v} ${n0(num(READ[v].people) ?? 0)}`).join(' · ');
+  return `<button class="card numrow" data-go="results:read"><span><small>Your numbers</small><b>${pe} people</b></span>${I.chevS}</button>`;
+}
 function verdictScreen() {
   const p = planOf(S), v = verdictOf(p);
   if (!v) return resultsScreen();
@@ -407,7 +411,7 @@ function verdictScreen() {
   const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? '' : ' bad'}" title="${esc(c.detail)}">${c.ok ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
   const vs = v.versions ? vsPlot(v.versions, v.r.lead, S.goal === 'notworse' ? -5 : null) : '';
-  const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + (wide() ? '' : `<button class="btn sec2" data-go="share-result">Share result</button>`);   // desktop: bottom-left, like Share plan
+  const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + (wide() ? '' : numbersRow() + `<button class="btn sec2" data-go="share-result">Share result</button>`);   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
   const rail = `<aside class="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
   const share = wide() ? `<button class="share-float" data-go="share-result">${I.share}<span>Share result</span></button>` : '';
   return top() + `<main class="page" id="main">${body}</main>` + share + rail;
@@ -567,6 +571,7 @@ app.addEventListener('click', (e) => {
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
+    if (arg === 'read') return go(r, true);                 // back to the numbers, with them in the link
     if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('traffic'); }
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
