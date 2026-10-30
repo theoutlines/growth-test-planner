@@ -62,7 +62,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 
 /* ---------- hero */
 .hero { position: relative; height: 300px; border-radius: 24px; overflow: hidden; background: var(--orange); }
-.hero img { position: absolute; right: -36px; bottom: -42px; width: 250px; filter: drop-shadow(0 24px 30px rgba(60,0,0,.35)); }
+.hero img { position: absolute; right: 8px; bottom: -13px; width: 227px;   /* placed by the owner on the canvas (VHero) */ filter: drop-shadow(0 24px 30px rgba(60,0,0,.35)); }
 .hero div { position: absolute; left: 20px; top: 22px; right: 20px; display: flex; flex-direction: column; gap: 10px; }
 .hero small { font-size: 14px; font-weight: 500; color: rgba(255,255,255,.85); }
 .hero strong { font-size: 34px; font-weight: 700; letter-spacing: -.035em; line-height: 1.02; max-width: 260px; }
