@@ -199,9 +199,10 @@ function testScreen() {
   const main = `<main class="page" id="main">${thresholdBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much', 'Lifts other apps saw in published tests.')}${ideasBlock(p)}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
-    const extra = UI.overlay === 'idea' ? `<section class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px;background:#2A2A2A">${ideaCard(p)}</section>`
-      : UI.overlay === 'prices' ? `<section class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px;background:#2A2A2A">${pricesCard()}</section>` : '';
-    return top(shareBtn) + main + `<aside class="rail" id="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your test</small>${controls()}</section>${extra}</aside>`;
+    // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
+    const extra = UI.overlay === 'idea' ? `<section class="float" role="dialog" aria-label="Idea details">${ideaCard(p)}</section>`
+      : UI.overlay === 'prices' ? `<section class="float" role="dialog" aria-label="Prices">${pricesCard()}</section>` : '';
+    return top(shareBtn) + main + `<aside class="rail" id="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your test</small>${controls()}</section></aside>` + extra;
   }
   if (UI.overlay === 'edit') overlay = `<div class="scrim" data-close></div><div class="sheet" id="sheet"><div class="sheet-in"><span class="grab"></span><button class="sumrow" data-close aria-label="Close"><span><small>Your test</small><em>${summary(p)}</em></span><span class="icon-btn">${I.down}</span></button>${controls()}</div></div>`;
   else if (UI.overlay === 'idea') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in text"><span class="grab"></span>${ideaCard(p)}</div></div>`;
@@ -410,6 +411,7 @@ app.addEventListener('input', (e) => {
 });
 app.addEventListener('change', (e) => { if (e.target.dataset.type) render(); });
 app.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && UI.overlay) { UI.overlay = null; render(); return; }
   if (e.target.dataset.type && e.key === 'Enter') e.target.blur();
   const tr = e.target.closest('[data-slide]');
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
