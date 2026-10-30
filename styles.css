@@ -390,3 +390,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .icon-btn.sm { width: 44px; height: 44px; flex: none; border-radius: 10px; }
 .addplan { height: 44px; border-radius: 10px; border: 1px dashed rgba(255,255,255,.2); color: var(--t75); font-size: 14px; font-weight: 500; }
 .addplan:hover { color: var(--w); border-color: rgba(255,255,255,.4); }
+
+/* mobile verdict: a way back to the numbers in case one was typed wrong */
+.numrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 14px 16px; text-align: left; transition: background-color var(--duration-quick) var(--ease-smooth-out); }
+.numrow:hover { background: #262626; }
+.numrow > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.numrow small { font-size: 13px; color: var(--t50); }
+.numrow b { font-size: 15px; font-weight: 500; }
+.numrow svg { flex: none; }
