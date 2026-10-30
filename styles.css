@@ -157,7 +157,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .seg .opts button[aria-pressed="true"] { background: var(--s14); color: var(--w); }
 .rs { display: flex; flex-direction: column; gap: 8px; }
 .rs .top2 { display: flex; justify-content: space-between; align-items: baseline; }
-.rs .val { font-size: 20px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.rs .valbox { display: flex; align-items: baseline; gap: 2px; padding: 2px 8px; margin-right: -8px; border-radius: 8px; background: rgba(255,255,255,.06); cursor: text; }
+.rs .valbox:focus-within { background: rgba(255,255,255,.12); }
+.rs .val { width: auto; border: none; outline: none; background: none; padding: 0; text-align: right; font-size: 20px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; caret-color: var(--acc); }
+.rs .u { font-size: 16px; font-weight: 600; }
 .controls { display: flex; flex-direction: column; gap: 16px; }
 .hint { font-size: 13px; line-height: 1.45; color: rgba(255,255,255,.55); margin-top: -8px; }
 
