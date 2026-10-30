@@ -88,7 +88,7 @@ function track(k, sm) {
 }
 const chips = (k, label) => (label ? `<span class="chips-label">${label}</span>` : '') + `<div class="chips">${CHIPS[k].map(([v, a, b]) => `<button class="chip" data-set="${k}" data-val="${v}">${a} <span>${b}</span></button>`).join('')}</div>`;
 const seg = (label, key, opts) => `<div class="seg"><span>${label}</span><div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))">${opts.map(([v, t]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(S[key]) === String(v)}">${t}</button>`).join('')}</div></div>`;
-const railSlider = (label, k) => `<div class="rs"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}</div>`;   // drag the track or type the number
+const railSlider = (label, k, small) => `<div class="rs${small ? ' small' : ''}"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}</div>`;   // drag the track or type the number
 
 // ------------------------------------------------------------------ shared pieces
 const top = (action) => `<header class="top"><a class="brand" href="#/" aria-label="Growth Test Planner, start"><i></i>Growth Test Planner</a>${action || ''}</header>`;
@@ -193,7 +193,7 @@ function controls() {
 function pricesCard() {
   const f = (label, key, pre, suf) => `<label class="rr" style="gap:6px"><span style="font-size:14px;color:rgba(255,255,255,.75)">${label}</span><div style="grid-template-columns:1fr"><label><span>${pre || ''}</span><input data-num="${key}" inputmode="decimal" value="${S[key]}">${suf ? `<span>${suf}</span>` : ''}</label></div></label>`;
   return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:600">Prices</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  ${f('Weekly price', 'pw', '$')}${f('Annual price', 'pa', '$')}${railSlider('Buyers who pick annual', 'mixA')}`;   // prices are exact numbers to type; the plan mix is a share, so it slides
+  ${f('Weekly price', 'pw', '$')}${f('Annual price', 'pa', '$')}${railSlider('Buyers who pick annual', 'mixA', true)}`;   // prices are exact numbers to type; the plan mix is a share, so it slides
 }
 function testScreen() {
   const p = planOf(S);
