@@ -10,7 +10,7 @@ let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError
 const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-const KEYS = { a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', t: 'trial', s: 'traffic', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', pw: 'pw', pa: 'pa', m: 'mixA' };
+const KEYS = { a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', t: 'trial', s: 'traffic', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', pw: 'pw', pa: 'pa', m: 'mixA' };
 function toQuery(withRead) {
   const q = new URLSearchParams();
   for (const [k, f] of Object.entries(KEYS)) if (S[f] !== DEFAULTS[f] || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
@@ -87,7 +87,7 @@ function track(k, sm) {
   return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="fill" style="width:${p}%"></div><div class="handle" style="left:${p}%"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
 }
 const chips = (k, label) => (label ? `<span class="chips-label">${label}</span>` : '') + `<div class="chips">${CHIPS[k].map(([v, a, b]) => `<button class="chip" data-set="${k}" data-val="${v}">${a} <span>${b}</span></button>`).join('')}</div>`;
-const seg = (label, key, opts) => `<div class="seg"><span>${label}</span><div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))">${opts.map(([v, t]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(S[key]) === String(v)}">${t}</button>`).join('')}</div></div>`;
+const seg = (label, key, opts) => `<div class="seg"><span>${label}</span><div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))"><span class="pill" data-js-style aria-hidden="true"></span>${opts.map(([v, t]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(S[key]) === String(v)}">${t}</button>`).join('')}</div></div>`;
 const railSlider = (label, k, small) => `<div class="rs${small ? ' small' : ''}"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}</div>`;   // drag the track or type the number
 
 // ------------------------------------------------------------------ shared pieces
@@ -95,7 +95,7 @@ const top = (action) => `<header class="top"><a class="brand" href="#/" aria-lab
 const shareBtn = `<button class="icon-btn" data-go="share" aria-label="Share">${I.share}</button>`;
 const heading = (h, sub) => `<div class="heading"><h1>${h}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
 const sec = (t, sub) => `<div class="sec"><b>${t}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
-const nav = (label, step, next, back) => `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= 4 ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of 4 answered)">${step < 4 ? `<i style="width:${step * 25}%"></i>` : ''}<span>${label}</span></button></div>`;
+const nav = (label, step, next, back) => `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= 4 ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of 4 answered)">${step < 4 ? `<i style="width:${step * 25}%;--fill-from:${Math.max(0, (UI.lastStep ?? step - 1)) * 25}%"></i>` : ''}<span>${label}</span></button></div>`;
 const pick = (glyph, t, sub, goTo) => `<button class="pick" data-go="${goTo}"><span>${glyph}</span><span><b>${t}</b><em>${sub}</em></span>${I.chev}</button>`;
 
 function summary(p) {
@@ -146,7 +146,7 @@ function thresholdBlock(p) {
     ? `Money per paywall view: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
     : `${p.metricName[0].toUpperCase() + p.metricName.slice(1)}: ${(p.today * 100).toFixed(2)}% today, ${(p.today * 100 * (1 + p.thr / 100)).toFixed(2)}% or more to show up. Smaller changes look like noise.`;
   return `<section class="thr"><h1>Your test catches changes of <span>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
-  <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span>≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
+  <div class="weeks" role="radiogroup" aria-label="How long the test runs"><span class="pill" data-js-style aria-hidden="true"></span>${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span>≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
 }
 function planBlock(p) {
   const legs = [[`${p.collect} days of traffic`, '#FFFFFF']];
@@ -157,7 +157,7 @@ function planBlock(p) {
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
   const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change prices"><span>Prices</span><span>$${S.pw} wk · $${S.pa} yr ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
-  return `<section class="card plan"><span class="dates">Start ${day(p.start)}<small> · next Monday</small><br>Decision day <span class="acc">${day(p.decideDate)}</span></span>
+  return `<section class="card plan"><span class="dates">Start ${day(p.start)}<br>Decision day <span class="acc">${day(p.decideDate)}</span></span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
   <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
@@ -188,7 +188,13 @@ function controls() {
   ${seg('Traffic in test', 'traffic', [[100, '100%'], [50, '50%'], [20, '20%']])}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster.'}</span>
-  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>`;
+  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}
+  ${startField()}</div>`;
+}
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function startField() {          // defaults to next Monday: whole weeks, and a few days to set the test up
+  const p = planOf(S);
+  return `<label class="seg datef"><span>Start</span><span class="dbox"><input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"><b>${day(p.start)}</b><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true" style="margin-left:auto;opacity:.6"><path fill-rule="evenodd" d="M5 2h2v2h6V2h2v2h3v14H2V4h3zM4 8v8h12V8z" fill="#FFFFFF"/></svg></span></label>`;
 }
 function pricesCard() {
   const f = (label, key, pre, suf) => `<label class="rr" style="gap:6px"><span style="font-size:14px;color:rgba(255,255,255,.75)">${label}</span><div style="grid-template-columns:1fr"><label><span>${pre || ''}</span><input data-num="${key}" inputmode="decimal" value="${S[key]}">${suf ? `<span>${suf}</span>` : ''}</label></div></label>`;
@@ -247,7 +253,7 @@ function resultTones(p, v) {
 function shareBody(texts, title, sub) {
   const tones = Object.keys(texts);
   if (!texts[UI.tone]) UI.tone = 'Friendly';
-  return `${heading(title, sub)}<section style="display:flex;flex-direction:column;gap:12px"><div class="tones" role="radiogroup" aria-label="Tone">${['Short', 'Friendly', 'Detailed'].filter((t) => tones.includes(t)).map((t) => `<button role="radio" aria-checked="${t === UI.tone}" data-tone="${t}">${t}</button>`).join('')}</div>
+  return `${heading(title, sub)}<section style="display:flex;flex-direction:column;gap:12px"><div class="tones" role="radiogroup" aria-label="Tone"><span class="pill" data-js-style aria-hidden="true"></span>${['Short', 'Friendly', 'Detailed'].filter((t) => tones.includes(t)).map((t) => `<button role="radio" aria-checked="${t === UI.tone}" data-tone="${t}">${t}</button>`).join('')}</div>
   <div class="msg"><div contenteditable="true" id="msgtext" aria-label="Message, editable" role="textbox" aria-multiline="true">${esc(texts[UI.tone])}</div><div class="foot"><span>Tap the text to edit</span><button class="icon-btn" data-copy aria-label="Copy message">${I.copy}</button></div></div></section>`;
 }
 function shareScreen(result) {
@@ -285,7 +291,7 @@ function resultsScreen() {
   const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${readRows(p).map(readRow).join('')}
-  ${p.decide !== 'trials' ? `<div class="seg"><span>Have the last free trials billed?</span><div class="opts" style="grid-template-columns:1fr 1fr"><button data-billed data-val="1" aria-pressed="${READ.billed}">Yes</button><button data-billed data-val="0" aria-pressed="${!READ.billed}">Not yet</button></div></div>` : ''}
+  ${p.decide !== 'trials' ? `<div class="seg"><span>Have the last free trials billed?</span><div class="opts" style="grid-template-columns:1fr 1fr"><span class="pill" data-js-style aria-hidden="true"></span><button data-billed data-val="1" aria-pressed="${READ.billed}">Yes</button><button data-billed data-val="0" aria-pressed="${!READ.billed}">Not yet</button></div></div>` : ''}
   <button class="rowlink" data-toggle-plan><span>Reading as planned: judge by ${p.metricName} · ${S.goal === 'notworse' ? 'prove not worse' : 'find a win'}</span>${UI.readPlan ? I.down : I.chevS}</button>${plan}
   ${PRIVACY}${UI.readError ? `<p class="err">${UI.readError}</p>` : ''}<button class="btn" data-read-go>Read my result</button>`;
   return top() + `<main class="page">${body}</main>` + `<aside class="rail">${SKILL}</aside>`;
@@ -360,11 +366,107 @@ function addFooter(pg) {
   const sp = pg.querySelector('.spacer-peek'), f = document.createElement('footer');
   f.className = 'foot'; f.innerHTML = FOOTER; sp ? pg.insertBefore(f, sp) : pg.appendChild(f);
 }
-function swapMain(html) {           // live updates replace only the content column; it keeps its footer
+function swapMain(html) {           // live updates touch only the content column; it keeps its footer
   const main = document.getElementById('main'); if (!main) return null;
   const tmp = document.createElement('div'); tmp.innerHTML = html;
-  const fresh = tmp.querySelector('#main'); addFooter(fresh); main.replaceWith(fresh);
+  const fresh = tmp.querySelector('#main'); addFooter(fresh); morphNode(main, fresh); afterPaint();
   return tmp;
+}
+
+// ------------------------------------------------------------------ motion (transitions.dev tokens and patterns)
+// Inside one page the DOM is patched in place (morph), so CSS transitions run on what changed: pills slide,
+// bars and lines move, short values cross-blur. A new page is drawn fresh and rises in.
+const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cssMs = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0;
+
+function softSwap(el, next) {                         // transitions.dev 34 · text swap soft
+  const prev = el.dataset.text ?? el.textContent;
+  if (prev === next) return;
+  el.dataset.text = next;
+  clearTimeout(el._softTimer);
+  if (reduced()) { el.textContent = next; delete el.dataset.text; return; }
+  const out = document.createElement('span'); out.className = 't-text-soft-old'; out.setAttribute('aria-hidden', 'true'); out.textContent = prev;
+  const inn = document.createElement('span'); inn.className = 't-text-soft-new'; inn.textContent = next;
+  el.classList.add('t-text-soft');
+  const w0 = el.getBoundingClientRect().width;
+  el.classList.remove('is-swapping');
+  el.replaceChildren(out, inn);
+  const w1 = inn.getBoundingClientRect().width;
+  el.style.width = w0 + 'px';
+  void el.offsetWidth;
+  el.classList.add('is-swapping');
+  el.style.width = w1 + 'px';
+  el._softTimer = setTimeout(() => {
+    el.classList.remove('is-swapping', 't-text-soft'); el.style.removeProperty('width');
+    el.textContent = next; delete el.dataset.text; el._softTimer = null;
+  }, Math.max(cssMs('--text-soft-dur'), cssMs('--text-soft-resize-dur')) + 40);
+}
+function endSwap(el) {
+  clearTimeout(el._softTimer); el._softTimer = null;
+  el.classList.remove('is-swapping', 't-text-soft'); el.style.removeProperty('width');
+  if (el.dataset.text !== undefined) { el.textContent = el.dataset.text; delete el.dataset.text; }
+}
+const SOFT_MAX = 32;                                   // longer texts (sentences) just change; short values cross-blur
+const onlyText = (el) => el.childNodes.length === 1 && el.firstChild.nodeType === 3;
+function morphNode(a, b) {
+  if (a.nodeType !== b.nodeType || a.nodeName !== b.nodeName) { a.replaceWith(b); return; }
+  if (a.nodeType === 3) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+  if (a.nodeType !== 1) return;
+  // a swap still running on a node that is about to become something else: finish it first
+  if (a._softTimer) {
+    const base = (el) => [...el.classList].filter((c) => c !== 't-text-soft' && c !== 'is-swapping').sort().join(' ');
+    if (base(a) !== base(b) || !onlyText(b)) endSwap(a);
+  }
+  // attributes
+  const keepStyle = a.hasAttribute('data-js-style') || a._softTimer;
+  for (const { name } of [...a.attributes]) {
+    if (name === 'data-text' && a._softTimer) continue;
+    if (name === 'style' && keepStyle) continue;
+    if (name === 'class' && a._softTimer) continue;
+    if (!b.hasAttribute(name)) a.removeAttribute(name);
+  }
+  for (const { name, value } of [...b.attributes]) {
+    if (name === 'style' && keepStyle) continue;
+    if (name === 'class' && a._softTimer) { b.classList.forEach((c) => a.classList.add(c)); continue; }
+    if (a.getAttribute(name) !== value) a.setAttribute(name, value);
+  }
+  if (a.tagName === 'INPUT') { if (document.activeElement !== a && a.value !== b.value) a.value = b.value; return; }
+  if (a.isContentEditable && a === document.activeElement) return;
+  // a short value changing in place: cross-blur it
+  if (onlyText(b) && (a._softTimer || onlyText(a))) {
+    const next = b.textContent, cur = a.dataset.text ?? a.textContent;
+    if (cur !== next) {
+      if (!UI.instant && next.length <= SOFT_MAX && cur.length <= SOFT_MAX && !a.closest('[contenteditable]')) softSwap(a, next);
+      else { endSwap(a); a.textContent = next; }
+    }
+    return;
+  }
+  // children, by position
+  const ac = [...a.childNodes], bc = [...b.childNodes];
+  for (let i = 0; i < bc.length; i++) { if (i < ac.length) morphNode(ac[i], bc[i]); else a.appendChild(bc[i]); }
+  for (let i = bc.length; i < ac.length; i++) ac[i].remove();
+}
+function placePills() {                                // transitions.dev 16 · tabs sliding (measured pill)
+  document.querySelectorAll('.pill').forEach((pill) => {
+    const box = pill.parentElement;
+    const on = box.querySelector('[aria-pressed="true"],[aria-checked="true"]');
+    if (!on) { pill.style.opacity = '0'; return; }
+    const pos = `translate(${on.offsetLeft}px, ${on.offsetTop}px)`, w = on.offsetWidth + 'px', h = on.offsetHeight + 'px';
+    if (pill.style.transform === pos && pill.style.width === w && pill.style.height === h) return;
+    const first = !pill.dataset.placed;
+    if (first) { pill.style.transition = 'none'; }
+    pill.style.opacity = '1'; pill.style.transform = pos; pill.style.width = w; pill.style.height = h;
+    if (first) { void pill.offsetWidth; pill.style.removeProperty('transition'); pill.dataset.placed = '1'; }
+  });
+}
+function afterPaint() { placePills(); }
+const PAGE = (r) => (wide() && r === 'share' ? 'test' : wide() && r === 'share-result' ? 'verdict' : r);   // desktop share is a modal over its page
+let lastPage = null;
+function closeThen(after) {                            // overlays leave before the state changes
+  const els = document.querySelectorAll('.sheet, .float, .modal, .scrim');
+  if (!els.length || reduced()) return after();
+  els.forEach((el) => el.classList.add('is-closing'));
+  setTimeout(after, document.querySelector('.sheet') ? cssMs('--duration-medium') : cssMs('--duration-quick'));
 }
 // ------------------------------------------------------------------ render + events
 const app = document.getElementById('app');
@@ -373,13 +475,24 @@ function render() {
   const sheet = document.getElementById('sheet'), st = sheet ? sheet.scrollTop : 0;
   const html = { '': startScreen, area: areaScreen, traffic: trafficScreen, conv: convScreen, trial: trialScreen, test: testScreen, share: () => shareScreen(false),
     results: resultsScreen, verdict: verdictScreen, 'share-result': () => shareScreen(true) }[r]();
-  app.innerHTML = html;
-  addFooter(app.querySelector('main.page:not(.q)'));               // the footer closes every content page, not the four questions
+  const page = PAGE(r);
+  const tmp = document.createElement('div'); tmp.innerHTML = html;
+  addFooter(tmp.querySelector('main.page:not(.q)'));               // the footer closes every content page, not the four questions
+  if (page === lastPage && app.firstChild) {
+    const fake = document.createElement('div'); fake.append(...tmp.childNodes);
+    fake.id = 'app'; morphNode(app, fake);                       // same page: patch in place, so things move
+  } else {
+    app.replaceChildren(...tmp.childNodes);
+    if (!reduced()) app.querySelectorAll('main.page, .rail').forEach((el) => { el.classList.add('enter'); el.addEventListener('animationend', () => el.classList.remove('enter'), { once: true }); });
+  }
+  lastPage = page;
+  if (/^(area|traffic|conv|trial)$/.test(r)) UI.lastStep = { area: 1, traffic: 2, conv: 3, trial: 4 }[r];
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
   document.documentElement.style.overflow = document.querySelector('.scrim') ? 'hidden' : '';   // a modal or sheet holds the page still
   document.title = 'Growth Test Planner';
+  requestAnimationFrame(afterPaint);
 }
-function onRoute() { const { r, qs } = route(); if (qs) fromQuery(qs); UI.overlay = null; render(); window.scrollTo(0, 0); }
+function onRoute() { const { r, qs } = route(); if (qs) fromQuery(qs); UI.overlay = null; const turn = PAGE(r) !== lastPage; render(); if (turn) window.scrollTo(0, 0); }
 
 function set(key, raw) {
   const v = typeof DEFAULTS[key] === 'number' ? Number(raw) : raw;
@@ -397,12 +510,13 @@ app.addEventListener('click', (e) => {
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
     if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('traffic'); }
+    if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
   if (el.dataset.idea) { UI.overlay = 'idea'; UI.idea = Number(el.dataset.idea); return render(); }
   if (el.dataset.overlay) { UI.overlay = el.dataset.overlay; return render(); }
-  if ('close' in el.dataset) { UI.overlay = null; return render(); }
+  if ('close' in el.dataset) return closeThen(() => { UI.overlay = null; render(); });
   if (el.dataset.tone) { UI.tone = el.dataset.tone; return render(); }
   if ('copy' in el.dataset) return copy(document.getElementById('msgtext').innerText);
   if ('nativeShare' in el.dataset) {
@@ -424,12 +538,14 @@ app.addEventListener('input', (e) => {
     const [v, f] = t.dataset.read.split('.'); READ[v][f] = t.value.replace(/[^\d]/g, '');
     if (route().r === 'verdict' && readInputs(planOf(S))) { history.replaceState(null, '', '#/verdict?' + toQuery(true)); swapMain(verdictScreen()); }
   }
+  UI.instant = true; setTimeout(() => { UI.instant = false; });
   if (t.dataset.type) { const k = t.dataset.type, v = num(t.value); if (v != null && (v > 0 || SL[k].linear)) { S[k] = SL[k].linear ? Math.min(100, v) : Math.min(SL[k].hi * 10, v); save(); syncTrack(k, t); refreshMain(); } }
+  if ('date' in t.dataset) { if (/^\d{4}-\d{2}-\d{2}$/.test(t.value)) { S.start = t.value; save(); history.replaceState(null, '', '#/' + route().r + '?' + toQuery(route().r === 'verdict')); render(); } }
   if (t.dataset.num) { const v = num(t.value); if (v != null && v > 0) { S[t.dataset.num] = t.dataset.num === 'mixA' ? Math.min(100, v) : v; save(); refreshMain(); } }
 });
 app.addEventListener('change', (e) => { if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
 app.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && UI.overlay) { UI.overlay = null; render(); return; }
+  if (e.key === 'Escape' && UI.overlay) { closeThen(() => { UI.overlay = null; render(); }); return; }
   if (e.target.dataset.type && e.key === 'Enter') e.target.blur();
   const tr = e.target.closest('[data-slide]');
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
@@ -455,10 +571,10 @@ function refreshMain() {           // update the answer without touching the con
 let drag = null;
 app.addEventListener('pointerdown', (e) => {
   const tr = e.target.closest('[data-slide]'); if (!tr) return;
-  drag = { tr, k: tr.dataset.slide }; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
+  drag = { tr, k: tr.dataset.slide }; tr.classList.add('dragging'); UI.instant = true; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
 });
 app.addEventListener('pointermove', (e) => { if (drag) move(e); });
-app.addEventListener('pointerup', () => { if (drag) { drag = null; save(); if (route().r !== 'test') render(); } });
+app.addEventListener('pointerup', () => { if (drag) { drag.tr.classList.remove('dragging'); drag = null; UI.instant = false; save(); if (route().r !== 'test') render(); } });
 function move(e) {
   const b = drag.tr.getBoundingClientRect();
   const p = Math.max(0, Math.min(100, (e.clientX - b.left) / b.width * 100));
@@ -479,7 +595,7 @@ function scale() {
   document.documentElement.style.setProperty('--vh', window.innerHeight / z + 'px');   // the rail's height limit in unzoomed pixels
 }
 let lastWide = wide();
-window.addEventListener('resize', () => { scale(); if (wide() !== lastWide) { lastWide = wide(); render(); } });
+window.addEventListener('resize', () => { scale(); if (wide() !== lastWide) { lastWide = wide(); lastPage = null; render(); } else document.querySelectorAll('.pill').forEach((p) => delete p.dataset.placed), placePills(); });
 window.addEventListener('hashchange', onRoute);
 
 const saved = store.get('gtp:last');

@@ -33,6 +33,7 @@ export const DEFAULTS = {
   decide: 'money',        // money | paid | trials
   goal: 'win',            // win | notworse
   weeks: 4,
+  start: '',             // ISO date; empty = next Monday (whole weeks from a clean start)
   pw: 6.99, pa: 39.99, mixA: 50,   // weekly price, annual price, % of buyers on annual
 };
 
@@ -79,7 +80,7 @@ export function planOf(s) {
     notWorse = { weeks, margin: NOT_WORSE_MARGIN * 100, times: n / nWin };
   }
   const thr = mdeAt(weeks);
-  const start = nextMonday(new Date());
+  const start = s.start && /^\d{4}-\d{2}-\d{2}$/.test(s.start) ? new Date(s.start + 'T00:00:00') : nextMonday(new Date());
   const decideDate = addDays(start, weeks * 7 + wait + watch);
   return { onb, decide, metricName, unit, today, thr, options, weeks, notWorse, start, decideDate, collect: weeks * 7, wait, watch,
            perVersion: perVersionWeek * weeks, exposure, p };
