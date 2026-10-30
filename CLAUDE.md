@@ -8,6 +8,7 @@ Design source of truth: the Claude Design canvas https://claude.ai/artifact/FDAg
 - `assets/character.png` (owner's character, not MIT), `fonts/` (Uncut Sans variable, Geist Mono 400; OFL in `LICENSES/`), `_headers` (CSP etc. for Cloudflare Pages).
 
 ## Rules
+- One change, every place (owner rule, 2026-10-30): any change the owner asks for is applied in the same pass to the live site, the design canvas (mobile and desktop boards, components) and the project memory. Before saying "done", check all three; never fix only one.
 - Nothing typed leaves the browser: no backend, no runtime AI, no third-party requests except Cloudflare Web Analytics (page views only). Last inputs in localStorage (try/catch); share links put inputs after `#`.
 - Public sources only; never employer data. Every benchmark keeps its source.
 - Mobile-first (390). Desktop (≥1200): the mobile column centred, controls in a 320 rail fixed to the right edge from the top (top 20, max height = window − 44 px, scrolls inside); “Share plan” is a fixed button in the bottom-left corner, and idea details / the prices editor float right above it (✕ or Esc closes); the top bar holds only the logo; share is a modal. Anything with a scrim (modal, mobile sheet) locks page scroll. The top bar is sticky on every screen: only the content scrolls. Above 1440 the whole page scales (body zoom = width/1440).
