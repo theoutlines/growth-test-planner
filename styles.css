@@ -272,7 +272,8 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .foot a { color: rgba(255,255,255,.55); }
 .foot a:hover { color: var(--w); }
 /* content slides under the sticky top bar through a short fade, never a hard cut */
-.top::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 28px; background: linear-gradient(var(--bg), rgba(21,21,21,0)); pointer-events: none; }
+.top::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 28px; background: linear-gradient(var(--bg), rgba(21,21,21,0)); pointer-events: none; opacity: 0; transition: opacity var(--duration-quick) var(--ease-smooth-out); }
+.scrolled .top::after { opacity: 1; }   /* the fade shows only once content goes under the bar */
 @media (min-width: 1200px) {          /* desktop: the logo sits left of the column, nothing to cover — no bar, content runs to the window edge */
   .top { background: transparent; pointer-events: none; }
   .top > * { pointer-events: auto; }

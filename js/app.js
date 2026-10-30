@@ -602,3 +602,6 @@ if (saved) Object.assign(S, saved);
 if (!location.hash && saved) history.replaceState(null, '', '#/test?' + toQuery());
 scale();
 onRoute();
+// the fade under the mobile top bar appears only once the page is scrolled
+const onScrollFade = () => document.documentElement.classList.toggle('scrolled', window.scrollY > 0);
+window.addEventListener('scroll', onScrollFade, { passive: true }); onScrollFade();
