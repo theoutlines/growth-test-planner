@@ -359,6 +359,7 @@ function render() {
     results: resultsScreen, verdict: verdictScreen, 'share-result': () => shareScreen(true) }[r]();
   app.innerHTML = html;
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
+  document.documentElement.style.overflow = document.querySelector('.scrim') ? 'hidden' : '';   // a modal or sheet holds the page still
   document.title = 'Growth Test Planner';
 }
 function onRoute() { const { r, qs } = route(); if (qs) fromQuery(qs); UI.overlay = null; render(); window.scrollTo(0, 0); }
