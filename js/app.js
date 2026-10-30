@@ -27,6 +27,7 @@ function fromQuery(qs) {
   if (!['paywall', 'onboarding'].includes(S.area)) S.area = 'paywall';
   if (!['win', 'notworse'].includes(S.goal)) S.goal = 'win';
   if (![2, 3].includes(S.versions)) S.versions = 2;
+  if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0];   // a link with only a=onboarding still has a choice picked
   for (const v of ['A', 'B']) if (q.has('r' + v.toLowerCase())) {
     const parts = q.get('r' + v.toLowerCase()).split('.'); READ[v] = {};
     ['people', 'weekly', 'annual', 'trials', 'refunds'].forEach((f, i) => { if (parts[i]) READ[v][f] = parts[i]; });
@@ -444,7 +445,9 @@ function placePills() {                                // transitions.dev 16 · 
     if (first) { void pill.offsetWidth; pill.style.removeProperty('transition'); pill._placed = true; }
   });
 }
-function afterPaint() { placePills(); }
+// a control that changes size without a window resize (fonts load, a scrollbar comes or goes, the sheet settles): re-place its pill without sliding
+const pillRO = 'ResizeObserver' in window ? new ResizeObserver((es) => { es.forEach((e) => { const p = e.target.querySelector(':scope > .pill'); if (p) p._placed = false; }); placePills(); }) : null;
+function afterPaint() { placePills(); if (pillRO) document.querySelectorAll('.pill').forEach((p) => { const box = p.parentElement; if (!box._ro) { box._ro = true; pillRO.observe(box); } }); }
 const PAGE = (r) => (wide() && r === 'share' ? 'test' : wide() && r === 'share-result' ? 'verdict' : r);   // desktop share is a modal over its page
 let lastPage = null;
 function closeThen(after) {                            // overlays leave before the state changes
