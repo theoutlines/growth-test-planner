@@ -284,12 +284,12 @@ const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="no
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
   const p = planOf(S);
-  const plan = UI.readPlan ? `<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:16px">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>` : '';
+  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>` : '';
   const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${readRows(p).map(readRow).join('')}
   ${p.decide !== 'trials' ? `<div class="seg"><span>Have the last free trials billed?</span><div class="opts" style="grid-template-columns:1fr 1fr"><span class="pill" data-js-style aria-hidden="true"></span><button data-billed data-val="1" aria-pressed="${READ.billed}">Yes</button><button data-billed data-val="0" aria-pressed="${!READ.billed}">Not yet</button></div></div>` : ''}
-  <button class="rowlink" data-toggle-plan><span>Reading as planned: judge by ${p.metricName} · ${S.goal === 'notworse' ? 'prove not worse' : 'find a win'}</span>${UI.readPlan ? I.down : I.chevS}</button>${plan}
+  <section class="card planacc"><button class="acc-head" data-toggle-plan aria-expanded="${UI.readPlan}"><span><small>Reading as planned</small><b>${cap(p.metricName)} · ${S.goal === 'notworse' ? 'prove not worse' : 'find a win'}</b></span>${I.down}</button>${plan}</section>
   ${PRIVACY}${UI.readError ? `<p class="err">${UI.readError}</p>` : ''}<button class="btn" data-read-go>Read my result</button>`;
   return top() + `<main class="page">${body}</main>` + `<aside class="rail">${SKILL}</aside>`;
 }
