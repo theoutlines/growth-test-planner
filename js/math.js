@@ -100,70 +100,80 @@ const erfc = (x) => {        // Numerical Recipes erfc, |error| < 1.2e-7
   return x >= 0 ? r : 2 - r;
 };
 
-function relCI(mA, vA, nA, mB, vB, nB) {
+function relCI(mA, vA, nA, mB, vB, nB, z = 1.96) {
   const r = mB / mA - 1;
   const se = Math.sqrt(vB / nB / mA ** 2 + mB ** 2 * vA / nA / mA ** 4);
-  return [r, r - 1.96 * se, r + 1.96 * se];
+  return [r, r - z * se, r + z * se];
 }
-function propRel(xA, nA, xB, nB) {
+function propRel(xA, nA, xB, nB, z = 1.96) {
   if (!xA || !xB) return [NaN, NaN, NaN];
   const pA = xA / nA, pB = xB / nB;
   const se = Math.sqrt((1 - pA) / xA + (1 - pB) / xB), lr = Math.log(pB / pA);
-  return [Math.exp(lr) - 1, Math.exp(lr - 1.96 * se) - 1, Math.exp(lr + 1.96 * se) - 1];
+  return [Math.exp(lr) - 1, Math.exp(lr - z * se) - 1, Math.exp(lr + z * se) - 1];
 }
 function z2(xA, nA, xB, nB) {
   const p = (xA + xB) / (nA + nB), se = Math.sqrt(p * (1 - p) * (1 / nA + 1 / nB));
   return se ? (xB / nB - xA / nA) / se : 0;
 }
 
-// r = { A: {people, weekly, annual, trials, refunds}, B: {...}, billed: true|false }
-export function readOf(s, r, plan) {
-  const { A, B } = r;
+// One version against A: the decision metric with its range, guardrails, and where the difference came from.
+function pairOf(s, plan, A, X, z, tag) {
   const out = { checks: [] };
-  const n = A.people + B.people;
-  const chi = 2 * (A.people - n / 2) ** 2 / (n / 2);
-  const pSrm = erfc(Math.sqrt(chi / 2));
+  const payA = A.weekly + A.annual, payX = X.weekly + X.annual;
+  const rev = (v) => { const s1 = v.weekly * s.pw + v.annual * s.pa, s2 = v.weekly * s.pw ** 2 + v.annual * s.pa ** 2, m = s1 / v.people; return [m, s2 / v.people - m * m, s1]; };
+  const [mA, vA, revA] = rev(A), [mX, vX, revX] = rev(X);
+  let lift, lo, hi;
+  if (plan.decide === 'money') [lift, lo, hi] = relCI(mA, vA, A.people, mX, vX, X.people, z);
+  else if (plan.decide === 'trials') [lift, lo, hi] = propRel(A.trials, A.people, X.trials, X.people, z);
+  else [lift, lo, hi] = propRel(payA, A.people, payX, X.people, z);
+  out.metric = { lift: lift * 100, lo: lo * 100, hi: hi * 100 };
+  if (plan.decide === 'paid' && payA && payX && s.area === 'paywall') {      // money per view stays a guardrail
+    const [g, , gHi] = relCI(mA, vA, A.people, mX, vX, X.people, z);
+    out.checks.push({ label: `Money per view ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
+  }
+  if (A.refunds != null && X.refunds != null && payA && payX) {
+    const zr = z2(A.refunds, payA, X.refunds, payX);
+    out.checks.push({ label: `Refunds held${tag}`, ok: zr <= 2.58, detail: `${(A.refunds / payA * 100).toFixed(1)}% → ${(X.refunds / payX * 100).toFixed(1)}%` });
+  }
+  if (payA && payX && revA && revX) {        // revenue per person = how many paid × what they paid
+    const cA = payA / A.people, cX = payX / X.people, aA = revA / payA, aX = revX / payX;
+    const lr = Math.log(mX / mA), lc = Math.log(cX / cA), la = Math.log(aX / aA);
+    out.source = { conv: cX / cA - 1, perPayer: aX / aA - 1, fromConv: lr ? lc / lr : null, fromMix: lr ? la / lr : null, annualA: A.annual / payA, annualB: X.annual / payX };
+  }
+  out.guardBad = out.checks.some((c) => !c.ok);
+  return out;
+}
+
+// r = { A: {people, weekly, annual, trials, refunds}, B: {...}, C?: {...}, billed: true|false }
+// With three versions each of B and C is read against A, ranges widened for two comparisons (same Bonferroni split as the plan).
+export function readOf(s, r, plan) {
+  const letters = r.C ? ['A', 'B', 'C'] : ['A', 'B'];
+  const k = letters.length, n = letters.reduce((t, v) => t + r[v].people, 0), e = n / k;
+  const chi = letters.reduce((t, v) => t + (r[v].people - e) ** 2 / e, 0);
+  const pSrm = k === 2 ? erfc(Math.sqrt(chi / 2)) : Math.exp(-chi / 2);       // chi-square, 1 or 2 degrees of freedom
   const srmOk = pSrm >= 0.001;
-  out.checks.push({ label: 'Fair split', ok: srmOk, detail: `${(A.people / n * 100).toFixed(1)} / ${(B.people / n * 100).toFixed(1)}` });
+  const split = letters.map((v) => r[v].people / n * 100);
+  const out = { checks: [{ label: 'Fair split', ok: srmOk, detail: split.map((x) => x.toFixed(1)).join(' / ') }] };
   const payments = plan.decide !== 'trials';
   if (payments) out.checks.push({ label: 'Trials billed', ok: r.billed, detail: r.billed ? 'Decision day passed' : 'Not yet' });
-
-  const payA = A.weekly + A.annual, payB = B.weekly + B.annual;
-  const rev = (v) => { const s1 = v.weekly * s.pw + v.annual * s.pa, s2 = v.weekly * s.pw ** 2 + v.annual * s.pa ** 2, m = s1 / v.people; return [m, s2 / v.people - m * m, s1]; };
-  const [mA, vA, revA] = rev(A), [mB, vB, revB] = rev(B);
-  let lift, lo, hi;
-  if (plan.decide === 'money') [lift, lo, hi] = relCI(mA, vA, A.people, mB, vB, B.people);
-  else if (plan.decide === 'trials') [lift, lo, hi] = propRel(A.trials, A.people, B.trials, B.people);
-  else [lift, lo, hi] = propRel(payA, A.people, payB, B.people);
-  out.metric = { lift: lift * 100, lo: lo * 100, hi: hi * 100 };
-
-  if (plan.decide === 'paid' && payA && payB && s.area === 'paywall') {      // money per view stays a guardrail
-    const [g, , gHi] = relCI(mA, vA, A.people, mB, vB, B.people);
-    out.checks.push({ label: `Money per view ${sign(g * 100)}`, ok: gHi > 0, detail: '' });
-  }
-  if (A.refunds != null && B.refunds != null && payA && payB) {
-    const z = z2(A.refunds, payA, B.refunds, payB);
-    out.checks.push({ label: 'Refunds held', ok: z <= 2.58, detail: `${(A.refunds / payA * 100).toFixed(1)}% → ${(B.refunds / payB * 100).toFixed(1)}%` });
-  }
-
-  // where it came from: revenue per person = how many paid × what they paid
-  if (payA && payB && revA && revB) {
-    const cA = payA / A.people, cB = payB / B.people, aA = revA / payA, aB = revB / payB;
-    const lr = Math.log(mB / mA), lc = Math.log(cB / cA), la = Math.log(aB / aA);
-    out.source = { conv: cB / cA - 1, perPayer: aB / aA - 1, fromConv: lr ? lc / lr : null, fromMix: lr ? la / lr : null,
-                   annualA: A.annual / payA, annualB: B.annual / payB };
-  }
-
-  const guardBad = out.checks.some((c) => !c.ok && c.label !== 'Fair split' && c.label !== 'Trials billed');
+  const z = zInv(1 - ALPHA / (k - 1) / 2);
+  out.versions = letters.slice(1).map((v) => ({ v, ...pairOf(s, plan, r.A, r[v], z, k > 2 ? ` · ${v}` : '') }));
+  out.versions.forEach((x) => out.checks.push(...x.checks));
+  const notWorse = s.goal === 'notworse', lim = -NOT_WORSE_MARGIN * 100;
+  out.versions.forEach((x) => {
+    const m = x.metric;
+    x.verdict = notWorse ? (m.lo > lim ? 'not_worse' : 'maybe_worse') : m.lo > 0 ? (x.guardBad ? 'win_with_cost' : 'win') : m.hi < 0 ? 'loss' : 'cant_tell';
+  });
+  // the version the answer is about: the best clear winner, else the best guess
+  const rank = { win: 4, win_with_cost: 3, not_worse: 2, cant_tell: 1, maybe_worse: 1, loss: 0 };
+  const lead = [...out.versions].sort((a, b) => (rank[b.verdict] - rank[a.verdict]) || (b.metric.lift - a.metric.lift))[0];
+  out.lead = lead.v; out.metric = lead.metric; out.source = lead.source;
   let v;
   if (!srmOk) v = 'broken';
   else if (payments && !r.billed) v = 'too_early';
-  else if (s.goal === 'notworse') v = lo * 100 > -NOT_WORSE_MARGIN * 100 ? 'not_worse' : 'maybe_worse';
-  else if (lo > 0) v = guardBad ? 'win_with_cost' : 'win';
-  else if (hi < 0) v = 'loss';
-  else v = 'cant_tell';
+  else v = lead.verdict;
   out.verdict = v;
-  out.split = { a: A.people / n * 100, b: B.people / n * 100 };
+  out.split = { a: split[0], b: split[1], c: split[2], all: split };
   return out;
 }
 
