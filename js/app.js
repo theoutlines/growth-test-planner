@@ -347,9 +347,10 @@ function verdictScreen() {
   const card = `<section class="verdict${win ? ' win' : ''}">${win ? '<img src="assets/character.png" alt="">' : ''}<span class="tag">${v.tag}</span><span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
   const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? '' : ' bad'}" title="${esc(c.detail)}">${c.ok ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
-  const body = card + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + `<button class="btn sec2" data-go="share-result">Share result</button>`;
+  const body = card + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + (wide() ? '' : `<button class="btn sec2" data-go="share-result">Share result</button>`);   // desktop: bottom-left, like Share plan
   const rail = `<aside class="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
-  return top() + `<main class="page" id="main">${body}</main>` + rail;
+  const share = wide() ? `<button class="share-float" data-go="share-result">${I.share}<span>Share result</span></button>` : '';
+  return top() + `<main class="page" id="main">${body}</main>` + share + rail;
 }
 
 const FOOTER = `<span>© ${new Date().getFullYear()} Ivan Polushin</span><a href="https://github.com/theoutlines/growth-test-planner" target="_blank" rel="noopener">Source</a><a href="https://github.com/theoutlines/growth-skills" target="_blank" rel="noopener">Growth Skills for Claude</a>`;
