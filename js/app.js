@@ -450,7 +450,11 @@ function copy(text) {
 }
 
 // ------------------------------------------------------------------ scale: drawn at 1440, bigger screens zoom the whole page
-function scale() { document.body.style.zoom = window.innerWidth > 1440 ? String(window.innerWidth / 1440) : ''; }
+function scale() {
+  const z = window.innerWidth > 1440 ? window.innerWidth / 1440 : 1;
+  document.body.style.zoom = z === 1 ? '' : String(z);
+  document.documentElement.style.setProperty('--vh', window.innerHeight / z + 'px');   // the rail's height limit in unzoomed pixels
+}
 let lastWide = wide();
 window.addEventListener('resize', () => { scale(); if (wide() !== lastWide) { lastWide = wide(); render(); } });
 window.addEventListener('hashchange', onRoute);
