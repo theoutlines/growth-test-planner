@@ -351,6 +351,8 @@ function verdictScreen() {
   return top() + `<main class="page" id="main">${body}</main>` + rail;
 }
 
+const FOOTER = `<span>© ${new Date().getFullYear()} Ivan Polushin</span><a href="https://github.com/theoutlines/growth-test-planner" target="_blank" rel="noopener">Source</a><a href="https://github.com/theoutlines/growth-skills" target="_blank" rel="noopener">Growth Skills for Claude</a>`;
+
 // ------------------------------------------------------------------ render + events
 const app = document.getElementById('app');
 function render() {
@@ -359,6 +361,8 @@ function render() {
   const html = { '': startScreen, area: areaScreen, traffic: trafficScreen, conv: convScreen, trial: trialScreen, test: testScreen, share: () => shareScreen(false),
     results: resultsScreen, verdict: verdictScreen, 'share-result': () => shareScreen(true) }[r]();
   app.innerHTML = html;
+  const pg = app.querySelector('main.page:not(.q)');                 // the footer closes every content page, not the four questions
+  if (pg) { const sp = pg.querySelector('.spacer-peek'); const f = document.createElement('footer'); f.className = 'foot'; f.innerHTML = FOOTER; sp ? pg.insertBefore(f, sp) : pg.appendChild(f); }
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
   document.documentElement.style.overflow = document.querySelector('.scrim') ? 'hidden' : '';   // a modal or sheet holds the page still
   document.title = 'Growth Test Planner';
