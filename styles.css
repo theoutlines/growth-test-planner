@@ -10,6 +10,12 @@
   --ui: 'Uncut Sans', system-ui, -apple-system, sans-serif;
   --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   color-scheme: dark;
+  /* motion tokens — transitions.dev */
+  --duration-quick: 150ms; --duration-fast: 250ms; --duration-medium: 350ms; --duration-slow: 400ms;
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1); --ease-in-out: ease-in-out;
+  --blur-small: 2px; --blur-medium: 3px; --distance-base: 8px; --distance-medium: 12px;
+  --text-soft-dur: 200ms; --text-soft-blur: 2px; --text-soft-ease: ease-in-out; --text-soft-resize-dur: 240ms; --text-soft-resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tabs-dur: 250ms; --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--w); font-family: var(--ui); -webkit-font-smoothing: antialiased; }
@@ -115,7 +121,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .weeks button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 56px; border-radius: 12px; background: var(--s07); }
 .weeks button b { font-size: 15px; font-weight: 600; }
 .weeks button span { font-size: 12px; opacity: .65; }
-.weeks button[aria-checked="true"] { background: var(--w); color: #151515; }
+.weeks { position: relative; }
+.weeks button { position: relative; z-index: 1; transition: color var(--tabs-dur) var(--tabs-ease), background-color var(--tabs-dur) var(--tabs-ease); }
+.weeks button[aria-checked="true"] { background: transparent; color: #151515; }
+.weeks .pill { background: var(--w); border-radius: 12px; }
 
 /* ---------- plan */
 .plan { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
@@ -154,7 +163,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .seg > span, .rs .lab { font-size: 14px; font-weight: 500; color: var(--t75); }
 .seg .opts { display: grid; gap: 2px; padding: 3px; border-radius: 10px; background: var(--s05); }
 .seg .opts button { height: 36px; border-radius: 8px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,.55); }
-.seg .opts button[aria-pressed="true"] { background: var(--s14); color: var(--w); }
+.seg .opts { position: relative; }
+.seg .opts button { position: relative; z-index: 1; transition: color var(--tabs-dur) var(--tabs-ease); }
+.seg .opts button[aria-pressed="true"] { color: var(--w); }
+.seg .opts .pill { background: var(--s14); border-radius: 8px; }
 .rs { display: flex; flex-direction: column; gap: 8px; }
 .rs .top2 { display: flex; justify-content: space-between; align-items: baseline; }
 .rs .valbox { display: flex; align-items: baseline; gap: 2px; padding: 2px 8px; margin-right: -8px; border-radius: 8px; cursor: text; }   /* just the number; a fill shows only while editing */
@@ -184,7 +196,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 /* ---------- message */
 .tones { display: flex; gap: 8px; flex-wrap: wrap; }
 .tones button { height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 500; background: var(--s07); }
-.tones button[aria-checked="true"] { background: var(--w); color: #151515; }
+.tones { position: relative; }
+.tones button { position: relative; z-index: 1; transition: color var(--tabs-dur) var(--tabs-ease), background-color var(--tabs-dur) var(--tabs-ease); }
+.tones button[aria-checked="true"] { background: transparent; color: #151515; }
+.tones .pill { background: var(--w); border-radius: 18px; }
 .msg { padding: 16px 12px 12px 16px; border-radius: 16px; background: var(--card); display: flex; flex-direction: column; gap: 10px; }
 .msg [contenteditable] { outline: none; font-size: 15px; line-height: 1.45; color: rgba(255,255,255,.92); white-space: pre-wrap; min-height: 120px; }
 .msg .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -261,3 +276,66 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .rs.small .val { font-size: 15px; font-weight: 500; letter-spacing: 0; }
 .rs.small .u { font-size: 13px; font-weight: 500; }
 .rs.small .valbox { padding: 4px 8px; }
+
+/* ==================================================================== motion (transitions.dev patterns + tokens) */
+/* 16 · tabs sliding: one pill per control, moved by JS */
+.pill { position: absolute; top: 0; left: 0; width: 0; height: 0; z-index: 0; pointer-events: none;
+  transition: transform var(--tabs-dur) var(--tabs-ease), width var(--tabs-dur) var(--tabs-ease), height var(--tabs-dur) var(--tabs-ease); will-change: transform, width; }
+
+/* 34 · text swap soft: short values cross-blur in place */
+.t-text-soft { display: inline-grid; justify-items: var(--text-soft-align, start); transition: width var(--text-soft-resize-dur) var(--text-soft-resize-ease); }
+.t-text-soft > span { grid-area: 1 / 1; white-space: pre; transition: filter var(--text-soft-dur) var(--text-soft-ease), opacity var(--text-soft-dur) var(--text-soft-ease); }
+.t-text-soft-new { opacity: 0; filter: blur(var(--text-soft-blur)); }
+.t-text-soft.is-swapping .t-text-soft-old { opacity: 0; filter: blur(var(--text-soft-blur)); }
+.t-text-soft.is-swapping .t-text-soft-new { opacity: 1; filter: blur(0); }
+.rows div span:last-child.t-text-soft, .weeks .t-text-soft, .legend .t-text-soft { justify-items: end; }
+
+/* data that moves: sliders, plan phases, forest plot, verdict range */
+.track .fill { transition: width var(--duration-fast) var(--ease-smooth-out); }
+.track .handle { transition: left var(--duration-fast) var(--ease-smooth-out); }
+.track.dragging .fill, .track.dragging .handle { transition: none; }
+.phases span { transition: flex-grow var(--duration-slow) var(--ease-smooth-out), background-color var(--duration-fast) var(--ease-in-out); }
+.fp .zone { transition: width var(--duration-slow) var(--ease-smooth-out); }
+.fp .line { transition: left var(--duration-slow) var(--ease-smooth-out); }
+.fp .row .bar i { transition: left var(--duration-slow) var(--ease-smooth-out), width var(--duration-slow) var(--ease-smooth-out), background-color var(--duration-fast) var(--ease-in-out); }
+.fp .row .t { transition: color var(--duration-fast) var(--ease-in-out); }
+.rb .range { transition: left var(--duration-slow) var(--ease-smooth-out), width var(--duration-slow) var(--ease-smooth-out); }
+.rb .zero, .rb .lim, .rb .lbls span { transition: left var(--duration-slow) var(--ease-smooth-out), top var(--duration-fast) var(--ease-smooth-out), height var(--duration-fast) var(--ease-smooth-out); }
+.tile { transition: background-color var(--duration-fast) var(--ease-in-out); }
+.tile .days i { transition: background-color var(--duration-fast) var(--ease-in-out); }
+.ck { transition: background-color var(--duration-fast) var(--ease-in-out), color var(--duration-fast) var(--ease-in-out); }
+.verdict { transition: background-color var(--duration-fast) var(--ease-in-out); }
+
+/* fill button grows from the previous step */
+.next i { animation: t-fill var(--duration-slow) var(--ease-smooth-out); }
+@keyframes t-fill { from { width: var(--fill-from, 0%); } }
+
+/* 18 · texts reveal, page-sized: a new page rises in */
+.enter { animation: t-rise var(--duration-slow) var(--ease-smooth-out); }
+@keyframes t-rise { from { opacity: 0; transform: translateY(var(--distance-medium)); filter: blur(var(--blur-medium)); } }
+
+/* 07 · panel reveal: the mobile sheet slides up; 06 · modal; 05-style float card from its corner */
+.scrim { animation: t-fade var(--duration-fast) var(--ease-smooth-out); }
+.scrim.is-closing { animation: t-fade-out var(--duration-medium) var(--ease-smooth-out) forwards; }
+.sheet { animation: t-sheet-in var(--duration-slow) var(--ease-smooth-out); }
+.sheet.is-closing { animation: t-sheet-out var(--duration-medium) var(--ease-smooth-out) forwards; }
+.modal { animation: t-modal-in var(--duration-fast) var(--ease-smooth-out); }
+.modal.is-closing { animation: t-modal-out var(--duration-quick) var(--ease-smooth-out) forwards; }
+.float { transform-origin: bottom left; animation: t-float-in var(--duration-fast) var(--ease-smooth-out); }
+.float.is-closing { animation: t-float-out var(--duration-quick) var(--ease-smooth-out) forwards; }
+@keyframes t-fade { from { opacity: 0; } }
+@keyframes t-fade-out { to { opacity: 0; } }
+@keyframes t-sheet-in { from { transform: translateY(100%); } }
+@keyframes t-sheet-out { to { transform: translateY(100%); } }
+@keyframes t-modal-in { from { opacity: 0; transform: translateX(-50%) scale(0.96); } }
+@keyframes t-modal-out { to { opacity: 0; transform: translateX(-50%) scale(0.96); } }
+@keyframes t-float-in { from { opacity: 0; transform: scale(0.97) translateY(var(--distance-base)); filter: blur(var(--blur-small)); } }
+@keyframes t-float-out { to { opacity: 0; transform: scale(0.99); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+/* start date: reads like the other controls, opens the native picker */
+.datef .dbox { position: relative; display: flex; align-items: center; height: 42px; padding: 0 12px; border-radius: 10px; background: var(--s05); font-size: 14px; font-weight: 500; }
+.datef .dbox input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.datef .dbox input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
