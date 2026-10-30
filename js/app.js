@@ -155,7 +155,7 @@ function planBlock(p) {
   const rows = [['People per version', k100(p.perVersion) + unitP]];
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
-  const prices = !p.onb ? `<div><span>Prices</span><span>$${S.pw} wk · $${S.pa} yr · <button class="link" data-overlay="prices">change</button></span></div>` : '';
+  const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change prices"><span>Prices</span><span>$${S.pw} wk · $${S.pa} yr ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
   return `<section class="card plan"><span class="dates">Start ${day(p.start)}<small> · next Monday</small><br>Decision day <span class="acc">${day(p.decideDate)}</span></span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>

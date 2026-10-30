@@ -251,3 +251,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
   .top > * { pointer-events: auto; }
   .top::after { display: none; }
 }
+.rows .rowbtn { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: calc(100% + 16px); margin: 2px -8px 0; padding: 8px; border-radius: 10px; font-size: 14px; text-align: left; background: rgba(255,255,255,.05); }
+.rows .rowbtn span:first-child { color: var(--t60); }
+.rows .rowbtn span:last-child { display: flex; align-items: center; gap: 4px; font-weight: 500; }
