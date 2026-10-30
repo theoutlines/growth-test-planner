@@ -157,7 +157,7 @@ function planBlock(p) {
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
   const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change prices"><span>Prices</span><span>$${S.pw} wk · $${S.pa} yr ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
-  return `<section class="card plan"><span class="dates">Start ${day(p.start)}<br>Decision day <span class="acc">${day(p.decideDate)}</span></span>
+  return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc">${day(p.decideDate)}</span></span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
   <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
@@ -188,14 +188,10 @@ function controls() {
   ${seg('Traffic in test', 'traffic', [[100, '100%'], [50, '50%'], [20, '20%']])}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster.'}</span>
-  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}
-  ${startField()}</div>`;
+  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>`;
 }
+// Start date: edited in the plan, where it's read (defaults to next Monday: whole weeks, a few days to set up)
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-function startField() {          // defaults to next Monday: whole weeks, and a few days to set the test up
-  const p = planOf(S);
-  return `<label class="seg datef"><span>Start</span><span class="dbox"><input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"><b>${day(p.start)}</b><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true" style="margin-left:auto;opacity:.6"><path fill-rule="evenodd" d="M5 2h2v2h6V2h2v2h3v14H2V4h3zM4 8v8h12V8z" fill="#FFFFFF"/></svg></span></label>`;
-}
 function pricesCard() {
   const f = (label, key, pre, suf) => `<label class="rr" style="gap:6px"><span style="font-size:14px;color:rgba(255,255,255,.75)">${label}</span><div style="grid-template-columns:1fr"><label><span>${pre || ''}</span><input data-num="${key}" inputmode="decimal" value="${S[key]}">${suf ? `<span>${suf}</span>` : ''}</label></div></label>`;
   return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:600">Prices</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
