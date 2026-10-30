@@ -605,3 +605,33 @@ onRoute();
 // the fade under the mobile top bar appears only once the page is scrolled
 const onScrollFade = () => document.documentElement.classList.toggle('scrolled', window.scrollY > 0);
 window.addEventListener('scroll', onScrollFade, { passive: true }); onScrollFade();
+// mobile sheet: swipe down to close (from anywhere in it once it is scrolled to the top; sliders keep their horizontal drag)
+let sw = null;
+document.addEventListener('touchstart', (e) => {
+  const sheet = e.target.closest('.sheet'); if (!sheet || e.target.closest('.track, input, textarea, [contenteditable]')) { sw = null; return; }
+  const t = e.touches[0]; sw = { sheet, x: t.clientX, y: t.clientY, t0: performance.now(), drag: false, dy: 0 };
+}, { passive: true });
+document.addEventListener('touchmove', (e) => {
+  if (!sw) return;
+  const t = e.touches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+  if (!sw.drag) {
+    if (Math.abs(dy) < 8 && Math.abs(dx) < 8) return;
+    if (dy > 0 && Math.abs(dy) > Math.abs(dx) && sw.sheet.scrollTop <= 0) { sw.drag = true; sw.sheet.style.transition = 'none'; sw.sheet.style.animation = 'none'; }
+    else { sw = null; return; }
+  }
+  e.preventDefault();
+  sw.dy = Math.max(0, dy);
+  sw.sheet.style.transform = `translateY(${sw.dy}px)`;
+  const scrim = document.querySelector('.scrim'); if (scrim) scrim.style.opacity = String(Math.max(0, 1 - sw.dy / sw.sheet.offsetHeight));
+}, { passive: false });
+document.addEventListener('touchend', () => {
+  if (!sw || !sw.drag) { sw = null; return; }
+  const { sheet, dy, t0 } = sw; sw = null;
+  const fast = dy / (performance.now() - t0) > 0.5, scrim = document.querySelector('.scrim');
+  const ease = `var(--duration-fast) var(--ease-smooth-out)`;
+  sheet.style.transition = `transform ${ease}`; if (scrim) scrim.style.transition = `opacity ${ease}`;
+  if (dy > Math.min(120, sheet.offsetHeight * 0.25) || (fast && dy > 30)) {
+    sheet.style.transform = 'translateY(100%)'; if (scrim) scrim.style.opacity = '0';
+    setTimeout(() => { UI.overlay = null; render(); }, reduced() ? 0 : cssMs('--duration-fast'));
+  } else { sheet.style.transform = ''; if (scrim) scrim.style.opacity = ''; }
+});
