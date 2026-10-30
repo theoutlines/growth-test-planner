@@ -145,8 +145,8 @@ function thresholdBlock(p) {
   const abs = p.unit === 'money'
     ? `Money per paywall view: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
     : `${p.metricName[0].toUpperCase() + p.metricName.slice(1)}: ${(p.today * 100).toFixed(2)}% today, ${(p.today * 100 * (1 + p.thr / 100)).toFixed(2)}% or more to show up. Smaller changes look like noise.`;
-  return `<section class="thr"><h1>Your test catches changes of <span>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
-  <div class="weeks" role="radiogroup" aria-label="How long the test runs"><span class="pill" data-js-style aria-hidden="true"></span>${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span>≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
+  return `<section class="thr"><h1>Your test catches changes of <span data-swap>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
+  <div class="weeks" role="radiogroup" aria-label="How long the test runs"><span class="pill" data-js-style aria-hidden="true"></span>${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap>≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
 }
 function planBlock(p) {
   const legs = [[`${p.collect} days of traffic`, '#FFFFFF']];
@@ -157,7 +157,7 @@ function planBlock(p) {
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
   const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change prices"><span>Prices</span><span>$${S.pw} wk · $${S.pa} yr ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
-  return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc">${day(p.decideDate)}</span></span>
+  return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span></span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
   <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
@@ -402,7 +402,7 @@ function endSwap(el) {
   el.classList.remove('is-swapping', 't-text-soft'); el.style.removeProperty('width');
   if (el.dataset.text !== undefined) { el.textContent = el.dataset.text; delete el.dataset.text; }
 }
-const SOFT_MAX = 32;                                   // longer texts (sentences) just change; short values cross-blur
+const SOFT_MAX = 32;                                   // only the answer cross-blurs (data-swap: the headline value, week thresholds, decision day); everything else just changes
 const onlyText = (el) => el.childNodes.length === 1 && el.firstChild.nodeType === 3;
 function morphNode(a, b) {
   if (a.nodeType !== b.nodeType || a.nodeName !== b.nodeName) { a.replaceWith(b); return; }
@@ -432,7 +432,7 @@ function morphNode(a, b) {
   if (onlyText(b) && (a._softTimer || onlyText(a))) {
     const next = b.textContent, cur = a.dataset.text ?? a.textContent;
     if (cur !== next) {
-      if (!UI.instant && next.length <= SOFT_MAX && cur.length <= SOFT_MAX && !a.closest('[contenteditable]')) softSwap(a, next);
+      if (!UI.instant && a.hasAttribute('data-swap') && next.length <= SOFT_MAX && cur.length <= SOFT_MAX && !a.closest('[contenteditable]')) softSwap(a, next);
       else { endSwap(a); a.textContent = next; }
     }
     return;
@@ -449,10 +449,10 @@ function placePills() {                                // transitions.dev 16 · 
     if (!on) { pill.style.opacity = '0'; return; }
     const pos = `translate(${on.offsetLeft}px, ${on.offsetTop}px)`, w = on.offsetWidth + 'px', h = on.offsetHeight + 'px';
     if (pill.style.transform === pos && pill.style.width === w && pill.style.height === h) return;
-    const first = !pill.dataset.placed;
+    const first = !pill._placed;                     // a JS property: the morph would strip a data- attribute and kill the slide
     if (first) { pill.style.transition = 'none'; }
     pill.style.opacity = '1'; pill.style.transform = pos; pill.style.width = w; pill.style.height = h;
-    if (first) { void pill.offsetWidth; pill.style.removeProperty('transition'); pill.dataset.placed = '1'; }
+    if (first) { void pill.offsetWidth; pill.style.removeProperty('transition'); pill._placed = true; }
   });
 }
 function afterPaint() { placePills(); }
@@ -474,14 +474,24 @@ function render() {
   const page = PAGE(r);
   const tmp = document.createElement('div'); tmp.innerHTML = html;
   addFooter(tmp.querySelector('main.page:not(.q)'));               // the footer closes every content page, not the four questions
-  if (page === lastPage && app.firstChild) {
+  if (page === lastPage && app.firstChild && UI.areaSwap && !reduced()) {
+    // a different set of inputs, not new values: swap the content in one soft fade instead of morphing each piece
+    const fake = document.createElement('div'); fake.append(...tmp.childNodes); fake.id = 'app';
+    app.classList.add('swap-instant'); UI.instant = true; morphNode(app, fake); UI.instant = false;
+    void app.offsetWidth; app.classList.remove('swap-instant');
+    app.querySelectorAll('.controls > :not(:first-child), main.page > :not(.thr)').forEach((el) => {
+      el.querySelectorAll('.pill').forEach((p) => { p._placed = false; });
+      el.classList.remove('swap-in'); void el.offsetWidth; el.classList.add('swap-in');
+      el.addEventListener('animationend', () => el.classList.remove('swap-in'), { once: true });
+    });
+  } else if (page === lastPage && app.firstChild) {
     const fake = document.createElement('div'); fake.append(...tmp.childNodes);
     fake.id = 'app'; morphNode(app, fake);                       // same page: patch in place, so things move
   } else {
     app.replaceChildren(...tmp.childNodes);
     if (!reduced()) app.querySelectorAll('main.page, .rail').forEach((el) => { el.classList.add('enter'); el.addEventListener('animationend', () => el.classList.remove('enter'), { once: true }); });
   }
-  lastPage = page;
+  lastPage = page; UI.areaSwap = false;
   if (/^(area|traffic|conv|trial)$/.test(r)) UI.lastStep = { area: 1, traffic: 2, conv: 3, trial: 4 }[r];
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
   document.documentElement.style.overflow = document.querySelector('.scrim') ? 'hidden' : '';   // a modal or sheet holds the page still
@@ -492,6 +502,7 @@ function onRoute() { const { r, qs } = route(); if (qs) fromQuery(qs); UI.overla
 
 function set(key, raw) {
   const v = typeof DEFAULTS[key] === 'number' ? Number(raw) : raw;
+  if (key === 'area' && S.area !== v) UI.areaSwap = true;
   S[key] = v;
   if (key === 'area' && !decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0];
   save();
@@ -591,7 +602,7 @@ function scale() {
   document.documentElement.style.setProperty('--vh', window.innerHeight / z + 'px');   // the rail's height limit in unzoomed pixels
 }
 let lastWide = wide();
-window.addEventListener('resize', () => { scale(); if (wide() !== lastWide) { lastWide = wide(); lastPage = null; render(); } else document.querySelectorAll('.pill').forEach((p) => delete p.dataset.placed), placePills(); });
+window.addEventListener('resize', () => { scale(); if (wide() !== lastWide) { lastWide = wide(); lastPage = null; render(); } else document.querySelectorAll('.pill').forEach((p) => p._placed = false), placePills(); });
 window.addEventListener('hashchange', onRoute);
 
 const saved = store.get('gtp:last');
