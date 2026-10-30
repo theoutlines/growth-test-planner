@@ -114,7 +114,7 @@ function startScreen() {
   <section class="hero"><img src="assets/character.png" alt=""><div><small>For designers who ship onboarding and paywalls</small><strong>Will your test see your change?</strong></div></section>
   <div class="stack">${pick(G.plan, 'Plan a test', 'How bold your change must be to show up, how long the test runs, the day you decide. Four questions.', 'area')}
   ${pick(G.read, 'Read a finished test', 'Win, loss or too early to tell, with the likely range. Same terms as the plan.', 'results')}</div>
-  <div class="grow"></div><p class="fine" style="text-align:center;margin:0">Free. Nothing you type leaves this page.</p></main>`;
+  <p class="fine" style="text-align:center;margin:0">Free. Nothing you type leaves this page.</p></main>`;
 }
 function areaScreen() {
   return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. Three quick questions follow.')}
