@@ -120,11 +120,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .weeks { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
 .weeks button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 56px; border-radius: 12px; background: var(--s07); }
 .weeks button b { font-size: 15px; font-weight: 600; }
-.weeks button span { font-size: 12px; opacity: .65; }
+.weeks button > span { font-size: 12px; opacity: .65; }
 .weeks { position: relative; }
-.weeks button { position: relative; z-index: 1; transition: color var(--tabs-dur) var(--tabs-ease), background-color var(--tabs-dur) var(--tabs-ease); }
-.weeks button[aria-checked="true"] { background: #000; }   /* white pill × difference over black = white card, white text turns black, also mid-slide */
-.weeks .pill { background: #FFFFFF; border-radius: 12px; z-index: 2; mix-blend-mode: difference; }
+.weeks button { position: relative; z-index: 1; transition: color var(--duration-quick) var(--ease-in-out, ease-in-out), background-color var(--duration-quick) var(--ease-in-out, ease-in-out); }
+.weeks button[aria-checked="true"] { background: var(--w); color: #151515; }   /* big cards: the choice crossfades, no sliding card */
 
 /* ---------- plan */
 .plan { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
@@ -197,9 +196,8 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .tones { display: flex; gap: 8px; flex-wrap: wrap; }
 .tones button { height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 500; background: var(--s07); }
 .tones { position: relative; }
-.tones button { position: relative; z-index: 1; transition: color var(--tabs-dur) var(--tabs-ease), background-color var(--tabs-dur) var(--tabs-ease); }
-.tones button[aria-checked="true"] { background: #000; }
-.tones .pill { background: #FFFFFF; border-radius: 18px; z-index: 2; mix-blend-mode: difference; }
+.tones button { position: relative; z-index: 1; transition: color var(--duration-quick) var(--ease-in-out, ease-in-out), background-color var(--duration-quick) var(--ease-in-out, ease-in-out); }
+.tones button[aria-checked="true"] { background: var(--w); color: #151515; }
 .msg { padding: 16px 12px 12px 16px; border-radius: 16px; background: var(--card); display: flex; flex-direction: column; gap: 10px; }
 .msg [contenteditable] { outline: none; font-size: 15px; line-height: 1.45; color: rgba(255,255,255,.92); white-space: pre-wrap; min-height: 120px; }
 .msg .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -282,15 +280,13 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .pill { position: absolute; top: 0; left: 0; width: 0; height: 0; z-index: 0; pointer-events: none;
   transition: transform var(--tabs-dur) var(--tabs-ease), width var(--tabs-dur) var(--tabs-ease), height var(--tabs-dur) var(--tabs-ease); will-change: transform, width; }
 
-/* 34 · text swap soft: short values cross-blur in place */
-.t-text-soft { display: inline-grid; justify-items: var(--text-soft-align, start); overflow-x: clip;   /* the old value never spills over its neighbours while the box resizes */
-  transition: width var(--text-soft-resize-dur) var(--text-soft-resize-ease); }
-.t-text-soft > span { grid-area: 1 / 1; white-space: pre; transition: filter var(--text-soft-dur) var(--text-soft-ease), opacity var(--text-soft-dur) var(--text-soft-ease); }
-.t-text-soft-new { opacity: 0; filter: blur(var(--text-soft-blur)); }
-.t-text-soft.is-swapping .t-text-soft-old { opacity: 0; filter: blur(var(--text-soft-blur)); }
-.t-text-soft.is-swapping .t-text-soft-new { opacity: 1; filter: blur(0); }
-.rows div span:last-child.t-text-soft, .legend .t-text-soft { justify-items: end; }
-.weeks .t-text-soft { justify-items: center; }
+/* 34 · text swap soft: the new value is in place at once; the old one sits on top and fades out (no width change, nothing moves) */
+.t-swap { position: relative; }
+.t-swap > .t-new { animation: t-swap-in-text var(--text-soft-dur) var(--text-soft-ease) both; }
+.t-swap > .t-old { position: absolute; left: 0; top: 0; white-space: pre; pointer-events: none; animation: t-swap-out-text var(--text-soft-dur) var(--text-soft-ease) both; }
+.t-swap[data-swap="center"] > .t-old { left: 50%; transform: translateX(-50%); }
+@keyframes t-swap-in-text { from { opacity: 0; filter: blur(var(--text-soft-blur)); } }
+@keyframes t-swap-out-text { to { opacity: 0; filter: blur(var(--text-soft-blur)); } }
 
 /* data that moves: sliders, plan phases, forest plot, verdict range */
 .track .fill { transition: width var(--duration-fast) var(--ease-smooth-out); }

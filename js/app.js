@@ -146,7 +146,7 @@ function thresholdBlock(p) {
     ? `Money per paywall view: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
     : `${p.metricName[0].toUpperCase() + p.metricName.slice(1)}: ${(p.today * 100).toFixed(2)}% today, ${(p.today * 100 * (1 + p.thr / 100)).toFixed(2)}% or more to show up. Smaller changes look like noise.`;
   return `<section class="thr"><h1>Your test catches changes of <span data-swap>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
-  <div class="weeks" role="radiogroup" aria-label="How long the test runs"><span class="pill" data-js-style aria-hidden="true"></span>${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap>≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
+  <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
 }
 function planBlock(p) {
   const legs = [[`${p.collect} days of traffic`, '#FFFFFF']];
@@ -249,7 +249,7 @@ function resultTones(p, v) {
 function shareBody(texts, title, sub) {
   const tones = Object.keys(texts);
   if (!texts[UI.tone]) UI.tone = 'Friendly';
-  return `${heading(title, sub)}<section style="display:flex;flex-direction:column;gap:12px"><div class="tones" role="radiogroup" aria-label="Tone"><span class="pill" data-js-style aria-hidden="true"></span>${['Short', 'Friendly', 'Detailed'].filter((t) => tones.includes(t)).map((t) => `<button role="radio" aria-checked="${t === UI.tone}" data-tone="${t}">${t}</button>`).join('')}</div>
+  return `${heading(title, sub)}<section style="display:flex;flex-direction:column;gap:12px"><div class="tones" role="radiogroup" aria-label="Tone">${['Short', 'Friendly', 'Detailed'].filter((t) => tones.includes(t)).map((t) => `<button role="radio" aria-checked="${t === UI.tone}" data-tone="${t}">${t}</button>`).join('')}</div>
   <div class="msg"><div contenteditable="true" id="msgtext" aria-label="Message, editable" role="textbox" aria-multiline="true">${esc(texts[UI.tone])}</div><div class="foot"><span>Tap the text to edit</span><button class="icon-btn" data-copy aria-label="Copy message">${I.copy}</button></div></div></section>`;
 }
 function shareScreen(result) {
@@ -375,31 +375,20 @@ function swapMain(html) {           // live updates touch only the content colum
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cssMs = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0;
 
-function softSwap(el, next) {                         // transitions.dev 34 · text swap soft
-  const prev = el.dataset.text ?? el.textContent;
+function softSwap(el, next) {                         // transitions.dev 34 · text swap soft, without resizing anything:
+  const prev = el.dataset.text ?? el.textContent;      // the new value takes its place at once, the old one fades out on top of it
   if (prev === next) return;
   el.dataset.text = next;
   clearTimeout(el._softTimer);
   if (reduced()) { el.textContent = next; delete el.dataset.text; return; }
-  const out = document.createElement('span'); out.className = 't-text-soft-old'; out.setAttribute('aria-hidden', 'true'); out.textContent = prev;
-  const inn = document.createElement('span'); inn.className = 't-text-soft-new'; inn.textContent = next;
-  el.classList.add('t-text-soft');
-  const w0 = el.getBoundingClientRect().width;
-  el.classList.remove('is-swapping');
-  el.replaceChildren(out, inn);
-  const w1 = inn.getBoundingClientRect().width;
-  el.style.width = w0 + 'px';
-  void el.offsetWidth;
-  el.classList.add('is-swapping');
-  el.style.width = w1 + 'px';
-  el._softTimer = setTimeout(() => {
-    el.classList.remove('is-swapping', 't-text-soft'); el.style.removeProperty('width');
-    el.textContent = next; delete el.dataset.text; el._softTimer = null;
-  }, Math.max(cssMs('--text-soft-dur'), cssMs('--text-soft-resize-dur')) + 40);
+  const inn = document.createElement('span'); inn.className = 't-new'; inn.textContent = next;
+  const out = document.createElement('span'); out.className = 't-old'; out.setAttribute('aria-hidden', 'true'); out.textContent = prev;
+  el.classList.add('t-swap'); el.replaceChildren(inn, out);
+  el._softTimer = setTimeout(() => endSwap(el), cssMs('--text-soft-dur') + 40);
 }
 function endSwap(el) {
   clearTimeout(el._softTimer); el._softTimer = null;
-  el.classList.remove('is-swapping', 't-text-soft'); el.style.removeProperty('width');
+  el.classList.remove('t-swap');
   if (el.dataset.text !== undefined) { el.textContent = el.dataset.text; delete el.dataset.text; }
 }
 const SOFT_MAX = 32;                                   // only the answer cross-blurs (data-swap: the headline value, week thresholds, decision day); everything else just changes
@@ -410,7 +399,7 @@ function morphNode(a, b) {
   if (a.nodeType !== 1) return;
   // a swap still running on a node that is about to become something else: finish it first
   if (a._softTimer) {
-    const base = (el) => [...el.classList].filter((c) => c !== 't-text-soft' && c !== 'is-swapping').sort().join(' ');
+    const base = (el) => [...el.classList].filter((c) => c !== 't-swap').sort().join(' ');
     if (base(a) !== base(b) || !onlyText(b)) endSwap(a);
   }
   // attributes
