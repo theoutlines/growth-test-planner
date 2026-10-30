@@ -202,7 +202,8 @@ function testScreen() {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
     const extra = UI.overlay === 'idea' ? `<section class="float" role="dialog" aria-label="Idea details">${ideaCard(p)}</section>`
       : UI.overlay === 'prices' ? `<section class="float" role="dialog" aria-label="Prices">${pricesCard()}</section>` : '';
-    return top(shareBtn) + main + `<aside class="rail" id="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your test</small>${controls()}</section></aside>` + extra;
+    const share = `<button class="share-float" data-go="share">${I.share}<span>Share plan</span></button>`;   // bottom-left: frees the top for the rail and the content
+    return top() + main + share + `<aside class="rail" id="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your test</small>${controls()}</section></aside>` + extra;
   }
   if (UI.overlay === 'edit') overlay = `<div class="scrim" data-close></div><div class="sheet" id="sheet"><div class="sheet-in"><span class="grab"></span><button class="sumrow" data-close aria-label="Close"><span><small>Your test</small><em>${summary(p)}</em></span><span class="icon-btn">${I.down}</span></button>${controls()}</div></div>`;
   else if (UI.overlay === 'idea') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in text"><span class="grab"></span>${ideaCard(p)}</div></div>`;
