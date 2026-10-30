@@ -1,37 +1,53 @@
-import { DEFAULTS, planOf, readOf, decideOptions, sign } from './math.js';
+import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, shares, planTrial } from './math.js';
 import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL } from './data.js';
 
 // ------------------------------------------------------------------ state
 // Nothing typed here leaves the browser. The last inputs are kept in localStorage (this browser only);
 // a shared link carries them after "#", which browsers never send to the server.
-const S = { ...DEFAULTS };
+const S = fresh();
 let READ = { A: {}, B: {}, C: {}, billed: true };
 const LETTERS = () => (S.versions === 3 ? ['A', 'B', 'C'] : ['A', 'B']);
 let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError: '' };
 const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-const KEYS = { a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', t: 'trial', s: 'traffic', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', pw: 'pw', pa: 'pa', m: 'mixA' };
+const KEYS = { a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', t: 'trial', s: 'traffic', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start' };
+// plans in a link: w6.99-50-3_y39.99-50-3 (type letter, price, share, trial days)
+const TL = { week: 'w', month: 'm', year: 'y', once: 'o' }, LT = { w: 'week', m: 'month', y: 'year', o: 'once' };
+const plansOut = (pl) => pl.map((x) => `${TL[x.t]}${x.p}-${Math.round(x.s)}-${x.tr}`).join('_');
+const plansIn = (str) => {
+  const pl = String(str).split('_').map((t) => { const m = /^([wmyo])([\d.]+)-(\d+)-(\d+)$/.exec(t); return m && { t: LT[m[1]], p: Number(m[2]) || 1, s: Number(m[3]), tr: [0, 3, 7, 14].includes(Number(m[4])) ? Number(m[4]) : 0 }; }).filter(Boolean).slice(0, 4);
+  return pl.length ? pl : null;
+};
+// links and saved state from before plans existed: weekly + annual price and the annual share
+const legacyPlans = (pw, pa, mix, tr) => [{ t: 'week', p: Number(pw) || 6.99, s: 100 - (Number(mix) || 50), tr: Number(tr) || 0 }, { t: 'year', p: Number(pa) || 39.99, s: Number(mix) || 50, tr: Number(tr) || 0 }];
 function toQuery(withRead) {
   const q = new URLSearchParams();
   for (const [k, f] of Object.entries(KEYS)) if (S[f] !== DEFAULTS[f] || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
+  if (plansOut(S.plans) !== plansOut(DEFAULTS.plans)) q.set('pl', plansOut(S.plans));
   if (withRead) {
-    for (const v of LETTERS()) q.set('r' + v.toLowerCase(), ['people', 'weekly', 'annual', 'trials', 'refunds'].map((f) => READ[v][f] ?? '').join('.'));
+    for (const v of LETTERS()) q.set('x' + v.toLowerCase(), [READ[v].people, READ[v].trials, READ[v].refunds, ...S.plans.map((_, i) => READ[v]['p' + i])].map((x) => x ?? '').join('.'));
     q.set('bl', READ.billed ? 1 : 0);
   }
   return q.toString();
 }
 function fromQuery(qs) {
   const q = new URLSearchParams(qs);
-  if (q.has('a')) Object.assign(S, DEFAULTS);          // a link describes a whole test: missing keys mean defaults
+  if (q.has('a')) Object.assign(S, fresh());          // a link describes a whole test: missing keys mean defaults
   for (const [k, f] of Object.entries(KEYS)) if (q.has(k)) { const raw = q.get(k); S[f] = typeof DEFAULTS[f] === 'number' ? (Number(raw) || DEFAULTS[f]) : raw; }
   if (!['paywall', 'onboarding'].includes(S.area)) S.area = 'paywall';
   if (!['win', 'notworse'].includes(S.goal)) S.goal = 'win';
   if (![2, 3].includes(S.versions)) S.versions = 2;
   if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0];   // a link with only a=onboarding still has a choice picked
-  for (const v of ['A', 'B', 'C']) if (q.has('r' + v.toLowerCase())) {
-    const parts = q.get('r' + v.toLowerCase()).split('.'); READ[v] = {};
-    ['people', 'weekly', 'annual', 'trials', 'refunds'].forEach((f, i) => { if (parts[i]) READ[v][f] = parts[i]; });
+  if (q.has('pl')) S.plans = plansIn(q.get('pl')) || fresh().plans;
+  else if (q.has('pw') || q.has('pa') || q.has('m')) S.plans = legacyPlans(q.get('pw'), q.get('pa'), q.get('m'), S.trial);
+  for (const v of ['A', 'B', 'C']) {
+    const L = v.toLowerCase();
+    if (q.has('x' + L)) { const [pe, tr, rf, ...ps] = q.get('x' + L).split('.'); READ[v] = {}; Object.entries({ people: pe, trials: tr, refunds: rf }).forEach(([f, x]) => { if (x) READ[v][f] = x; }); ps.forEach((x, i) => { if (x) READ[v]['p' + i] = x; }); }
+    else if (q.has('r' + L)) {                            // old links: people.weekly.annual.trials.refunds
+      const parts = q.get('r' + L).split('.'); READ[v] = {};
+      ['people', 'p0', 'p1', 'trials', 'refunds'].forEach((f, i) => { if (parts[i]) READ[v][f] = parts[i]; });
+    }
   }
   if (q.has('bl')) READ.billed = q.get('bl') === '1';
 }
@@ -74,8 +90,21 @@ const SL = {
   users: { lo: 1000, hi: 500000, l: '1k', h: '500k', fmt: n0, round: (v) => v < 10000 ? Math.round(v / 100) * 100 : Math.round(v / 1000) * 1000 },
   conv: { lo: 0.5, hi: 10, l: '0.5', h: '10', fmt: (v) => String(+v.toFixed(2)), round: (v) => Math.round(v * 20) / 20, unit: '%' },
   trialRate: { lo: 0.5, hi: 25, l: '0.5', h: '25', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
-  mixA: { lo: 0, hi: 100, l: '0', h: '100', fmt: (v) => String(Math.round(v)), round: (v) => Math.round(v), unit: '%', linear: true },   // a share: linear, not log
 };
+// each plan's share of buyers slides 0–100 and the other plans make room, so the shares always add up to 100
+for (let i = 0; i < 4; i++) {
+  SL['sh' + i] = { lo: 0, hi: 100, l: '0', h: '100', fmt: (v) => String(Math.round(v)), round: (v) => Math.round(v), unit: '%', linear: true };
+  Object.defineProperty(S, 'sh' + i, { enumerable: false, get: () => (S.plans[i] ? Math.round(shares(S.plans)[i] * 100) : 0), set: (v) => setShare(i, v) });
+}
+function setShare(i, v) {
+  const pl = S.plans; if (!pl[i]) return;
+  v = Math.max(0, Math.min(100, Math.round(v)));
+  const w = shares(pl).map((x) => x * 100), rest = w.reduce((t, x, j) => t + (j === i ? 0 : x), 0), others = pl.length - 1;
+  pl.forEach((x, j) => { x.s = j === i ? v : rest > 0 ? w[j] / rest * (100 - v) : (100 - v) / others; });
+  const ints = pl.map((x) => Math.round(x.s)), diff = 100 - ints.reduce((t, x) => t + x, 0);
+  if (diff) { const j = ints.reduce((b, x, k) => (k !== i && x > ints[b] ? k : b), i === 0 && pl.length > 1 ? 1 : 0); ints[j] += diff; }
+  pl.forEach((x, j) => { x.s = ints[j]; });
+}
 const pctOf = (k, v) => SL[k].linear ? Math.max(0, Math.min(100, (v - SL[k].lo) / (SL[k].hi - SL[k].lo) * 100)) : Math.max(0, Math.min(100, Math.log(v / SL[k].lo) / Math.log(SL[k].hi / SL[k].lo) * 100));
 const valOf = (k, pct) => SL[k].round(SL[k].linear ? SL[k].lo + (SL[k].hi - SL[k].lo) * pct / 100 : SL[k].lo * Math.pow(SL[k].hi / SL[k].lo, pct / 100));
 
@@ -100,9 +129,14 @@ const sec = (t, sub) => `<div class="sec"><b>${t}</b>${sub ? `<span>${sub}</span
 const nav = (label, step, next, back) => `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= 4 ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of 4 answered)">${step < 4 ? `<i style="width:${step * 25}%;--fill-from:${Math.max(0, (UI.lastStep ?? step - 1)) * 25}%"></i>` : ''}<span>${label}</span></button></div>`;
 const pick = (glyph, t, sub, goTo) => `<button class="pick" data-go="${goTo}"><span>${glyph}</span><span><b>${t}</b><em>${sub}</em></span>${I.chev}</button>`;
 
+function trialText() {          // paywall: each plan has its own trial
+  if (S.area === 'onboarding') return S.trial ? `${S.trial}-day trial` : 'no trial';
+  const t = [...new Set(S.plans.map(planTrial))];
+  return t.length > 1 ? 'trials vary by plan' : t[0] ? `${t[0]}-day trial` : 'no trial';
+}
 function summary(p) {
   const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} views a week`, `${S.conv}% pay`];
-  bits.push(S.trial ? `${S.trial}-day trial` : 'no trial');
+  bits.push(trialText());
   if (S.traffic !== 100) bits.push(`${S.traffic}% of traffic`);
   if (S.versions === 3) bits.push('A/B/C');
   if (S.goal === 'notworse') bits.push('prove not worse');
@@ -158,7 +192,7 @@ function planBlock(p) {
   const rows = [['People per version', k100(p.perVersion) + unitP]];
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
-  const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change prices"><span>Prices</span><span>$${S.pw} wk · $${S.pa} yr ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
+  const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change plans"><span>Plans</span><span>${S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')} ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span></span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
@@ -186,7 +220,7 @@ function controls() {
   const dec = decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]);
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
   ${onb ? railSlider('New users a week', 'users') + railSlider('New users who start a trial', 'trialRate') : railSlider('Paywall views a week', 'views') + railSlider('Views that end in payment', 'conv')}
-  ${seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']])}
+  ${onb ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : ''}
   ${seg('Traffic in test', 'traffic', [[100, '100%'], [50, '50%'], [20, '20%']])}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster.'}</span>
@@ -194,10 +228,16 @@ function controls() {
 }
 // Start date: edited in the plan, where it's read (defaults to next Monday: whole weeks, a few days to set up)
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-function pricesCard() {
-  const f = (label, key, pre, suf) => `<label class="rr" style="gap:6px"><span style="font-size:14px;color:rgba(255,255,255,.75)">${label}</span><div style="grid-template-columns:1fr"><label><span>${pre || ''}</span><input data-num="${key}" inputmode="decimal" value="${S[key]}">${suf ? `<span>${suf}</span>` : ''}</label></div></label>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:600">Prices</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  ${f('Weekly price', 'pw', '$')}${f('Annual price', 'pa', '$')}${railSlider('Buyers who pick annual', 'mixA', true)}`;   // prices are exact numbers to type; the plan mix is a share, so it slides
+const pseg = (label, i, f, opts) => `<div class="seg"${label ? '' : ' aria-label="Plan type"'}>${label ? `<span>${label}</span>` : ''}<div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))"><span class="pill" data-js-style aria-hidden="true"></span>${opts.map(([v, t]) => `<button data-plan="${i}.${f}" data-val="${v}" aria-pressed="${String(S.plans[i][f]) === String(v)}">${t}</button>`).join('')}</div></div>`;
+function pricesCard() {           // the paywall's plans: type, price, free trial, share of buyers
+  const many = S.plans.length > 1;
+  const one = (x, i) => `<section class="pl">
+    <div class="plhead">${pseg('', i, 't', Object.entries(PLAN_TYPES).map(([k, v]) => [k, v[0]]))}${many ? `<button class="icon-btn sm" data-plan-del="${i}" aria-label="Remove this plan">${I.x}</button>` : ''}</div>
+    <div class="plrow"><label class="rr"><span>Price</span><div style="grid-template-columns:1fr"><label><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label></div></label>
+    ${x.t === 'once' ? '' : pseg('Free trial', i, 'tr', [[0, 'None'], [3, '3'], [7, '7'], [14, '14+']])}</div>
+    ${many ? railSlider('Buyers who pick it', 'sh' + i, true) : ''}</section>`;
+  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:600">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  ${S.plans.map(one).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}`;
 }
 function testScreen() {
   const p = planOf(S);
@@ -273,7 +313,7 @@ function readRows(p) {
   const onb = p.onb;
   const rows = [[onb ? 'New users' : 'Saw the paywall', 'people', onb ? 'People per version, from the moment they were split.' : 'People per version.']];
   if (p.decide === 'trials') rows.push(['Started a trial', 'trials', 'Trial starts per version.']);
-  else rows.push([`Paid · weekly $${S.pw}`, 'weekly', 'First payments after the last trials billed.'], [`Paid · annual $${S.pa}`, 'annual', 'Prices come from your plan.']);
+  else S.plans.forEach((x, i) => rows.push([`Paid · ${PLAN_TYPES[x.t][1]} $${x.p}`, 'p' + i, i === 0 ? 'First payments after the last trials billed.' : i === S.plans.length - 1 ? 'Prices come from your plan.' : '']));
   rows.push(['Refunds', 'refunds', 'Leave empty if you don’t have it yet.', 'optional']);
   return rows;
 }
@@ -297,16 +337,16 @@ function resultsScreen() {
 }
 function num(x) { const v = Number(String(x ?? '').replace(/[ ,]/g, '')); return Number.isFinite(v) && String(x ?? '').trim() !== '' ? v : null; }
 function readInputs(p) {
-  const need = p.decide === 'trials' ? ['people', 'trials'] : ['people', 'weekly', 'annual'];
+  const need = p.decide === 'trials' ? ['people', 'trials'] : ['people'];
   const out = { billed: READ.billed };
   for (const v of LETTERS()) {
     const o = {};
-    for (const f of ['people', 'weekly', 'annual', 'trials', 'refunds']) o[f] = num(READ[v][f]);
+    for (const f of ['people', 'trials', 'refunds']) o[f] = num(READ[v][f]);
     if (need.some((f) => o[f] == null) || !o.people) return null;
-    for (const f of ['weekly', 'annual', 'trials']) o[f] = o[f] ?? 0;
+    o.trials = o.trials ?? 0; o.paid = S.plans.map((_, i) => num(READ[v]['p' + i]) ?? 0);
     out[v] = o;
   }
-  if (p.decide !== 'trials' && LETTERS().some((v) => !(out[v].weekly + out[v].annual))) return null;
+  if (p.decide !== 'trials' && LETTERS().some((v) => !out[v].paid.some((n) => n > 0))) return null;
   return out;
 }
 function verdictOf(p) {
@@ -332,9 +372,9 @@ function verdictOf(p) {
   }[r.verdict];
   let source = '';
   if (r.source && !['broken', 'too_early'].includes(r.verdict) && p.decide !== 'trials') {
-    const s = r.source, a = Math.round(s.annualA * 100), b = Math.round(s.annualB * 100);
-    if (p.decide === 'money' && s.fromMix != null && s.fromMix > 0.5 && s.fromMix <= 1) source = `About ${Math.round(s.fromMix * 100)}% from plans: annual went from ${a}% to ${b}% of buyers. ${more(s.conv)} people paid. ${L} ${m.lift >= 0 ? 'sold the annual plan better' : 'sold the annual plan worse'}.`;
-    else if (s.fromConv != null && s.fromConv >= 0 && s.fromMix >= 0) source = `${cap(more(s.conv))} people paid; the plan mix barely moved (annual ${a}% → ${b}%). So ${L} changed how many people pay, not which plan they pick.`;
+    const s = r.source, a = Math.round(s.topA * 100), b = Math.round(s.topB * 100);
+    if (p.decide === 'money' && s.fromMix != null && s.fromMix > 0.5 && s.fromMix <= 1) source = `About ${Math.round(s.fromMix * 100)}% from plans: the ${s.top} plan went from ${a}% to ${b}% of buyers. ${more(s.conv)} people paid. ${L} ${m.lift >= 0 ? `sold the ${s.top} plan better` : `sold the ${s.top} plan worse`}.`;
+    else if (s.fromConv != null && s.fromConv >= 0 && s.fromMix >= 0) source = `${cap(more(s.conv))} people paid; the plan mix barely moved (${s.top} ${a}% → ${b}%). So ${L} changed how many people pay, not which plan they pick.`;
     else source = `Paid conversion ${sign(s.conv * 100)}, money per payer ${sign(s.perPayer * 100)}. They pulled in different directions; the net is their difference.`;
   }
   const note = r.verdict === 'broken' ? 'Fix this before you trust any number.' : r.checks.some((c) => !c.ok) ? 'Something went wrong. Fix it before you trust the result.'
@@ -513,6 +553,7 @@ function set(key, raw) {
   const v = typeof DEFAULTS[key] === 'number' ? Number(raw) : raw;
   if (key === 'area' && S.area !== v) UI.areaSwap = true;
   S[key] = v;
+  if (key === 'trial') S.plans.forEach((x) => { if (x.t !== 'once') x.tr = v; });   // the trial question sets every plan; the plans editor can differ
   if (key === 'area' && !decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0];
   save();
   const { r } = route();
@@ -520,8 +561,9 @@ function set(key, raw) {
   render();
 }
 
+function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-go],[data-set],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
@@ -530,6 +572,9 @@ app.addEventListener('click', (e) => {
     return go(r);
   }
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
+  if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
+  if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
+  if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: t === 'once' ? 0 : S.plans[0].tr }); setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); return planChanged(); }
   if (el.dataset.idea) { UI.overlay = 'idea'; UI.idea = Number(el.dataset.idea); return render(); }
   if (el.dataset.overlay) { UI.overlay = el.dataset.overlay; return render(); }
   if ('close' in el.dataset) return closeThen(() => { UI.overlay = null; render(); });
@@ -557,7 +602,7 @@ app.addEventListener('input', (e) => {
   UI.instant = true; setTimeout(() => { UI.instant = false; });
   if (t.dataset.type) { const k = t.dataset.type, v = num(t.value); if (v != null && (v > 0 || SL[k].linear)) { S[k] = SL[k].linear ? Math.min(100, v) : Math.min(SL[k].hi * 10, v); save(); syncTrack(k, t); refreshMain(); } }
   if ('date' in t.dataset) { if (/^\d{4}-\d{2}-\d{2}$/.test(t.value)) { S.start = t.value; save(); history.replaceState(null, '', '#/' + route().r + '?' + toQuery(route().r === 'verdict')); render(); } }
-  if (t.dataset.num) { const v = num(t.value); if (v != null && v > 0) { S[t.dataset.num] = t.dataset.num === 'mixA' ? Math.min(100, v) : v; save(); refreshMain(); } }
+  if (t.dataset.planPrice) { const v = num(t.value); if (v != null && v > 0) { S.plans[+t.dataset.planPrice].p = v; save(); refreshMain(); } }
 });
 app.addEventListener('change', (e) => { if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
 app.addEventListener('keydown', (e) => {
@@ -567,6 +612,7 @@ app.addEventListener('keydown', (e) => {
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
 });
 function syncTrack(k, except) {
+  if (/^sh\d$/.test(k) && !syncTrack.busy) { syncTrack.busy = true; S.plans.forEach((_, i) => { if ('sh' + i !== k) syncTrack('sh' + i); }); syncTrack.busy = false; }
   document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { const p = pctOf(k, S[k]); tr.querySelector('.fill').style.width = p + '%'; tr.querySelector('.handle').style.left = p + '%'; tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
   document.querySelectorAll(`[data-val-of="${k}"]`).forEach((el) => { el.textContent = SL[k].fmt(S[k]) + (SL[k].unit || ''); });
   const txt = SL[k].fmt(S[k]);
@@ -615,7 +661,10 @@ window.addEventListener('resize', () => { scale(); if (wide() !== lastWide) { la
 window.addEventListener('hashchange', onRoute);
 
 const saved = store.get('gtp:last');
-if (saved) Object.assign(S, saved);
+if (saved) {
+  const { pw, pa, mixA, ...rest } = saved; Object.assign(S, rest);
+  if (!Array.isArray(S.plans) || !S.plans.length) S.plans = pw != null ? legacyPlans(pw, pa, mixA, S.trial) : fresh().plans;
+}
 if (!location.hash && saved) history.replaceState(null, '', '#/test?' + toQuery());
 scale();
 onRoute();
