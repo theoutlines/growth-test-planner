@@ -353,6 +353,17 @@ function verdictScreen() {
 
 const FOOTER = `<span>© ${new Date().getFullYear()} Ivan Polushin</span><a href="https://github.com/theoutlines/growth-test-planner" target="_blank" rel="noopener">Source</a><a href="https://github.com/theoutlines/growth-skills" target="_blank" rel="noopener">Growth Skills for Claude</a>`;
 
+function addFooter(pg) {
+  if (!pg || pg.querySelector('.foot')) return;
+  const sp = pg.querySelector('.spacer-peek'), f = document.createElement('footer');
+  f.className = 'foot'; f.innerHTML = FOOTER; sp ? pg.insertBefore(f, sp) : pg.appendChild(f);
+}
+function swapMain(html) {           // live updates replace only the content column; it keeps its footer
+  const main = document.getElementById('main'); if (!main) return null;
+  const tmp = document.createElement('div'); tmp.innerHTML = html;
+  const fresh = tmp.querySelector('#main'); addFooter(fresh); main.replaceWith(fresh);
+  return tmp;
+}
 // ------------------------------------------------------------------ render + events
 const app = document.getElementById('app');
 function render() {
@@ -361,8 +372,7 @@ function render() {
   const html = { '': startScreen, area: areaScreen, traffic: trafficScreen, conv: convScreen, trial: trialScreen, test: testScreen, share: () => shareScreen(false),
     results: resultsScreen, verdict: verdictScreen, 'share-result': () => shareScreen(true) }[r]();
   app.innerHTML = html;
-  const pg = app.querySelector('main.page:not(.q)');                 // the footer closes every content page, not the four questions
-  if (pg) { const sp = pg.querySelector('.spacer-peek'); const f = document.createElement('footer'); f.className = 'foot'; f.innerHTML = FOOTER; sp ? pg.insertBefore(f, sp) : pg.appendChild(f); }
+  addFooter(app.querySelector('main.page:not(.q)'));               // the footer closes every content page, not the four questions
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
   document.documentElement.style.overflow = document.querySelector('.scrim') ? 'hidden' : '';   // a modal or sheet holds the page still
   document.title = 'Growth Test Planner';
@@ -410,7 +420,7 @@ app.addEventListener('input', (e) => {
   const t = e.target;
   if (t.dataset.read) {
     const [v, f] = t.dataset.read.split('.'); READ[v][f] = t.value.replace(/[^\d]/g, '');
-    if (route().r === 'verdict' && readInputs(planOf(S))) { history.replaceState(null, '', '#/verdict?' + toQuery(true)); const main = document.getElementById('main'); const tmp = document.createElement('div'); tmp.innerHTML = verdictScreen(); main.replaceWith(tmp.querySelector('#main')); }
+    if (route().r === 'verdict' && readInputs(planOf(S))) { history.replaceState(null, '', '#/verdict?' + toQuery(true)); swapMain(verdictScreen()); }
   }
   if (t.dataset.type) { const v = num(t.value); if (v) { S[t.dataset.type] = Math.min(SL[t.dataset.type].hi * 10, v); save(); syncTrack(t.dataset.type); } }
   if (t.dataset.num) { const v = num(t.value); if (v != null && v > 0) { S[t.dataset.num] = t.dataset.num === 'mixA' ? Math.min(100, v) : v; save(); refreshMain(); } }
@@ -428,9 +438,7 @@ function syncTrack(k) {
 }
 function refreshMain() {           // update the answer without touching the control being used
   if (route().r !== 'test') return;
-  const main = document.getElementById('main'); if (!main) return;
-  const tmp = document.createElement('div'); tmp.innerHTML = testScreen();
-  main.replaceWith(tmp.querySelector('#main'));
+  const tmp = swapMain(testScreen()); if (!tmp) return;
   const em = tmp.querySelector('.sumrow em'); document.querySelectorAll('.sumrow em').forEach((x) => { if (em) x.textContent = em.textContent; });
   history.replaceState(null, '', '#/test?' + toQuery());
 }
