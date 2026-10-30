@@ -27,7 +27,7 @@ a { color: inherit; text-decoration: none; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- page frame: one column; on wide screens a rail pinned to the right edge */
-.top { position: sticky; top: 0; z-index: 15; background: var(--bg); display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 12px max(16px, calc(50% - 204px)) 8px; box-sizing: content-box; }
+.top { position: sticky; top: 0; z-index: 15; background: transparent; display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 12px max(16px, calc(50% - 204px)) 8px; box-sizing: content-box; }
 .brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
 .brand i { width: 18px; height: 18px; border-radius: 6px; background: var(--acc); }
 .icon-btn { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: var(--s08); color: var(--w); }
@@ -272,8 +272,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .foot a { color: rgba(255,255,255,.55); }
 .foot a:hover { color: var(--w); }
 /* content slides under the sticky top bar through a short fade, never a hard cut */
-.top::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 32px; background: linear-gradient(rgba(21,21,21,.8) 0%, rgba(21,21,21,.55) 25%, rgba(21,21,21,.3) 50%, rgba(21,21,21,.12) 75%, rgba(21,21,21,0) 100%);   /* an eased fade, no solid band */ pointer-events: none; opacity: 0; transition: opacity var(--duration-quick) var(--ease-smooth-out); }
-.scrolled .top::after { opacity: 1; }   /* the fade shows only once content goes under the bar */
+.top::after { content: ''; position: absolute; left: 0; right: 0; top: 0; bottom: -24px; z-index: -1; pointer-events: none;   /* solid behind the logo row, then fades out over ~30 px */
+  background: linear-gradient(var(--bg) 0%, var(--bg) 64%, rgba(21,21,21,.75) 76%, rgba(21,21,21,.4) 87%, rgba(21,21,21,.12) 95%, rgba(21,21,21,0) 100%);
+  opacity: 0; transition: opacity var(--duration-quick) var(--ease-smooth-out); }
+.scrolled .top::after { opacity: 1; }   /* mobile: no bar at rest; once content scrolls under, the bar's own background appears as a gradient into transparency */
 @media (min-width: 1200px) {          /* desktop: the logo sits left of the column, nothing to cover — no bar, content runs to the window edge */
   .top { background: transparent; pointer-events: none; }
   .top > * { pointer-events: auto; }
