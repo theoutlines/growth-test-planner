@@ -413,3 +413,20 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .ideas .lost .row .t { display: flex; flex-direction: column; gap: 2px; }
 .ideas .lost .row .t b { font-size: 14px; font-weight: 500; line-height: 1.25; color: var(--t85); }
 .ideas .lost .row .t span { display: flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 600; color: var(--t60); }
+
+/* ideas card: the metric is named; one number is a dot, a range a rounded bar; the idea card lists the single published tests (owner, 2026-10-31) */
+.ideas .kick { font-size: 13px; color: var(--t50); padding-bottom: 2px; }
+.fp .row .bar i { border-radius: 7px; }
+.fp .row .bar i.dot { border-radius: 50%; }
+.ideas .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding-top: 14px; font-size: 12px; color: var(--t50); }
+.ideas .legend > span { display: flex; align-items: center; gap: 6px; }
+.ideas .legend .lb { width: 22px; height: 10px; border-radius: 5px; background: var(--w); }
+.ideas .legend .ld { width: 10px; height: 10px; border-radius: 50%; background: var(--w); }
+.tests { display: flex; flex-direction: column; }
+.tests .th { font-size: 13px; font-weight: 600; color: var(--t50); padding-bottom: 2px; }
+.tests .test { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; color: inherit; text-decoration: none; border-radius: 10px; }
+.tests .test > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.tests .test b { font-size: 15px; font-weight: 600; color: var(--w); line-height: 1.35; }
+.tests .test small { font-size: 14px; line-height: 1.4; color: var(--t60); }
+@media (hover: hover) { .tests .test:hover b { text-decoration: underline; text-underline-offset: 3px; } }
+.para.muted { color: var(--t50); }

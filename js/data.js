@@ -47,8 +47,8 @@ export const IDEAS = {
 // the metric each decision reads, so ideas measured on it rank first
 export const DECIDE_METRIC = { money: 'arpu', paid: 'conv', trials: 'trials' };
 export const IDEAS_SRC = {
-  paywall: 'Ranges from Adapty’s A/B test library. Other apps’ results, not a forecast for yours.',
-  onboarding: 'Ranges from published tests (onboarding-teardown library). Other apps’ results, not a forecast for yours.',
+  paywall: 'Each range is a band from Adapty’s A/B library, many tests. Tap an idea for the single published tests and their links. Not a forecast for yours.',
+  onboarding: 'Each number is what other apps saw in published tests, counted only on the metric its row shows. Tap an idea for every test and its link. Not a forecast for yours.',
 };
 
 export const CHIPS = {
@@ -61,3 +61,68 @@ export const CHIPS = {
 export const TRIALS = [[0, 'People pay right away'], [3, 'Common for weekly plans'], [7, 'Common for annual plans'], [14, 'Rare, long wait for results']];
 
 export const SKILL_URL = 'https://github.com/theoutlines/growth-skills';
+
+// Single published tests behind each idea (evidence base: theoutlines/growth-skills evidence/tests.csv, IDs in brackets in the comments).
+// [app, number as published, what changed, link]. Shown in the idea card under the range; never merged into it.
+const RC_MOJO = 'https://www.revenuecat.com/blog/growth/mojo-60-percent-arpu-growth-five-months/', ADAPTY_ONB = 'https://adapty.io/blog/how-to-fix-your-onboarding-flow/';
+export const TESTS = {
+  paywall: {
+    annual: [['Mojo', 'Revenue per paywall view: US +8%, Mexico +26%, Brazil +45%', 'Annual price shown as a monthly price.', RC_MOJO], // #43
+      ['Rash ID', 'ARPU about +20%', 'Weekly plan added, annual flagged as the best choice. Several changes at once.', 'https://superwall.com/case-studies/rash-id'], // #80
+      ['Preu AI', 'Proceeds per user +80%', 'An annual plan added next to a monthly-only paywall. Offer change.', 'https://superwall.com/case-studies/preu-ai'], // #79
+      ['Mojo', 'Annual share +15 to +20 points, cancellations slightly up', 'Only yearly shown, monthly behind “View all plans”.', RC_MOJO]], // #42
+    explain: [['Blinkist', 'Trial sign-ups +23%, complaints −55%', 'Day-by-day trial timeline on the paywall, reminder opt-in after it.', 'https://uxplanet.org/how-solving-our-biggest-customer-complaint-at-blinkist-led-to-a-23-increase-in-conversion-b60ad514134b'], // #1
+      ['Pepper', 'LTV +50%', 'Two-step paywall with the trial as a timeline. Staged rollout, no control group.', 'https://superwall.com/case-studies/pepper']], // #78
+    annualTrial: [['Moonly', 'View to subscription +39%, revenue per 100 installs +47%', 'Free trial added to the annual plan only.', 'https://adapty.io/case-studies/moonly/']], // #41
+    compare: [['Symmetry', 'Conversion “+1%”, paid activation +5%', 'Feature list turned into a Free vs Pro table. The page doesn’t say if +1% is relative.', 'https://superwall.com/case-studies/symmetry']], // #81
+    proof: [['Runtastic', 'Paid subscriptions +44%', 'A promo line replaced with a real 5-star review.', 'https://abtest.design/tests/user-reviews-on-paywall']], // #60
+    visuals: [['Unchaind', 'Conversion over +50%, estimated ARPU +64%', 'Text paywall turned into a visual app preview.', 'https://superwall.com/case-studies/unchaind'], // #82
+      ['Neos Kosmos', 'Conversion +13%', 'A different paywall image. News, on the web.', 'https://abtest.design/tests/paywall-visuals']], // #68
+    cta: [['Going', 'Trial starts +104% month over month', '“Trial for free” instead of “Sign up for free”. On the web.', 'https://abtest.design/tests/trial-for-free-cta']], // #67
+    lifetime: [['Dark Noise', 'Total initial conversions about +10%; lifetime +266%, annual −30%', 'All three plans shown by default, lifetime included.', 'https://www.revenuecat.com/blog/engineering/how-i-successfully-migrated-my-indie-app-to-revenuecat-paywalls/']], // U22
+    price: [['BuyBye', 'Conversions −19%, proceeds per user +25%', 'Yearly price raised 50%.', 'https://superwall.com/case-studies/buybye'], // #85
+      ['SellRaze', 'ARPU +10%', 'Annual price lowered from $59.99 to $44.99. A cut won here.', 'https://superwall.com/case-studies/sellraze'], // #84
+      ['Travel app (unnamed)', 'Conversion −5%', 'Price raised 30%.', 'https://adapty.io/case-studies/travel-app/']], // #59
+    second: [['Rizz God', 'Onboarding conversion +10%, trial conversion +10%', 'A second paywall at the end of onboarding. Several changes at once.', 'https://superwall.com/case-studies/rizz-god']], // #21
+    copy: [['Neos Kosmos', 'Conversion +16%', '“Support our work” copy instead of a benefits list. News, on the web.', 'https://abtest.design/tests/benefits-driven-vs-emotional-appeal-messaging'], // #69
+      ['Unnamed (conference talk)', 'Conversion +54% or more', 'Paywall copy from features to outcomes. No method given.', 'https://growthgems.substack.com/p/growth-gems-127-onboarding-activation']], // #58
+  },
+  onboarding: {
+    goals: [['Education app (unnamed)', 'Trial starts +25%, ARPU +78%', 'Survey plus a trial lesson, against either alone. Several changes at once.', ADAPTY_ONB], // #12
+      ['Productivity app (unnamed)', 'Trial starts +8.5%, paid +17%, ARPU +22%', 'Goal questions and a loading screen instead of feature demos; US: paid +27%. Several changes at once.', ADAPTY_ONB], // #13
+      ['Headspace', 'Free-trial conversion about +10%', 'The intent question became multi-select. From an interview, no method.', 'https://www.insidergrowthhq.com/p/3-case-studies-from-headspace-on'], // #4
+      ['Headspace', 'Course starts +7.6 points', 'A quiz before the same course. Active days didn’t change.', 'https://irrationallabs.com/case-studies/headspace-doubled-course-starts/']], // #3
+    core: [['Education app (unnamed)', 'Trial starts +25%, ARPU +78%', 'A trial lesson plus a survey before the paywall. Several changes at once.', ADAPTY_ONB], // #12
+      ['Duolingo', 'Daily active users about +20%', 'Sign-up moved after a first lesson. A sign-up wall, not a paywall.', 'https://review.firstround.com/the-tenets-of-a-b-testing-from-duolingos-master-growth-hacker'], // #5
+      ['Fender Play', 'Engagement +4% at every step', '“Play a song” moved to the first screen.', 'https://amplitude.com/blog/aha-moment-fender']], // #77
+    outcomes: [['Five Minute Journal', 'ARPU +20%, trial starts about +10%', 'Onboarding rebuilt around jobs to be done. Several changes at once.', 'https://www.revenuecat.com/blog/growth/five-minute-journal-onboarding-redesign-arpu/'], // #2
+      ['Productivity app (unnamed)', 'Trial conversion +17%, ARPU +13%', 'Outcome-focused screens instead of features.', ADAPTY_ONB]], // #11
+    proof: [['Travel app (unnamed)', 'Conversion to purchase +30%', 'Shorter copy, value up front and testimonials. Several changes at once.', 'https://adapty.io/case-studies/travel-app/'], // #17
+      ['Five Minute Journal', 'Trial starts about +10%, ARPU +20%', 'Testimonials moved earlier inside a rebuild. Several changes at once.', 'https://www.revenuecat.com/blog/growth/five-minute-journal-onboarding-redesign-arpu/']], // #2
+    timeline: [['Blinkist', 'Trial sign-ups +23%, complaints −55%', 'Day-by-day trial timeline on the paywall, reminder opt-in after it.', 'https://uxplanet.org/how-solving-our-biggest-customer-complaint-at-blinkist-led-to-a-23-increase-in-conversion-b60ad514134b'], // #1
+      ['Pepper', 'LTV +50%', 'Two-step paywall with the trial as a timeline. Staged rollout, no control group.', 'https://superwall.com/case-studies/pepper']], // #78
+    quickstart: [['Slopes', 'Trial starts +25%, trial-to-paid about flat', 'One tap starts the trial and skips the plan screen.', 'https://blog.curtisherbert.com/slopes-diaries-42-building-ramps-not-walls/']], // #45
+    echo: [['Grammarly', 'Upgrades “10%+”', 'Survey answers drive a personal plan. The number has no source.', 'https://growth.design/case-studies/grammarly-onboarding-survey'], // #27
+      ['JourneyStamp', 'Conversion +50%', 'Paywalls specific to where people come from. Several changes at once.', 'https://superwall.com/case-studies/journeystamp'], // #23
+      ['Flirt AI', 'Trial-to-paid +20%, MRR +83%', 'Each segment routed to its own paywall, prices changed too.', 'https://superwall.com/case-studies/flirt-ai']], // #22
+    split: [['Speak4Me', 'Conversion +27%, proceeds +36%', 'Features first, then the price, on separate steps.', 'https://superwall.com/case-studies/speak4me'], // #55
+      ['Stompers', 'Conversion +16%', 'Benefits, then the trial reminder, then the price.', 'https://superwall.com/case-studies/stompers'], // #56
+      ['ASL Bloom', 'Trial conversion +15%, ARPU +12%', 'A value screen and a trial timeline before the price. Several changes at once.', 'https://www.revenuecat.com/blog/growth/asl-bloom-applica-case-study/']], // #18
+    reminder: [['Education app (unnamed)', 'ARPU +24%, trial conversion +6.4%', 'Reminder set-up inside onboarding instead of on the home screen.', ADAPTY_ONB]], // #16
+    loader: [['Education app (unnamed)', 'ARPU +30%, trial conversion +22%', 'The loading screen removed.', ADAPTY_ONB]], // #15
+    promise: [['Travel app (unnamed)', 'Conversion to purchase +30%', 'Shorter copy, value up front and testimonials. Several changes at once.', 'https://adapty.io/case-studies/travel-app/']], // #17
+    signup: [['Duolingo', 'Daily active users about +20%', 'Sign-up moved after a first lesson. A sign-up wall, not a paywall.', 'https://review.firstround.com/the-tenets-of-a-b-testing-from-duolingos-master-growth-hacker'], // #5
+      ['Duolingo', 'Daily active users +8.2%', 'A quiet “Later” instead of “Discard my progress”.', 'https://review.firstround.com/the-tenets-of-a-b-testing-from-duolingos-master-growth-hacker']], // #6
+    plan: [['Grammarly', 'Upgrades “10%+”', 'Survey answers drive a personal plan. The number has no source.', 'https://growth.design/case-studies/grammarly-onboarding-survey'], // #27
+      ['Productivity app (unnamed)', 'Trial starts +8.5%, paid +17%', 'Goal questions and a “customising” screen instead of demos. Several changes at once.', ADAPTY_ONB], // #13
+      ['Headspace', 'Course starts about 31% → 63%', 'A quiz and a course picked for the answers.', 'https://irrationallabs.com/case-studies/headspace-doubled-course-starts/']], // #3
+    depth: [['Entertainment app (unnamed)', 'Payment conversion +40% (iOS), ARPU +20%', 'A long onboarding instead of none.', ADAPTY_ONB]], // #14
+    shorter: [['Entertainment app (unnamed)', 'Conversion −13%', 'The long onboarding shortened.', ADAPTY_ONB]], // #14
+  },
+};
+// How many single tests stand behind each onboarding range, per metric; 0 = a band from Adapty's library (many tests).
+export const COUNT = {
+  goals: { trials: 2, conv: 0, arpu: 0 }, core: { trials: 1, arpu: 1 }, outcomes: { trials: 1, arpu: 2 }, proof: { conv: 1, trials: 1 },
+  timeline: { trials: 1 }, quickstart: { trials: 1 }, echo: { conv: 2 }, split: { conv: 2, arpu: 2 }, reminder: { arpu: 1 }, loader: { arpu: 1 },
+  promise: { conv: 1 }, signup: { conv: 0, arpu: 0 }, plan: { conv: 2, trials: 1 }, depth: { conv: 1, arpu: 1 }, shorter: { conv: 1, arpu: 1 }, loaderPlan: { arpu: 0 },
+};
