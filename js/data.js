@@ -73,8 +73,8 @@ export const TESTS = {
       ['Preu AI', 'Proceeds per user +80%', 'An annual plan added next to a monthly-only paywall. Offer change.', 'https://superwall.com/case-studies/preu-ai', '2026-02'], // #79
       ['Mojo', 'Annual share +15 to +20 points, cancellations slightly up', 'Only yearly shown, monthly behind “View all plans”.', RC_MOJO, '2023-10'], // #42
       ['Stardust', 'Conversion +50%, proceeds per user +62.5%', 'Discount shown on the yearly plan, weekly price shown per week.', 'https://superwall.com/blog/how-stardust-increased-ios-app-revenue-by-4x-in-six-weeks', '2024-09'], // #94
-      ['Glam AI', 'Conversion 3.14% → 3.77%', 'Year moved to the top with “Most Popular”, the pricier plan below.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #105
-      ['Glam AI', 'Yearly 0.43% → 0.55%, revenue per user $0.261 → $0.292', 'A pricier “Business” year added as an anchor. Offer change.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #104
+      ['Glam AI', 'Conversion 3.14% → 3.77%', 'Year moved to the top with “Most Popular”, the pricier plan below.', 'https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #105
+      ['Glam AI', 'Yearly 0.43% → 0.55%, revenue per user $0.261 → $0.292', 'A pricier “Business” year added as an anchor. Offer change.', 'https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #104
       ['TomTom', 'ARPU +56.8% (truck-plan users)', 'A discounted yearly plan offered next to the free trial. Offer change.', 'https://www.purchasely.com/case-studies/increasing-mrr-85-percent-against-free-competitors', '']], // #142
     explain: [['Blinkist', 'Trial sign-ups +23%, complaints −55%', 'Day-by-day trial timeline on the paywall, reminder opt-in after it.', 'https://uxplanet.org/how-solving-our-biggest-customer-complaint-at-blinkist-led-to-a-23-increase-in-conversion-b60ad514134b', '2021-01'], // #1
       ['Pepper', 'LTV +50%', 'Two-step paywall with the trial as a timeline. Staged rollout, no control group.', 'https://superwall.com/case-studies/pepper', '2026-02'], // #78
@@ -84,11 +84,11 @@ export const TESTS = {
     compare: [['Symmetry', 'Conversion “+1%”, paid activation +5%', 'Feature list turned into a Free vs Pro table. The page doesn’t say if +1% is relative.', 'https://superwall.com/case-studies/symmetry', '2025-12'], // #81
       ['Unnamed app', 'The simple page won by 111%', 'A comparison-chart paywall replaced with one simple page. Comparison lost. Several changes at once.', 'https://superwall.com/blog/the-paywall-tactics-behind-usd100k-month-apps', '2026-02']], // #100
     proof: [['Runtastic', 'Paid subscriptions +44%', 'A promo line replaced with a real 5-star review.', 'https://abtest.design/tests/user-reviews-on-paywall', '2017-05'], // #60
-      ['Glam AI', '2.54% vs 2.43%, called noise', 'A social-proof video on the plan picker. No change.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09']], // #106
+      ['Glam AI', '2.54% vs 2.43%, called noise', 'A social-proof video on the plan picker. No change.', 'https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09']], // #106
     visuals: [['Unchaind', 'Conversion over +50%, estimated ARPU +64%', 'Text paywall turned into a visual app preview.', 'https://superwall.com/case-studies/unchaind', '2025-12'], // #82
       ['Neos Kosmos', 'Conversion +13%', 'A different paywall image. News, on the web.', 'https://abtest.design/tests/paywall-visuals', ''], // #68
       ['Stardust', 'Conversion +67%, proceeds per user +12.5%', 'A video background instead of a text-heavy design.', 'https://superwall.com/blog/how-stardust-increased-ios-app-revenue-by-4x-in-six-weeks', '2024-09'], // #96
-      ['Glam AI', 'View to payment 1% → 1.25%, revenue per user lower', 'A video hero instead of static images. Control kept.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #103
+      ['Glam AI', 'View to payment 1% → 1.25%, revenue per user lower', 'A video hero instead of static images. Control kept.', 'https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #103
       ['CoinStats', 'Conversion 2.9x', 'An animated, playful paywall reveal.', 'https://www.revenuecat.com/blog/growth/weird-paywalls-drive-subscription-growth', '2025-08']], // #153
     cta: [['Going', 'Trial starts +104% month over month', '“Trial for free” instead of “Sign up for free”. On the web.', 'https://abtest.design/tests/trial-for-free-cta', ''], // #67
       ['Unnamed app', 'Registration to trial 3% → 27%', '“Subscribe” → “Start your 7-day free trial”. Method not stated.', 'https://adapty.io/blog/how-to-build-app-onboarding-flows-that-convert/', '2025-11'], // #132
@@ -99,7 +99,7 @@ export const TESTS = {
       ['Travel app (unnamed)', 'Conversion −5%', 'Price raised 30%.', 'https://adapty.io/case-studies/travel-app/', ''], // #59
       ['PropGPT', 'Proceeds per user +47.5%, conversion slightly down', 'Weekly $6.99 → $9.99.', 'https://superwall.com/case-studies/propgpt', '2026-01'], // #91
       ['Planner 5D', 'ARPU +83% (highest tier)', 'Three price tiers on the same paywall; prices not given.', 'https://superwall.com/case-studies/planner-5d', '2026-01'], // #90
-      ['Glam AI', 'Conversion 2.55% → 2.09%, ARPU flat', 'Year $59.99 → $79.99, week $8.99 → $11.99 for $800+ iPhone owners. Lost.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #107
+      ['Glam AI', 'Conversion 2.55% → 2.09%, ARPU flat', 'Year $59.99 → $79.99, week $8.99 → $11.99 for $800+ iPhone owners. Lost.', 'https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #107
       ['AppDevLabs', 'Won, conversion flat', 'Annual $9.99 → $14.99.', 'https://adapty.io/case-studies/appdevlabs/', '2026-03']], // #117
     second: [['Rizz God', 'Onboarding conversion +10%, trial conversion +10%', 'A second paywall at the end of onboarding. Several changes at once.', 'https://superwall.com/case-studies/rizz-god', '2026-01']], // #21
     copy: [['Neos Kosmos', 'Conversion +16%', '“Support our work” copy instead of a benefits list. News, on the web.', 'https://abtest.design/tests/benefits-driven-vs-emotional-appeal-messaging', ''], // #69
