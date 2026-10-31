@@ -212,9 +212,7 @@ function ideasFor(p) {
 }
 // Where a row's number comes from: onboarding ranges are single tests (counted on the row's metric); paywall ranges are Adapty bands, said once in the footnote.
 function srcLine(r) {
-  if (S.area !== 'onboarding') return '';
-  const n = (COUNT[r.id] || {})[r.m];
-  return n === undefined ? '' : n === 0 ? 'from Adapty’s library' : `from ${n} test${n > 1 ? 's' : ''}`;
+  return '';   // owner, 2026-10-31: no test counts on the chart; the idea card lists the tests
 }
 function seenBy(it) {
   if (it.id === 'copy') return 'Adapty’s expected effect for copy-only changes:';
