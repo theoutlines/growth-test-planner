@@ -559,6 +559,7 @@ function closeThen(after) {                            // overlays leave before 
 }
 // ------------------------------------------------------------------ render + events
 const app = document.getElementById('app');
+document.getElementById('about')?.remove();   // the plain-text description is for readers without JavaScript (and agents); the app replaces it
 function render() {
   const { r } = route();
   const sheet = document.getElementById('sheet'), st = sheet ? sheet.scrollTop : 0;

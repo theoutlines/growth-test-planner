@@ -452,3 +452,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .dd select:focus-visible { outline: 2px solid rgba(255,255,255,.5); outline-offset: 2px; }
 .dd select option { background: #2A2A2A; color: #fff; }
 .dd svg { position: absolute; right: 14px; top: 14px; pointer-events: none; opacity: .7; }
+
+/* plain-text description for readers without JavaScript and for agents; never flashes before the app */
+#about { display: none; }
