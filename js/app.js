@@ -282,7 +282,7 @@ function testScreen() {
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
     const extra = UI.overlay === 'idea' ? `<section class="float" role="dialog" aria-label="Idea details">${ideaCard(p)}</section>` : '';
-    const plans = UI.overlay === 'prices' ? `<div class="half"><section class="card plans-panel" role="dialog" aria-label="Plans">${pricesCard()}</section></div>` : '';
+    const plans = UI.overlay === 'prices' ? `<div class="half plans"><section class="card plans-panel" role="dialog" aria-label="Plans">${pricesCard()}</section></div>` : '';
     const share = `<button class="share-float" data-go="share">${I.share}<span>Share plan</span></button>`;   // bottom-left: frees the top for the rail and the content
     const settings = `<section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px">${controls()}</section>`;
     return top() + main + share + `<aside class="rail${plans ? ' split' : ''}" id="rail">${plans ? `<div class="half">${settings}</div>${plans}` : settings}</aside>` + extra;
@@ -552,10 +552,10 @@ function afterPaint() { placePills(); if (pillRO) document.querySelectorAll('.pi
 const PAGE = (r) => (wide() && r === 'share' ? 'test' : wide() && r === 'share-result' ? 'verdict' : r);   // desktop share is a modal over its page
 let lastPage = null;
 function closeThen(after) {                            // overlays leave before the state changes
-  const els = document.querySelectorAll('.sheet, .float, .modal, .scrim');
+  const els = document.querySelectorAll('.sheet, .float, .modal, .scrim, .rail .half.plans');
   if (!els.length || reduced()) return after();
   els.forEach((el) => el.classList.add('is-closing'));
-  setTimeout(after, document.querySelector('.sheet') ? cssMs('--duration-medium') : cssMs('--duration-quick'));
+  setTimeout(after, document.querySelector('.sheet, .rail .half.plans') ? cssMs('--duration-medium') : cssMs('--duration-quick'));
 }
 // ------------------------------------------------------------------ render + events
 const app = document.getElementById('app');

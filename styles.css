@@ -344,6 +344,13 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 @keyframes t-modal-out { to { opacity: 0; transform: translateX(-50%) scale(0.96); } }
 @keyframes t-float-in { from { opacity: 0; transform: scale(0.97) translateY(var(--distance-base)); filter: blur(var(--blur-small)); } }
 @keyframes t-float-out { to { opacity: 0; transform: scale(0.99); } }
+/* desktop plans editor: the plans half grows in under the settings (panel reveal), and gives the space back on close */
+@media (min-width: 1200px) {
+  .rail.split .half.plans { animation: t-plans-in var(--duration-slow) var(--ease-smooth-out); }
+  .rail.split .half.plans.is-closing { animation: t-plans-out var(--duration-medium) var(--ease-smooth-out) forwards; }
+}
+@keyframes t-plans-in { from { flex-grow: 0; opacity: 0; transform: translateY(var(--distance-base)); filter: blur(var(--blur-small)); } }
+@keyframes t-plans-out { to { flex-grow: 0; opacity: 0; transform: translateY(var(--distance-base)); filter: blur(var(--blur-small)); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
