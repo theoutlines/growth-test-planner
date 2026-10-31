@@ -30,18 +30,18 @@ export const IDEAS = {
     { id: 'core', t: 'Try the core action first', r: { trials: [25, 25], arpu: [78, 78] }, fits: () => true, what: 'One lesson, one result on their own input, then the paywall.', trap: 'In AI apps each free result costs money; pair it with a short trial.' },
     { id: 'outcomes', t: 'Outcomes, not features', r: { trials: [10, 10], arpu: [13, 20] }, fits: () => true, what: 'Each screen says what changes for the user, not what the app has.', trap: 'Wording-only edits are small; change what the screens show.' },
     { id: 'proof', t: 'Social proof before the ask', r: { conv: [30, 30], trials: [10, 10] }, fits: () => true, what: 'Reviews or results from people like them, a screen or two before the paywall.', trap: 'The biggest lift came bundled with other changes. Expect less from proof alone.' },
-    { id: 'timeline', t: 'Trial timeline and reminder promise', r: { trials: [23, 23] }, fits: (c) => c.onbTrial, what: 'On the paywall: today, reminder before the charge, first charge.', trap: 'Only works if the reminder really comes. Ship the reminder too.' },
+    { id: 'timeline', t: 'Trial timeline and reminder promise', r: { trials: [13.6, 23] }, fits: (c) => c.onbTrial, what: 'On the paywall: today, reminder before the charge, first charge.', trap: 'Only works if the reminder really comes. Ship the reminder too.' },
     { id: 'quickstart', t: 'One-tap trial start', r: { trials: [25, 25] }, fits: (c) => c.onbTrial, what: 'The trial starts from one clear button, plan picked for them.', trap: 'More trial starts, but trial-to-paid stayed flat. Judge by paid.' },
-    { id: 'echo', t: 'Paywall echoes their answers', r: { conv: [10, 50] }, fits: () => true, what: 'The paywall headline and benefits repeat the goal they picked.', trap: 'The big numbers came bundled with price changes. Treat as directional.' },
-    { id: 'split', t: 'A short pre-paywall before the price', r: { conv: [16, 27], arpu: [12, 36] }, fits: () => true, what: 'One screen with the value, then the plans on the next.', trap: 'An extra step loses people if it repeats what they just saw.' },
+    { id: 'echo', t: 'Paywall echoes their answers', r: { conv: [10, 50], arpu: [13, 13] }, fits: () => true, what: 'The paywall headline and benefits repeat the goal they picked.', trap: 'The big numbers came bundled with price changes. Treat as directional.' },
+    { id: 'split', t: 'A short pre-paywall before the price', r: { conv: [16, 27], arpu: [12, 36], trials: [60, 60] }, fits: () => true, what: 'One screen with the value, then the plans on the next.', trap: 'An extra step loses people if it repeats what they just saw.' },
     { id: 'reminder', t: 'Set a reminder inside onboarding', r: { arpu: [24, 24] }, fits: () => true, what: 'Ask when they want to practise and set it up before the paywall.', trap: 'One anonymised test behind this. Small, but cheap.' },
     { id: 'loader', t: 'Drop an empty loader', r: { arpu: [30, 30] }, fits: () => true, what: 'Drop the “building your plan” wait unless a real personal plan follows.', trap: 'A loader followed by a personal plan lost ARPU by half in another app.' },
     { id: 'promise', t: 'Value promise on the first screen', r: { conv: [30, 30] }, fits: () => true, what: 'Screen one says what they will get, in their words, before any question.', trap: 'One test, bundled with shorter copy and testimonials. Expect less on its own.' },
-    { id: 'signup', t: 'Ask to sign up later', r: { conv: [8, 8], arpu: [17, 17] }, fits: () => true, what: 'Move account creation after the first value, or make it skippable.', trap: 'Cut sign-up friction, not the whole flow: shortening everything lost.' },
+    { id: 'signup', t: 'Ask to sign up later', r: { conv: [8, 8], arpu: [17, 17], trials: [37, 37] }, fits: () => true, what: 'Move account creation after the first value, or make it skippable.', trap: 'Cut sign-up friction, not the whole flow: shortening everything lost.' },
     { id: 'plan', t: 'Show a plan built from their answers', r: { conv: [10, 17], trials: [8.5, 8.5] }, split: { conv: { note: 'US +27% in one test', to: 27 } }, fits: () => true, what: 'A screen that repeats their goal and shows the plan made for it, before the paywall.', trap: 'A plan screen after a fake loader lost revenue by half in another app. It has to use the answers.' },
     { id: 'depth', t: 'A fuller onboarding instead of none', r: { conv: [40, 40], arpu: [20, 20] }, split: { conv: { note: 'iOS only' } }, fits: () => true, what: 'If people land straight on the paywall or the app, add a few screens that set up the value.', trap: 'From one anonymised app. Every added step has to earn its place; cutting onboarding down lost about 13% in the same app.' },
     // Lost in published tests: shown only under “Show all”, at the bottom
-    { id: 'shorter', lost: true, t: 'Shorter onboarding', r: { conv: [-13, -13], arpu: [-13, -13] }, about: true, fits: () => true, what: 'Fewer screens, same content: cutting the flow to reduce friction.', trap: 'Cutting onboarding down lost about 13% of conversion and revenue per user (#14; Adapty library). Cut only steps whose answers are never used; that has no published range.' },
+    { id: 'shorter', lost: true, t: 'Shorter onboarding', r: { conv: [-13, -13], arpu: [-13, -13] }, about: true, fits: () => true, what: 'Fewer screens: cutting the steps that ask, show a result or set something up.', trap: 'Cutting those steps lost about 13% of conversion and revenue per user (#14; Adapty library). Condensing long reading screens into a short carousel is different: it won in one test (TomTom, paid +8%).' },
     { id: 'loaderPlan', lost: true, t: 'A loader, then a plan that ignores the answers', r: { arpu: [-50, -50] }, about: true, fits: () => true, what: 'A “building your plan” wait followed by a plan screen that looks the same whatever people answered.', trap: 'Lost about half of revenue per user in one flow (Adapty library). A plan that really changes with the answers is a different idea: “Show a plan built from their answers”.' },
   ],
 };
@@ -49,7 +49,7 @@ export const IDEAS = {
 export const DECIDE_METRIC = { money: 'arpu', paid: 'conv', trials: 'trials' };
 export const IDEAS_SRC = {
   paywall: 'Each range is a band from Adapty’s A/B library, many tests. Tap an idea for the single published tests and their links. Not a forecast for yours.',
-  onboarding: 'Each number is what other apps saw in published tests, on the metric its row shows. Where a test split by market, the chart uses the lower figure. A single test’s own uncertainty is rarely published: a dot is one result, not a precise effect. Tap an idea for every test and its link. Not a forecast for yours.',
+  onboarding: 'Each number is what other apps saw in published tests, on the metric its row shows. Where a test split by market, the chart uses the lower figure. A single test’s own uncertainty is rarely published: a dot is one result, not a precise effect. Tap an idea for the published tests and their links. Not a forecast for yours.',
 };
 
 export const CHIPS = {
@@ -150,6 +150,6 @@ export const TESTS = {
 // How many single tests stand behind each onboarding range, per metric; 0 = a band from Adapty's library (many tests).
 export const COUNT = {
   goals: { trials: 2, conv: 0, arpu: 0 }, core: { trials: 1, arpu: 1 }, outcomes: { trials: 1, arpu: 2 }, proof: { conv: 1, trials: 1 },
-  timeline: { trials: 1 }, quickstart: { trials: 1 }, echo: { conv: 2 }, split: { conv: 2, arpu: 2 }, reminder: { arpu: 1 }, loader: { arpu: 1 },
-  promise: { conv: 1 }, signup: { conv: 0, arpu: 0 }, plan: { conv: 2, trials: 1 }, depth: { conv: 1, arpu: 1 }, shorter: { conv: 1, arpu: 1 }, loaderPlan: { arpu: 0 },
+  timeline: { trials: 2 }, quickstart: { trials: 1 }, echo: { conv: 2, arpu: 1 }, split: { conv: 2, arpu: 2, trials: 1 }, reminder: { arpu: 1 }, loader: { arpu: 1 },
+  promise: { conv: 1 }, signup: { conv: 0, arpu: 0, trials: 1 }, plan: { conv: 2, trials: 1 }, depth: { conv: 1, arpu: 1 }, shorter: { conv: 1, arpu: 1 }, loaderPlan: { arpu: 0 },
 };
