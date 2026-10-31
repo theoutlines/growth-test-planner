@@ -209,8 +209,8 @@ function ideasFor(p) {
   const want = DECIDE_METRIC[p.decide];
   return IDEAS[S.area].filter((it) => it.fits(c)).map((it) => {
     const m = it.r[want] ? want : Object.keys(it.r)[0], [lo, hi] = it.r[m];
-    return { ...it, m, lo, hi, same: m === want };
-  }).sort((a, b) => (!!a.lost - !!b.lost) || (b.same - a.same) || ((b.lo + b.hi) - (a.lo + a.hi)));
+    return { ...it, m, lo, hi, same: m === want, weak: !!(it.weak || {})[m] };
+  }).sort((a, b) => (!!a.lost - !!b.lost) || (b.same - a.same) || (a.weak - b.weak) || ((b.lo + b.hi) - (a.lo + a.hi)));   // no-control results sit below controlled ones (owner, 2026-10-31)
 }
 // Where a row's number comes from: onboarding ranges are single tests (counted on the row's metric); paywall ranges are Adapty bands, said once in the footnote.
 function srcLine(r) {
