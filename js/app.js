@@ -1,5 +1,5 @@
 import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, shares, planTrial } from './math.js';
-import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL } from './data.js';
+import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL, METRIC, DECIDE_METRIC } from './data.js';
 
 // ------------------------------------------------------------------ state
 // Nothing typed here leaves the browser. The last inputs are kept in localStorage (this browser only);
@@ -198,22 +198,37 @@ function planBlock(p) {
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
   <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
 }
+// Ideas that fit this test: filtered by its plans and trial, ranked by the metric it decides on, six at most.
+function ideasFor(p) {
+  const pl = S.plans, year = pl.find((x) => x.t === 'year');
+  const c = { trial: pl.some((x) => planTrial(x) > 0), year: !!year, multi: pl.length > 1, once: pl.some((x) => x.t === 'once'), plans: pl.length, onbTrial: S.trial > 0,
+    trialOnlyAnnual: !!year && planTrial(year) > 0 && pl.every((x) => x === year || planTrial(x) === 0) };
+  const want = DECIDE_METRIC[p.decide];
+  return IDEAS[S.area].filter((it) => it.fits(c)).map((it) => {
+    const m = it.r[want] ? want : Object.keys(it.r)[0], [lo, hi] = it.r[m];
+    return { ...it, m, lo, hi, same: m === want };
+  }).sort((a, b) => (b.same - a.same) || ((b.lo + b.hi) - (a.lo + a.hi))).slice(0, 6);
+}
+const pctR = (lo, hi) => (lo === hi ? `+${lo}` : `+${lo}–${hi}`) + '%';
 function ideasBlock(p) {
-  const list = IDEAS[S.area], thr = p.thr, max = 45, x = (v) => Math.max(0, Math.min(100, v / max * 100));
-  const rows = list.map((it, i) => ({ ...it, i })).sort((a, b) => (b.lo + b.hi) - (a.lo + a.hi));
+  const rows = ideasFor(p), thr = p.thr, nw = S.goal === 'notworse';
+  const max = Math.max(45, ...rows.map((r) => r.hi + 3)), step = max > 60 ? 20 : 10, x = (v) => Math.max(0, Math.min(100, v / max * 100));
   const col = (pc) => `calc(var(--lc) + (100% - var(--lc)) * ${pc / 100})`;
-  return `<section class="card ideas"><span class="head">Your test catches +${t1(thr)}% and up</span><div class="fp">
-  <span class="zone" style="width:calc((100% - var(--lc)) * ${x(thr) / 100})"></span><span class="line" style="left:${col(x(thr))}"></span>
-  <div class="axis"><span></span><span>${[0, 10, 20, 30, 40].map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v}%</span>`).join('')}</span></div>
-  ${rows.map((r) => { const ok = r.lo >= thr; return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.i}"><span class="t"><b>${r.t}</b><span>${r.lo === r.hi ? '+' + r.lo : '+' + r.lo + '–' + r.hi}%${I.chevS}</span></span><span class="bar"><i style="left:${x(r.lo)}%;width:${Math.max(3, x(r.hi) - x(r.lo))}%;background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i></span></button>`; }).join('')}
-  </div><span class="src">${IDEAS_SRC[S.area]}</span></section>`;
+  const ticks = []; for (let v = 0; v <= max - step / 2; v += step) ticks.push(v);
+  return `<section class="card ideas"><span class="head">${nw ? 'Sized to rule out harm, not to find these' : `Your test catches +${t1(thr)}% and up`}</span><div class="fp">
+  ${nw ? '' : `<span class="zone" style="width:calc((100% - var(--lc)) * ${x(thr) / 100})"></span><span class="line" style="left:${col(x(thr))}"></span>`}
+  <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v}%</span>`).join('')}</span></div>
+  ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr; return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span><span class="bar"><i style="left:${x(r.lo)}%;width:${Math.max(3, x(r.hi) - x(r.lo))}%;background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i></span></button>`; }).join('')}
+  </div><span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
 }
 function ideaCard(p) {
-  const it = IDEAS[S.area][UI.idea]; if (!it) return '';
-  const catches = it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
+  const it = ideasFor(p).find((x) => x.id === UI.idea) || IDEAS[S.area].map((x) => ({ ...x, m: Object.keys(x.r)[0], lo: Object.values(x.r)[0][0], hi: Object.values(x.r)[0][1], same: false })).find((x) => x.id === UI.idea);
+  if (!it) return '';
+  const catches = S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
   const range = it.lo === it.hi ? `+${it.lo}%` : `+${it.lo}% to +${it.hi}%`;
+  const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}`).join(', ');
   return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  <p class="para">${it.what}</p><p class="para">Other apps saw ${range} ${it.metric}. ${catches}</p><p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>`;
+  <p class="para">${it.what}</p><p class="para">Other apps saw ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p><p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>`;
 }
 function controls() {
   const onb = S.area === 'onboarding';
@@ -580,7 +595,7 @@ app.addEventListener('click', (e) => {
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
   if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: t === 'once' ? 0 : S.plans[0].tr }); setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); return planChanged(); }
-  if (el.dataset.idea) { UI.overlay = 'idea'; UI.idea = Number(el.dataset.idea); return render(); }
+  if (el.dataset.idea) { UI.overlay = 'idea'; UI.idea = el.dataset.idea; return render(); }
   if (el.dataset.overlay) { UI.overlay = el.dataset.overlay; return render(); }
   if ('close' in el.dataset) return closeThen(() => { UI.overlay = null; render(); });
   if (el.dataset.tone) { UI.tone = el.dataset.tone; return render(); }
