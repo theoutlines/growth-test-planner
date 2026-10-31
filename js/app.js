@@ -338,7 +338,7 @@ function readRow([label, f, why, opt]) {
 }
 const VARIANT_URL = 'https://github.com/theoutlines/growth-skills/tree/main/plugins/growth-skills/skills/variant-check';
 // paywall tests: before launch, check the variant against what won in published tests (the variant-check skill)
-const variantCard = () => (S.area === 'paywall' ? `<a class="card skill" href="${VARIANT_URL}" target="_blank" rel="noopener"><b>Variant ready? Check it before launch</b><span>Give Claude your A and B screens: can this test see the change, and what did the winning versions have that B lacks. Free Growth Skills plugin.</span><em>Get the plugin →</em></a>` : '');
+const variantCard = () => `<a class="card skill" href="${VARIANT_URL}" target="_blank" rel="noopener"><b>Variant ready? Check it before launch</b><span>${S.area === 'onboarding' ? 'Give Claude your A and B flows' : 'Give Claude your A and B screens'}: can this test see the change, and what did the winning versions have that B lacks. Free Growth Skills plugin.</span><em>Get the plugin →</em></a>`;
 const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="noopener"><b>Test data in Amplitude or Mixpanel?</b><span>Let Claude pull it and read it for you with the free Growth Skills plugin. Nothing to type.</span><em>Get the plugin →</em></a>`;
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
