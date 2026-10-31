@@ -71,6 +71,8 @@ const I = {
   chevS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   up: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 12.5l6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   down: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7.5l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  minus: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  chevD: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   x: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   share: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3.5M6.5 7l3.5-3.5L13.5 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10.5v4.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   copy: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M13 4.5v-.5A1.5 1.5 0 0 0 11.5 2.5h-7A1.5 1.5 0 0 0 3 4v7a1.5 1.5 0 0 0 1.5 1.5H5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
@@ -264,7 +266,7 @@ const pseg = (label, i, f, opts) => `<div class="seg"${label ? '' : ' aria-label
 function pricesCard() {           // the paywall's plans: type, price, free trial, share of buyers
   const many = S.plans.length > 1;
   const one = (x, i) => `<section class="pl">
-    <div class="plhead">${pseg('', i, 't', Object.entries(PLAN_TYPES).map(([k, v]) => [k, v[0]]))}${many ? `<button class="icon-btn sm" data-plan-del="${i}" aria-label="Remove this plan">${I.x}</button>` : ''}</div>
+    <div class="plhead"><div class="dd"><select data-plan-type="${i}" aria-label="Plan type">${Object.entries(PLAN_TYPES).map(([k, v]) => `<option value="${k}"${x.t === k ? ' selected' : ''}>${v[0]}</option>`).join('')}</select>${I.chevD}</div>${many ? `<button class="icon-btn sm" data-plan-del="${i}" aria-label="Remove this plan">${I.minus}</button>` : ''}</div>
     <div class="plrow"><label class="rr"><span>Price</span><div style="grid-template-columns:1fr"><label><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label></div></label>
     ${x.t === 'once' ? '' : pseg('Free trial', i, 'tr', [[0, 'None'], [3, '3'], [7, '7'], [14, '14+']])}</div>
     ${many ? railSlider('Buyers who pick it', 'sh' + i, true) : ''}</section>`;
@@ -277,10 +279,11 @@ function testScreen() {
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
-    const extra = UI.overlay === 'idea' ? `<section class="float" role="dialog" aria-label="Idea details">${ideaCard(p)}</section>`
-      : UI.overlay === 'prices' ? `<section class="float" role="dialog" aria-label="Prices">${pricesCard()}</section>` : '';
+    const extra = UI.overlay === 'idea' ? `<section class="float" role="dialog" aria-label="Idea details">${ideaCard(p)}</section>` : '';
+    const plans = UI.overlay === 'prices' ? `<div class="half"><section class="card plans-panel" role="dialog" aria-label="Plans">${pricesCard()}</section></div>` : '';
     const share = `<button class="share-float" data-go="share">${I.share}<span>Share plan</span></button>`;   // bottom-left: frees the top for the rail and the content
-    return top() + main + share + `<aside class="rail" id="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px">${controls()}</section></aside>` + extra;
+    const settings = `<section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px">${controls()}</section>`;
+    return top() + main + share + `<aside class="rail${plans ? ' split' : ''}" id="rail">${plans ? `<div class="half">${settings}</div>${plans}` : settings}</aside>` + extra;
   }
   if (UI.overlay === 'edit') overlay = `<div class="scrim" data-close></div><div class="sheet" id="sheet"><div class="sheet-in"><span class="grab"></span><button class="sumrow" data-close aria-label="Close"><span><small>Your test</small><em>${summary(p)}</em></span><span class="icon-btn">${I.down}</span></button>${controls()}</div></div>`;
   else if (UI.overlay === 'idea') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in text"><span class="grab"></span>${ideaCard(p)}</div></div>`;
@@ -645,7 +648,7 @@ app.addEventListener('input', (e) => {
   if ('date' in t.dataset) { if (/^\d{4}-\d{2}-\d{2}$/.test(t.value)) { S.start = t.value; save(); history.replaceState(null, '', '#/' + route().r + '?' + toQuery(route().r === 'verdict')); render(); } }
   if (t.dataset.planPrice) { const v = num(t.value); if (v != null && v > 0) { S.plans[+t.dataset.planPrice].p = v; save(); refreshMain(); } }
 });
-app.addEventListener('change', (e) => { if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
+app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if (pt !== undefined) { const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; return planChanged(); } if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
 app.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && UI.overlay) { closeThen(() => { UI.overlay = null; render(); }); return; }
   if (e.target.dataset.type && e.key === 'Enter') e.target.blur();
