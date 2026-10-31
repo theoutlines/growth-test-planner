@@ -34,7 +34,7 @@ function toQuery(withRead) {
 function fromQuery(qs) {
   const q = new URLSearchParams(qs);
   if (q.has('a')) Object.assign(S, fresh());          // a link describes a whole test: missing keys mean defaults
-  for (const [k, f] of Object.entries(KEYS)) if (q.has(k)) { const raw = q.get(k); S[f] = typeof DEFAULTS[f] === 'number' ? (Number(raw) || DEFAULTS[f]) : raw; }
+  for (const [k, f] of Object.entries(KEYS)) if (q.has(k)) { const raw = q.get(k); S[f] = typeof DEFAULTS[f] === 'number' ? (raw !== '' && Number.isFinite(Number(raw)) ? Number(raw) : DEFAULTS[f]) : raw; /* 0 is a real value (no trial), not missing */ }
   if (!['paywall', 'onboarding'].includes(S.area)) S.area = 'paywall';
   if (!['win', 'notworse'].includes(S.goal)) S.goal = 'win';
   if (![2, 3].includes(S.versions)) S.versions = 2;
@@ -207,11 +207,11 @@ function ideasFor(p) {
   return IDEAS[S.area].filter((it) => it.fits(c)).map((it) => {
     const m = it.r[want] ? want : Object.keys(it.r)[0], [lo, hi] = it.r[m];
     return { ...it, m, lo, hi, same: m === want };
-  }).sort((a, b) => (b.same - a.same) || ((b.lo + b.hi) - (a.lo + a.hi))).slice(0, 6);
+  }).sort((a, b) => (b.same - a.same) || ((b.lo + b.hi) - (a.lo + a.hi)));
 }
 const pctR = (lo, hi) => (lo === hi ? `+${lo}` : `+${lo}–${hi}`) + '%';
 function ideasBlock(p) {
-  const rows = ideasFor(p), thr = p.thr, nw = S.goal === 'notworse';
+  const all = ideasFor(p), rows = UI.allIdeas ? all : all.slice(0, 6), thr = p.thr, nw = S.goal === 'notworse';
   const max = Math.max(45, ...rows.map((r) => r.hi + 3)), step = max > 60 ? 20 : 10, x = (v) => Math.max(0, Math.min(100, v / max * 100));
   const col = (pc) => `calc(var(--lc) + (100% - var(--lc)) * ${pc / 100})`;
   const ticks = []; for (let v = 0; v <= max - step / 2; v += step) ticks.push(v);
@@ -219,7 +219,7 @@ function ideasBlock(p) {
   ${nw ? '' : `<span class="zone" style="width:calc((100% - var(--lc)) * ${x(thr) / 100})"></span><span class="line" style="left:${col(x(thr))}"></span>`}
   <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v}%</span>`).join('')}</span></div>
   ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr; return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span><span class="bar"><i style="left:${x(r.lo)}%;width:${Math.max(3, x(r.hi) - x(r.lo))}%;background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i></span></button>`; }).join('')}
-  </div><span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
+  </div>${all.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${all.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
 }
 function ideaCard(p) {
   const it = ideasFor(p).find((x) => x.id === UI.idea) || IDEAS[S.area].map((x) => ({ ...x, m: Object.keys(x.r)[0], lo: Object.values(x.r)[0][0], hi: Object.values(x.r)[0][1], same: false })).find((x) => x.id === UI.idea);
@@ -582,7 +582,7 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
@@ -595,6 +595,7 @@ app.addEventListener('click', (e) => {
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
   if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: t === 'once' ? 0 : S.plans[0].tr }); setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); return planChanged(); }
+  if ('moreIdeas' in el.dataset) { UI.allIdeas = !UI.allIdeas; return render(); }
   if (el.dataset.idea) { UI.overlay = 'idea'; UI.idea = el.dataset.idea; return render(); }
   if (el.dataset.overlay) { UI.overlay = el.dataset.overlay; return render(); }
   if ('close' in el.dataset) return closeThen(() => { UI.overlay = null; render(); });

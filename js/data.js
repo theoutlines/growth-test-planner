@@ -19,6 +19,7 @@ export const IDEAS = {
     { id: 'close', t: 'Delay the close button', r: { conv: [8, 15] }, fits: () => true, what: 'The ✕ appears after a few seconds instead of at once.', trap: 'An “Are you sure?” popup on close lost. Delay, don’t nag.' },
     { id: 'lifetime', t: 'Add a lifetime option', r: { arpu: [10, 15] }, fits: (c) => !c.once && c.plans < 4, what: 'A one-time plan next to annual, priced well above it.', trap: 'Can pull buyers off annual. Watch the plan mix.' },
     { id: 'price', t: 'Raise the price in top markets', r: { arpu: [15, 25] }, fits: () => true, what: 'Higher prices in the US, Western Europe and similar markets.', trap: 'The same rise lost badly outside those markets. Test by region.' },
+    { id: 'second', t: 'Offer right after the first paywall closes', r: { conv: [25, 30] }, fits: () => true, what: 'When someone closes the onboarding paywall, one more screen with a discount or another plan.', trap: 'Wins were mostly on iOS. After the main in-app paywall the same offer lost about half the revenue per user.' },
     { id: 'copy', t: 'Headline and copy tweaks', r: { ltv: [0, 5] }, fits: () => true, what: 'New headline, button text, small reorders.', trap: 'Only a third of text and visual changes raised LTV at all. Fold them into a bigger change.' },
   ],
   onboarding: [
@@ -32,6 +33,10 @@ export const IDEAS = {
     { id: 'split', t: 'A short pre-paywall before the price', r: { conv: [16, 50], arpu: [12, 36] }, fits: () => true, what: 'One screen with the value, then the plans on the next.', trap: 'An extra step loses people if it repeats what they just saw.' },
     { id: 'reminder', t: 'Set a reminder inside onboarding', r: { conv: [6.4, 6.4], arpu: [24, 24] }, fits: () => true, what: 'Ask when they want to practise and set it up before the paywall.', trap: 'One anonymised test behind this. Small, but cheap.' },
     { id: 'loader', t: 'Drop an empty loader', r: { conv: [22, 22], arpu: [30, 30] }, fits: () => true, what: 'Drop the “building your plan” wait unless a real personal plan follows.', trap: 'A loader followed by a personal plan lost ARPU by half in another app.' },
+    { id: 'promise', t: 'Value promise on the first screen', r: { conv: [30, 30] }, fits: () => true, what: 'Screen one says what they will get, in their words, before any question.', trap: 'One test, bundled with shorter copy and testimonials. Expect less on its own.' },
+    { id: 'signup', t: 'Ask to sign up later', r: { conv: [8, 8], arpu: [17, 17] }, fits: () => true, what: 'Move account creation after the first value, or make it skippable.', trap: 'Cut sign-up friction, not the whole flow: shortening everything lost.' },
+    { id: 'plan', t: 'Show a plan built from their answers', r: { conv: [10, 17], trials: [8.5, 8.5] }, fits: () => true, what: 'A screen that repeats their goal and shows the plan made for it, before the paywall.', trap: 'A plan screen after a fake loader lost revenue by half in another app. It has to use the answers.' },
+    { id: 'depth', t: 'A fuller onboarding instead of none', r: { conv: [40, 40], arpu: [20, 20] }, fits: () => true, what: 'If people land straight on the paywall or the app, add a few screens that set up the value.', trap: 'From one anonymised app. Every added step has to earn its place.' },
     { id: 'shorter', t: 'Shorter onboarding', r: { conv: [0, 0] }, fits: () => true, what: 'Fewer screens, same content.', trap: 'Cutting onboarding to make it shorter lost about 13% in one app (#14).' },
   ],
 };
