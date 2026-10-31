@@ -256,7 +256,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much', 'Lifts other apps saw in published tests.')}${ideasBlock(p)}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much', 'Lifts other apps saw in published tests.')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -336,6 +336,9 @@ function readRow([label, f, why, opt]) {
   const inp = (v) => `<label><span>${v}</span><input data-read="${v}.${f}" inputmode="numeric" placeholder="0" value="${esc(READ[v][f] ?? '')}" aria-label="${label}, version ${v}"></label>`;
   return `<div class="rr"><span>${label}${opt ? `<small>${opt}</small>` : ''}</span><div${LETTERS().length === 3 ? ' class="three"' : ''}>${LETTERS().map(inp).join('')}</div><p>${why}</p></div>`;
 }
+const VARIANT_URL = 'https://github.com/theoutlines/growth-skills/tree/main/plugins/growth-skills/skills/variant-check';
+// paywall tests: before launch, check the variant against what won in published tests (the variant-check skill)
+const variantCard = () => (S.area === 'paywall' ? `<a class="card skill" href="${VARIANT_URL}" target="_blank" rel="noopener"><b>Variant ready? Check it before launch</b><span>Give Claude your A and B screens: can this test see the change, and what did the winning versions have that B lacks. Free Growth Skills plugin.</span><em>Get the plugin →</em></a>` : '');
 const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="noopener"><b>Test data in Amplitude or Mixpanel?</b><span>Let Claude pull it and read it for you with the free Growth Skills plugin. Nothing to type.</span><em>Get the plugin →</em></a>`;
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
