@@ -21,6 +21,8 @@ export const IDEAS = {
     { id: 'price', t: 'Raise the price in top markets', r: { arpu: [15, 25] }, fits: () => true, what: 'Higher prices in the US, Western Europe and similar markets.', trap: 'The same rise lost badly outside those markets. Test by region.' },
     { id: 'second', t: 'Offer right after the first paywall closes', r: { conv: [25, 30] }, fits: () => true, what: 'When someone closes the onboarding paywall, one more screen with a discount or another plan.', trap: 'Wins were mostly on iOS. After the main in-app paywall the same offer lost about half the revenue per user.' },
     { id: 'copy', t: 'Headline and copy tweaks', r: { conv: [3, 8], arpu: [1, 3] }, fits: () => true, what: 'New headline, button text, small reorders.', trap: 'Only about a third of visual or text-only tests lifted LTV at all (Adapty, 105,000 paywalls). Fold them into a bigger change.' },
+    // Lost in published tests: shown only under “Show all”, at the bottom, never ranked or marked as caught
+    { id: 'secondMain', lost: true, t: 'The same offer after the main in-app paywall', r: { arpu: [-50, -50] }, about: true, fits: () => true, what: 'The second-chance discount, shown after the paywall people meet inside the app instead of right after the onboarding paywall.', trap: 'Revenue per user fell by roughly half (Adapty library). Right after the onboarding paywall the same offer won.' },
   ],
   onboarding: [
     { id: 'goals', t: 'Ask goals, tailor what follows', r: { trials: [8.5, 25], conv: [8, 17], arpu: [13, 35] }, fits: () => true, what: '2–4 questions; the plan, the next screens and the paywall headline use the answers.', trap: 'Questions that change nothing feel like a survey and add drop-off.' },
@@ -37,6 +39,9 @@ export const IDEAS = {
     { id: 'signup', t: 'Ask to sign up later', r: { conv: [8, 8], arpu: [17, 17] }, fits: () => true, what: 'Move account creation after the first value, or make it skippable.', trap: 'Cut sign-up friction, not the whole flow: shortening everything lost.' },
     { id: 'plan', t: 'Show a plan built from their answers', r: { conv: [10, 17], trials: [8.5, 8.5] }, fits: () => true, what: 'A screen that repeats their goal and shows the plan made for it, before the paywall.', trap: 'A plan screen after a fake loader lost revenue by half in another app. It has to use the answers.' },
     { id: 'depth', t: 'A fuller onboarding instead of none', r: { conv: [40, 40], arpu: [20, 20] }, fits: () => true, what: 'If people land straight on the paywall or the app, add a few screens that set up the value.', trap: 'From one anonymised app. Every added step has to earn its place; cutting onboarding down lost about 13% in the same app.' },
+    // Lost in published tests: shown only under “Show all”, at the bottom
+    { id: 'shorter', lost: true, t: 'Shorter onboarding', r: { conv: [-13, -13], arpu: [-13, -13] }, about: true, fits: () => true, what: 'Fewer screens, same content: cutting the flow to reduce friction.', trap: 'Cutting onboarding down lost about 13% of conversion and revenue per user (#14; Adapty library). Cut only steps whose answers are never used; that has no published range.' },
+    { id: 'loaderPlan', lost: true, t: 'A loader, then a plan that ignores the answers', r: { arpu: [-50, -50] }, about: true, fits: () => true, what: 'A “building your plan” wait followed by a plan screen that looks the same whatever people answered.', trap: 'Lost about half of revenue per user in one flow (Adapty library). A plan that really changes with the answers is a different idea: “Show a plan built from their answers”.' },
   ],
 };
 // the metric each decision reads, so ideas measured on it rank first

@@ -207,11 +207,12 @@ function ideasFor(p) {
   return IDEAS[S.area].filter((it) => it.fits(c)).map((it) => {
     const m = it.r[want] ? want : Object.keys(it.r)[0], [lo, hi] = it.r[m];
     return { ...it, m, lo, hi, same: m === want };
-  }).sort((a, b) => (b.same - a.same) || ((b.lo + b.hi) - (a.lo + a.hi)));
+  }).sort((a, b) => (!!a.lost - !!b.lost) || (b.same - a.same) || ((b.lo + b.hi) - (a.lo + a.hi)));
 }
-const pctR = (lo, hi) => (lo === hi ? `+${lo}` : `+${lo}–${hi}`) + '%';
+const sgn = (v) => (v < 0 ? `−${-v}` : `+${v}`);
+const pctR = (lo, hi) => (lo === hi ? sgn(lo) : `${sgn(lo)}–${hi}`) + '%';
 function ideasBlock(p) {
-  const all = ideasFor(p), rows = UI.allIdeas ? all : all.slice(0, 6), thr = p.thr, nw = S.goal === 'notworse';
+  const every = ideasFor(p), all = every.filter((r) => !r.lost), lost = every.filter((r) => r.lost), rows = UI.allIdeas ? all : all.slice(0, 6), thr = p.thr, nw = S.goal === 'notworse';
   const max = Math.max(45, ...rows.map((r) => r.hi + 3)), step = max > 60 ? 20 : 10, x = (v) => Math.max(0, Math.min(100, v / max * 100));
   const col = (pc) => `calc(var(--lc) + (100% - var(--lc)) * ${pc / 100})`;
   const ticks = []; for (let v = 0; v <= max - step / 2; v += step) ticks.push(v);
@@ -219,13 +220,13 @@ function ideasBlock(p) {
   ${nw ? '' : `<span class="zone" style="width:calc((100% - var(--lc)) * ${x(thr) / 100})"></span><span class="line" style="left:${col(x(thr))}"></span>`}
   <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v}%</span>`).join('')}</span></div>
   ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr; return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span><span class="bar"><i style="left:${x(r.lo)}%;width:${Math.max(3, x(r.hi) - x(r.lo))}%;background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i></span></button>`; }).join('')}
-  </div>${all.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${all.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
+  </div>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
 }
 function ideaCard(p) {
   const it = ideasFor(p).find((x) => x.id === UI.idea) || IDEAS[S.area].map((x) => ({ ...x, m: Object.keys(x.r)[0], lo: Object.values(x.r)[0][0], hi: Object.values(x.r)[0][1], same: false })).find((x) => x.id === UI.idea);
   if (!it) return '';
-  const catches = S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
-  const range = it.lo === it.hi ? `+${it.lo}%` : `+${it.lo}% to +${it.hi}%`;
+  const catches = it.lost ? 'This lost in published tests. Don’t run it hoping for a win.' : S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
+  const range = (it.about ? 'about ' : '') + (it.lo === it.hi ? `${sgn(it.lo)}%` : `${sgn(it.lo)}% to ${sgn(it.hi)}%`);
   const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}`).join(', ');
   return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
   <p class="para">${it.what}</p><p class="para">Other apps saw ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p><p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>`;

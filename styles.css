@@ -405,3 +405,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 /* ideas: the six that fit best, the rest one tap away */
 .ideas .more { align-self: flex-start; margin-top: 10px; height: 36px; padding: 0 14px; border-radius: 10px; background: var(--s05); font-size: 14px; font-weight: 500; color: var(--t85); }
 .ideas .more:hover { background: var(--s08); }
+
+/* ideas that lost in published tests: only under “Show all”, below the chart, no bar (the axis starts at 0) */
+.ideas .lost { display: flex; flex-direction: column; margin-top: 20px; }
+.ideas .lost .lh { font-size: 13px; font-weight: 600; color: var(--t50); padding-bottom: 4px; }
+.ideas .lost .row { display: block; min-height: 48px; padding: 6px 0; text-align: left; width: 100%; }
+.ideas .lost .row .t { display: flex; flex-direction: column; gap: 2px; }
+.ideas .lost .row .t b { font-size: 14px; font-weight: 500; line-height: 1.25; color: var(--t85); }
+.ideas .lost .row .t span { display: flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 600; color: var(--t60); }
