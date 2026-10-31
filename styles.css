@@ -430,3 +430,9 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .tests .test small { font-size: 14px; line-height: 1.4; color: var(--t60); }
 @media (hover: hover) { .tests .test:hover b { text-decoration: underline; text-underline-offset: 3px; } }
 .para.muted { color: var(--t50); }
+
+/* a test split by market: the range keeps the lower figure; a hairline to a hollow ring marks the other market (owner, 2026-10-31) */
+.fp .row .bar .ext { position: absolute; top: 6px; height: 2px; background: rgba(255,255,255,.45); }
+.fp .row .bar .ring { position: absolute; top: 1px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(255,255,255,.7); background: var(--card, #212121); }
+.ideas .legend .le { width: 14px; height: 2px; background: rgba(255,255,255,.45); }
+.ideas .legend .lr { width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(255,255,255,.7); margin-left: -8px; }

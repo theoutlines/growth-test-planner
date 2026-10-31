@@ -3,6 +3,7 @@
 // Onboarding: the onboarding-teardown evidence library (theoutlines/growth-skills), test numbers in brackets.
 
 // Idea pool. Each idea keeps the ranges published tests measured, per metric (never merged), and when it applies.
+// split: { metric: { note, to } } when one test behind the range reported a different figure for a market or platform (the range keeps the lower one; growth-skills evidence `split`)
 // r: { arpu | conv | trials | ltv: [low, high] }  ·  fits(c): c = { trial (any plan has one), year, multi, once, onbTrial }
 // Paywall: Adapty's A/B test library (as summarised in the paywall-ab-test-assistant skill). Onboarding: the onboarding-teardown
 // ranges (theoutlines/growth-skills), test numbers in brackets; aggregate rows are Adapty's library.
@@ -37,8 +38,8 @@ export const IDEAS = {
     { id: 'loader', t: 'Drop an empty loader', r: { arpu: [30, 30] }, fits: () => true, what: 'Drop the “building your plan” wait unless a real personal plan follows.', trap: 'A loader followed by a personal plan lost ARPU by half in another app.' },
     { id: 'promise', t: 'Value promise on the first screen', r: { conv: [30, 30] }, fits: () => true, what: 'Screen one says what they will get, in their words, before any question.', trap: 'One test, bundled with shorter copy and testimonials. Expect less on its own.' },
     { id: 'signup', t: 'Ask to sign up later', r: { conv: [8, 8], arpu: [17, 17] }, fits: () => true, what: 'Move account creation after the first value, or make it skippable.', trap: 'Cut sign-up friction, not the whole flow: shortening everything lost.' },
-    { id: 'plan', t: 'Show a plan built from their answers', r: { conv: [10, 17], trials: [8.5, 8.5] }, fits: () => true, what: 'A screen that repeats their goal and shows the plan made for it, before the paywall.', trap: 'A plan screen after a fake loader lost revenue by half in another app. It has to use the answers.' },
-    { id: 'depth', t: 'A fuller onboarding instead of none', r: { conv: [40, 40], arpu: [20, 20] }, fits: () => true, what: 'If people land straight on the paywall or the app, add a few screens that set up the value.', trap: 'From one anonymised app. Every added step has to earn its place; cutting onboarding down lost about 13% in the same app.' },
+    { id: 'plan', t: 'Show a plan built from their answers', r: { conv: [10, 17], trials: [8.5, 8.5] }, split: { conv: { note: 'US +27% in one test', to: 27 } }, fits: () => true, what: 'A screen that repeats their goal and shows the plan made for it, before the paywall.', trap: 'A plan screen after a fake loader lost revenue by half in another app. It has to use the answers.' },
+    { id: 'depth', t: 'A fuller onboarding instead of none', r: { conv: [40, 40], arpu: [20, 20] }, split: { conv: { note: 'iOS only' } }, fits: () => true, what: 'If people land straight on the paywall or the app, add a few screens that set up the value.', trap: 'From one anonymised app. Every added step has to earn its place; cutting onboarding down lost about 13% in the same app.' },
     // Lost in published tests: shown only under “Show all”, at the bottom
     { id: 'shorter', lost: true, t: 'Shorter onboarding', r: { conv: [-13, -13], arpu: [-13, -13] }, about: true, fits: () => true, what: 'Fewer screens, same content: cutting the flow to reduce friction.', trap: 'Cutting onboarding down lost about 13% of conversion and revenue per user (#14; Adapty library). Cut only steps whose answers are never used; that has no published range.' },
     { id: 'loaderPlan', lost: true, t: 'A loader, then a plan that ignores the answers', r: { arpu: [-50, -50] }, about: true, fits: () => true, what: 'A “building your plan” wait followed by a plan screen that looks the same whatever people answered.', trap: 'Lost about half of revenue per user in one flow (Adapty library). A plan that really changes with the answers is a different idea: “Show a plan built from their answers”.' },
@@ -48,7 +49,7 @@ export const IDEAS = {
 export const DECIDE_METRIC = { money: 'arpu', paid: 'conv', trials: 'trials' };
 export const IDEAS_SRC = {
   paywall: 'Each range is a band from Adapty’s A/B library, many tests. Tap an idea for the single published tests and their links. Not a forecast for yours.',
-  onboarding: 'Each number is what other apps saw in published tests, on the metric its row shows. Tap an idea for every test and its link. Not a forecast for yours.',
+  onboarding: 'Each number is what other apps saw in published tests, on the metric its row shows. Where a test split by market, the chart uses the lower figure. A single test’s own uncertainty is rarely published: a dot is one result, not a precise effect. Tap an idea for every test and its link. Not a forecast for yours.',
 };
 
 export const CHIPS = {
