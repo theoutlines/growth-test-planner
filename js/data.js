@@ -48,7 +48,7 @@ export const IDEAS = {
 export const DECIDE_METRIC = { money: 'arpu', paid: 'conv', trials: 'trials' };
 export const IDEAS_SRC = {
   paywall: 'Each range is a band from Adapty’s A/B library, many tests. Tap an idea for the single published tests and their links. Not a forecast for yours.',
-  onboarding: 'Each number is what other apps saw in published tests, counted only on the metric its row shows. Tap an idea for every test and its link. Not a forecast for yours.',
+  onboarding: 'Each number is what other apps saw in published tests, on the metric its row shows. Tap an idea for every test and its link. Not a forecast for yours.',
 };
 
 export const CHIPS = {
