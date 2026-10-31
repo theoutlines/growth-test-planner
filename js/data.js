@@ -71,19 +71,36 @@ export const TESTS = {
     annual: [['Mojo', 'Revenue per paywall view: US +8%, Mexico +26%, Brazil +45%', 'Annual price shown as a monthly price.', RC_MOJO, '2023-10'], // #43
       ['Rash ID', 'ARPU about +20%', 'Weekly plan added, annual flagged as the best choice. Several changes at once.', 'https://superwall.com/case-studies/rash-id', '2026-01'], // #80
       ['Preu AI', 'Proceeds per user +80%', 'An annual plan added next to a monthly-only paywall. Offer change.', 'https://superwall.com/case-studies/preu-ai', '2026-02'], // #79
-      ['Mojo', 'Annual share +15 to +20 points, cancellations slightly up', 'Only yearly shown, monthly behind “View all plans”.', RC_MOJO, '2023-10']], // #42
+      ['Mojo', 'Annual share +15 to +20 points, cancellations slightly up', 'Only yearly shown, monthly behind “View all plans”.', RC_MOJO, '2023-10'], // #42
+      ['Stardust', 'Conversion +50%, proceeds per user +62.5%', 'Discount shown on the yearly plan, weekly price shown per week.', 'https://superwall.com/blog/how-stardust-increased-ios-app-revenue-by-4x-in-six-weeks', '2024-09'], // #94
+      ['Glam AI', 'Conversion 3.14% → 3.77%', 'Year moved to the top with “Most Popular”, the pricier plan below.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #105
+      ['Glam AI', 'Yearly 0.43% → 0.55%, revenue per user $0.261 → $0.292', 'A pricier “Business” year added as an anchor. Offer change.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #104
+      ['TomTom', 'ARPU +56.8% (truck-plan users)', 'A discounted yearly plan offered next to the free trial. Offer change.', 'https://www.purchasely.com/case-studies/increasing-mrr-85-percent-against-free-competitors', '']], // #142
     explain: [['Blinkist', 'Trial sign-ups +23%, complaints −55%', 'Day-by-day trial timeline on the paywall, reminder opt-in after it.', 'https://uxplanet.org/how-solving-our-biggest-customer-complaint-at-blinkist-led-to-a-23-increase-in-conversion-b60ad514134b', '2021-01'], // #1
-      ['Pepper', 'LTV +50%', 'Two-step paywall with the trial as a timeline. Staged rollout, no control group.', 'https://superwall.com/case-studies/pepper', '2026-02']], // #78
+      ['Pepper', 'LTV +50%', 'Two-step paywall with the trial as a timeline. Staged rollout, no control group.', 'https://superwall.com/case-studies/pepper', '2026-02'], // #78
+      ['Stardust', 'Trial starts +13.6%, trial to paid unchanged', 'Trial timeline design on the paywall.', 'https://superwall.com/blog/how-stardust-increased-ios-app-revenue-by-4x-in-six-weeks', '2024-09'], // #97
+      ['Pregnancy+', 'Revenue +27%', 'A visual timeline: today, day 3, the charge day.', 'https://adapty.io/case-studies/pregnancy-plus/', '2026-04']], // #116
     annualTrial: [['Moonly', 'View to subscription +39%, revenue per 100 installs +47%', 'Free trial added to the annual plan only.', 'https://adapty.io/case-studies/moonly/', '2024-05']], // #41
-    compare: [['Symmetry', 'Conversion “+1%”, paid activation +5%', 'Feature list turned into a Free vs Pro table. The page doesn’t say if +1% is relative.', 'https://superwall.com/case-studies/symmetry', '2025-12']], // #81
-    proof: [['Runtastic', 'Paid subscriptions +44%', 'A promo line replaced with a real 5-star review.', 'https://abtest.design/tests/user-reviews-on-paywall', '2017-05']], // #60
+    compare: [['Symmetry', 'Conversion “+1%”, paid activation +5%', 'Feature list turned into a Free vs Pro table. The page doesn’t say if +1% is relative.', 'https://superwall.com/case-studies/symmetry', '2025-12'], // #81
+      ['Unnamed app', 'The simple page won by 111%', 'A comparison-chart paywall replaced with one simple page. Comparison lost. Several changes at once.', 'https://superwall.com/blog/the-paywall-tactics-behind-usd100k-month-apps', '2026-02']], // #100
+    proof: [['Runtastic', 'Paid subscriptions +44%', 'A promo line replaced with a real 5-star review.', 'https://abtest.design/tests/user-reviews-on-paywall', '2017-05'], // #60
+      ['Glam AI', '2.54% vs 2.43%, called noise', 'A social-proof video on the plan picker. No change.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09']], // #106
     visuals: [['Unchaind', 'Conversion over +50%, estimated ARPU +64%', 'Text paywall turned into a visual app preview.', 'https://superwall.com/case-studies/unchaind', '2025-12'], // #82
-      ['Neos Kosmos', 'Conversion +13%', 'A different paywall image. News, on the web.', 'https://abtest.design/tests/paywall-visuals', '']], // #68
-    cta: [['Going', 'Trial starts +104% month over month', '“Trial for free” instead of “Sign up for free”. On the web.', 'https://abtest.design/tests/trial-for-free-cta', '']], // #67
+      ['Neos Kosmos', 'Conversion +13%', 'A different paywall image. News, on the web.', 'https://abtest.design/tests/paywall-visuals', ''], // #68
+      ['Stardust', 'Conversion +67%, proceeds per user +12.5%', 'A video background instead of a text-heavy design.', 'https://superwall.com/blog/how-stardust-increased-ios-app-revenue-by-4x-in-six-weeks', '2024-09'], // #96
+      ['Glam AI', 'View to payment 1% → 1.25%, revenue per user lower', 'A video hero instead of static images. Control kept.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #103
+      ['CoinStats', 'Conversion 2.9x', 'An animated, playful paywall reveal.', 'https://www.revenuecat.com/blog/growth/weird-paywalls-drive-subscription-growth', '2025-08']], // #153
+    cta: [['Going', 'Trial starts +104% month over month', '“Trial for free” instead of “Sign up for free”. On the web.', 'https://abtest.design/tests/trial-for-free-cta', ''], // #67
+      ['Unnamed app', 'Registration to trial 3% → 27%', '“Subscribe” → “Start your 7-day free trial”. Method not stated.', 'https://adapty.io/blog/how-to-build-app-onboarding-flows-that-convert/', '2025-11'], // #132
+      ['Going Merry', '1.14% vs 0.78%', '“Continue” → “Start for $0.00”. Several changes at once.', 'https://adapty.io/case-studies/going-merry/', '2025-09']], // #121
     lifetime: [['Dark Noise', 'Total initial conversions about +10%; lifetime +266%, annual −30%', 'All three plans shown by default, lifetime included.', 'https://www.revenuecat.com/blog/engineering/how-i-successfully-migrated-my-indie-app-to-revenuecat-paywalls/', '2024-01']], // U22
     price: [['BuyBye', 'Conversions −19%, proceeds per user +25%', 'Yearly price raised 50%.', 'https://superwall.com/case-studies/buybye', '2026-04'], // #85
       ['SellRaze', 'ARPU +10%', 'Annual price lowered from $59.99 to $44.99. A cut won here.', 'https://superwall.com/case-studies/sellraze', '2025-12'], // #84
-      ['Travel app (unnamed)', 'Conversion −5%', 'Price raised 30%.', 'https://adapty.io/case-studies/travel-app/', '']], // #59
+      ['Travel app (unnamed)', 'Conversion −5%', 'Price raised 30%.', 'https://adapty.io/case-studies/travel-app/', ''], // #59
+      ['PropGPT', 'Proceeds per user +47.5%, conversion slightly down', 'Weekly $6.99 → $9.99.', 'https://superwall.com/case-studies/propgpt', '2026-01'], // #91
+      ['Planner 5D', 'ARPU +83% (highest tier)', 'Three price tiers on the same paywall; prices not given.', 'https://superwall.com/case-studies/planner-5d', '2026-01'], // #90
+      ['Glam AI', 'Conversion 2.55% → 2.09%, ARPU flat', 'Year $59.99 → $79.99, week $8.99 → $11.99 for $800+ iPhone owners. Lost.', 'https://adapty.io/blog/glam-ai-paywall-tests/', '2026-09'], // #107
+      ['AppDevLabs', 'Won, conversion flat', 'Annual $9.99 → $14.99.', 'https://adapty.io/case-studies/appdevlabs/', '2026-03']], // #117
     second: [['Rizz God', 'Onboarding conversion +10%, trial conversion +10%', 'A second paywall at the end of onboarding. Several changes at once.', 'https://superwall.com/case-studies/rizz-god', '2026-01']], // #21
     copy: [['Neos Kosmos', 'Conversion +16%', '“Support our work” copy instead of a benefits list. News, on the web.', 'https://abtest.design/tests/benefits-driven-vs-emotional-appeal-messaging', ''], // #69
       ['Unnamed (conference talk)', 'Conversion +54% or more', 'Paywall copy from features to outcomes. No method given.', 'https://growthgems.substack.com/p/growth-gems-127-onboarding-activation', '2025-07']], // #58
@@ -101,24 +118,33 @@ export const TESTS = {
     proof: [['Travel app (unnamed)', 'Conversion to purchase +30%', 'Shorter copy, value up front and testimonials. Several changes at once.', 'https://adapty.io/case-studies/travel-app/', ''], // #17
       ['Five Minute Journal', 'Trial starts about +10%, ARPU +20%', 'Testimonials moved earlier inside a rebuild. Several changes at once.', 'https://www.revenuecat.com/blog/growth/five-minute-journal-onboarding-redesign-arpu/', '2024-10']], // #2
     timeline: [['Blinkist', 'Trial sign-ups +23%, complaints −55%', 'Day-by-day trial timeline on the paywall, reminder opt-in after it.', 'https://uxplanet.org/how-solving-our-biggest-customer-complaint-at-blinkist-led-to-a-23-increase-in-conversion-b60ad514134b', '2021-01'], // #1
-      ['Pepper', 'LTV +50%', 'Two-step paywall with the trial as a timeline. Staged rollout, no control group.', 'https://superwall.com/case-studies/pepper', '2026-02']], // #78
+      ['Pepper', 'LTV +50%', 'Two-step paywall with the trial as a timeline. Staged rollout, no control group.', 'https://superwall.com/case-studies/pepper', '2026-02'], // #78
+      ['Stardust', 'Trial starts +13.6%, trial to paid unchanged', 'Trial timeline design on the paywall.', 'https://superwall.com/blog/how-stardust-increased-ios-app-revenue-by-4x-in-six-weeks', '2024-09'], // #97
+      ['Pregnancy+', 'Revenue +27%', 'A visual timeline: today, day 3, the charge day.', 'https://adapty.io/case-studies/pregnancy-plus/', '2026-04']], // #116
     quickstart: [['Slopes', 'Trial starts +25%, trial-to-paid about flat', 'One tap starts the trial and skips the plan screen.', 'https://blog.curtisherbert.com/slopes-diaries-42-building-ramps-not-walls/', '2022-04']], // #45
     echo: [['Grammarly', 'Upgrades “10%+”', 'Survey answers drive a personal plan. The number has no source.', 'https://growth.design/case-studies/grammarly-onboarding-survey', ''], // #27
       ['JourneyStamp', 'Conversion +50%', 'Paywalls specific to where people come from. Several changes at once.', 'https://superwall.com/case-studies/journeystamp', '2026-02'], // #23
-      ['Flirt AI', 'Trial-to-paid +20%, MRR +83%', 'Each segment routed to its own paywall, prices changed too.', 'https://superwall.com/case-studies/flirt-ai', '2026-02']], // #22
+      ['Flirt AI', 'Trial-to-paid +20%, MRR +83%', 'Each segment routed to its own paywall, prices changed too.', 'https://superwall.com/case-studies/flirt-ai', '2026-02'], // #22
+      ['Dogo', 'Paywall conversion +9.5%, ARPU +13%', 'A paywall per user segment, each leading with its own value.', 'https://www.botsi.com/blog/personalize-paywall-messaging', '2026-02']], // #139
     split: [['Speak4Me', 'Conversion +27%, proceeds +36%', 'Features first, then the price, on separate steps.', 'https://superwall.com/case-studies/speak4me', ''], // #55
       ['Stompers', 'Conversion +16%', 'Benefits, then the trial reminder, then the price.', 'https://superwall.com/case-studies/stompers', '2026-01'], // #56
-      ['ASL Bloom', 'Trial conversion +15%, ARPU +12%', 'A value screen and a trial timeline before the price. Several changes at once.', 'https://www.revenuecat.com/blog/growth/asl-bloom-applica-case-study/', '2025-05']], // #18
+      ['ASL Bloom', 'Trial conversion +15%, ARPU +12%', 'A value screen and a trial timeline before the price. Several changes at once.', 'https://www.revenuecat.com/blog/growth/asl-bloom-applica-case-study/', '2025-05'], // #18
+      ['Unnamed app', 'Trial opt-in 2%, 8%, 15%', 'Paywall after home, after welcome, or after a new 3-slide carousel (15%).', 'https://www.revenuecat.com/blog/growth/how-top-apps-approach-paywalls', '2025-06'], // #151
+      ['Mimo', 'Trial opt-in +60%', 'Single-screen paywall → multi-screen paywall.', 'https://subclub.com/episode/how-to-build-more-successful-paywalls-sylvain-gauchet', '2025-03']], // #157
     reminder: [['Education app (unnamed)', 'ARPU +24%, trial conversion +6.4%', 'Reminder set-up inside onboarding instead of on the home screen.', ADAPTY_ONB, '2025-11']], // #16
     loader: [['Education app (unnamed)', 'ARPU +30%, trial conversion +22%', 'The loading screen removed.', ADAPTY_ONB, '2025-11']], // #15
     promise: [['Travel app (unnamed)', 'Conversion to purchase +30%', 'Shorter copy, value up front and testimonials. Several changes at once.', 'https://adapty.io/case-studies/travel-app/', '']], // #17
     signup: [['Duolingo', 'Daily active users about +20%', 'Sign-up moved after a first lesson. A sign-up wall, not a paywall.', 'https://review.firstround.com/the-tenets-of-a-b-testing-from-duolingos-master-growth-hacker', '2017-07'], // #5
-      ['Duolingo', 'Daily active users +8.2%', 'A quiet “Later” instead of “Discard my progress”.', 'https://review.firstround.com/the-tenets-of-a-b-testing-from-duolingos-master-growth-hacker', '2017-07']], // #6
+      ['Duolingo', 'Daily active users +8.2%', 'A quiet “Later” instead of “Discard my progress”.', 'https://review.firstround.com/the-tenets-of-a-b-testing-from-duolingos-master-growth-hacker', '2017-07'], // #6
+      ['Coconote', 'A 10% drop-off removed', 'Login moved from the start to after the paywall. Founder report.', 'https://www.revenuecat.com/blog/growth/brett-zack-coconote-sub-club-podcast-2026', '2026-03']], // #148
     plan: [['Grammarly', 'Upgrades “10%+”', 'Survey answers drive a personal plan. The number has no source.', 'https://growth.design/case-studies/grammarly-onboarding-survey', ''], // #27
       ['Productivity app (unnamed)', 'Trial starts +8.5%, paid +17%', 'Goal questions and a “customising” screen instead of demos. Several changes at once.', ADAPTY_ONB, '2025-11'], // #13
       ['Headspace', 'Course starts about 31% → 63%', 'A quiz and a course picked for the answers.', 'https://irrationallabs.com/case-studies/headspace-doubled-course-starts/', '']], // #3
-    depth: [['Entertainment app (unnamed)', 'Payment conversion +40% (iOS), ARPU +20%', 'A long onboarding instead of none.', ADAPTY_ONB, '2025-11']], // #14
-    shorter: [['Entertainment app (unnamed)', 'Conversion −13%', 'The long onboarding shortened.', ADAPTY_ONB, '2025-11']], // #14
+    depth: [['Entertainment app (unnamed)', 'Payment conversion +40% (iOS), ARPU +20%', 'A long onboarding instead of none.', ADAPTY_ONB, '2025-11'], // #14
+      ['Coconote', 'Trial starts +16%', 'Onboarding doubled to 15 screens, more personal. Founder report.', 'https://www.revenuecat.com/blog/growth/brett-zack-coconote-sub-club-podcast-2026', '2026-03'], // #147
+      ['TomTom', 'The short one won: trial starts +2.5%, paid +8%', 'Long-form onboarding against a simple carousel. The long one lost.', 'https://www.purchasely.com/case-studies/increasing-mrr-85-percent-against-free-competitors', '']], // #140
+    shorter: [['Entertainment app (unnamed)', 'Conversion −13%', 'The long onboarding shortened.', ADAPTY_ONB, '2025-11'], // #14
+      ['TomTom', 'Trial starts +2.5%, paid +8%', 'A simple carousel beat long-form onboarding. Shorter won here.', 'https://www.purchasely.com/case-studies/increasing-mrr-85-percent-against-free-competitors', '']], // #140
   },
 };
 // How many single tests stand behind each onboarding range, per metric; 0 = a band from Adapty's library (many tests).
