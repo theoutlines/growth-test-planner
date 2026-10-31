@@ -1,5 +1,5 @@
 import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, shares, planTrial } from './math.js';
-import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL, METRIC, DECIDE_METRIC } from './data.js';
+import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL, METRIC, DECIDE_METRIC, TESTS, COUNT } from './data.js';
 
 // ------------------------------------------------------------------ state
 // Nothing typed here leaves the browser. The last inputs are kept in localStorage (this browser only);
@@ -67,6 +67,7 @@ const t1 = (x) => x.toFixed(1);
 const I = {
   back: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chev: '<svg class="chev" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ext: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M8 4h8v8M16 4 7 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   up: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 12.5l6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   down: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7.5l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -209,6 +210,22 @@ function ideasFor(p) {
     return { ...it, m, lo, hi, same: m === want };
   }).sort((a, b) => (!!a.lost - !!b.lost) || (b.same - a.same) || ((b.lo + b.hi) - (a.lo + a.hi)));
 }
+// Where a row's number comes from: onboarding ranges are single tests (counted on the row's metric); paywall ranges are Adapty bands, said once in the footnote.
+function srcLine(r) {
+  if (S.area !== 'onboarding') return '';
+  const n = (COUNT[r.id] || {})[r.m];
+  return n === undefined ? '' : n === 0 ? 'from Adapty’s library' : `from ${n} test${n > 1 ? 's' : ''}`;
+}
+function seenBy(it) {
+  if (it.id === 'copy') return 'Adapty’s expected effect for copy-only changes:';
+  if (S.area === 'paywall' && !it.lost) return 'Adapty’s library, many tests:';
+  return (COUNT[it.id] || {})[it.m] === 0 ? 'Adapty’s library, many tests:' : 'Other apps saw';
+}
+function testsList(id) {
+  const list = (TESTS[S.area] || {})[id] || [];
+  if (!list.length) return '<p class="para muted">No single published test yet.</p>';
+  return `<div class="tests"><span class="th">Single published tests</span>${list.map(([app, num, what, url]) => `<a class="test" href="${url}" target="_blank" rel="noopener"><span><b>${app} · ${num}</b><small>${what}</small></span>${I.ext}</a>`).join('')}</div>`;
+}
 const sgn = (v) => (v < 0 ? `−${-v}` : `+${v}`);
 const pctR = (lo, hi) => (lo === hi ? sgn(lo) : `${sgn(lo)}–${hi}`) + '%';
 function ideasBlock(p) {
@@ -216,20 +233,21 @@ function ideasBlock(p) {
   const max = Math.max(45, ...rows.map((r) => r.hi + 3)), step = max > 60 ? 20 : 10, x = (v) => Math.max(0, Math.min(100, v / max * 100));
   const col = (pc) => `calc(var(--lc) + (100% - var(--lc)) * ${pc / 100})`;
   const ticks = []; for (let v = 0; v <= max - step / 2; v += step) ticks.push(v);
-  return `<section class="card ideas"><span class="head">${nw ? 'Sized to rule out harm, not to find these' : `Your test catches +${t1(thr)}% and up`}</span><div class="fp">
+  return `<section class="card ideas"><span class="kick">Lift in ${METRIC[DECIDE_METRIC[p.decide]]}, B against A</span><span class="head">${nw ? 'Sized to rule out harm, not to find these' : `Your test catches +${t1(thr)}% and up`}</span><div class="fp">
   ${nw ? '' : `<span class="zone" style="width:calc((100% - var(--lc)) * ${x(thr) / 100})"></span><span class="line" style="left:${col(x(thr))}"></span>`}
-  <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v}%</span>`).join('')}</span></div>
-  ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr; return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span><span class="bar"><i style="left:${x(r.lo)}%;width:${Math.max(3, x(r.hi) - x(r.lo))}%;background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i></span></button>`; }).join('')}
-  </div>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
+  <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v ? `+${v}%` : '0'}</span>`).join('')}</span></div>
+  ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr, src = srcLine(r), one = r.lo === r.hi;
+    return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${src || !r.same ? `<small>${[src, r.same ? '' : `on ${METRIC[r.m]}`].filter(Boolean).join(' · ')}</small>` : ''}</span><span class="bar"><i class="${one ? 'dot' : ''}" style="left:${one ? `calc(${x(r.lo)}% - 7px)` : `${x(r.lo)}%`};width:${one ? '14px' : `${Math.max(3, x(r.hi) - x(r.lo))}%`};background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i></span></button>`; }).join('')}
+  </div><span class="legend"><span><i class="lb"></i>Lowest to highest result</span><span><i class="ld"></i>One number (one test, or a band given as one figure)</span></span>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
 }
 function ideaCard(p) {
   const it = ideasFor(p).find((x) => x.id === UI.idea) || IDEAS[S.area].map((x) => ({ ...x, m: Object.keys(x.r)[0], lo: Object.values(x.r)[0][0], hi: Object.values(x.r)[0][1], same: false })).find((x) => x.id === UI.idea);
   if (!it) return '';
   const catches = it.lost ? 'This lost in published tests. Don’t run it hoping for a win.' : S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
   const range = (it.about ? 'about ' : '') + (it.lo === it.hi ? `${sgn(it.lo)}%` : `${sgn(it.lo)}% to ${sgn(it.hi)}%`);
-  const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}`).join(', ');
+  const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}${S.area === 'onboarding' && (COUNT[it.id] || {})[k] === 0 ? ' in Adapty’s library' : ''}`).join(', ');
   return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  <p class="para">${it.what}</p><p class="para">Other apps saw ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p><p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>`;
+  <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>`;
 }
 function controls() {
   const onb = S.area === 'onboarding';
