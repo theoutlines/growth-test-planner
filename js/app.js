@@ -224,7 +224,9 @@ function seenBy(it) {
 function testsList(id) {
   const list = (TESTS[S.area] || {})[id] || [];
   if (!list.length) return '<p class="para muted">No single published test yet.</p>';
-  return `<div class="tests"><span class="th">Single published tests</span>${list.map(([app, num, what, url]) => `<a class="test" href="${url}" target="_blank" rel="noopener"><span><b>${app} · ${num}</b><small>${what}</small></span>${I.ext}</a>`).join('')}</div>`;
+  // the latest three by publish date (undated last), with the total under the heading (owner, 2026-10-31)
+  const shown = [...list].sort((a, b) => (b[4] || '').localeCompare(a[4] || '')).slice(0, 3), n = list.length;
+  return `<div class="tests"><span class="th">Single published tests</span><span class="tn">${n > 3 ? `Latest 3 of ${n}` : `${n} in total`}</span>${shown.map(([app, num, what, url]) => `<a class="test" href="${url}" target="_blank" rel="noopener"><span><b>${app} · ${num}</b><small>${what}</small></span>${I.ext}</a>`).join('')}</div>`;
 }
 const sgn = (v) => (v < 0 ? `−${-v}` : `+${v}`);
 const pctR = (lo, hi) => (lo === hi ? sgn(lo) : `${sgn(lo)}–${hi}`) + '%';

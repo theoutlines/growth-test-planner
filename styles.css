@@ -423,7 +423,8 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .ideas .legend .lb { width: 22px; height: 10px; border-radius: 5px; background: var(--w); }
 .ideas .legend .ld { width: 10px; height: 10px; border-radius: 50%; background: var(--w); }
 .tests { display: flex; flex-direction: column; }
-.tests .th { font-size: 13px; font-weight: 600; color: var(--t50); padding-bottom: 2px; }
+.tests .th { font-size: 13px; font-weight: 600; color: var(--t50); }
+.tests .tn { font-size: 13px; color: var(--t50); padding-bottom: 2px; }
 .tests .test { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; color: inherit; text-decoration: none; border-radius: 10px; }
 .tests .test > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .tests .test b { font-size: 15px; font-weight: 600; color: var(--w); line-height: 1.35; }
