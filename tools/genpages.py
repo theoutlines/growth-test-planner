@@ -121,7 +121,7 @@ def page(slug, h1):
 <meta property="og:description" content="{DESC[slug]}">
 <meta property="og:url" content="{SITE}/{slug}/">
 <meta property="og:type" content="article">
-<meta property="og:image" content="{SITE}/assets/og.png?v=2">
+<meta property="og:image" content="{SITE}/assets/og.png?v=3">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/UncutSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
