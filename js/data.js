@@ -20,7 +20,7 @@ export const IDEAS = {
     { id: 'lifetime', t: 'Add a lifetime option', r: { arpu: [10, 15] }, fits: (c) => !c.once && c.plans < 4, what: 'A one-time plan next to annual, priced well above it.', trap: 'Can pull buyers off annual. Watch the plan mix.' },
     { id: 'price', t: 'Raise the price in top markets', r: { arpu: [15, 25] }, fits: () => true, what: 'Higher prices in the US, Western Europe and similar markets.', trap: 'The same rise lost badly outside those markets. Test by region.' },
     { id: 'second', t: 'Offer right after the first paywall closes', r: { conv: [25, 30] }, fits: () => true, what: 'When someone closes the onboarding paywall, one more screen with a discount or another plan.', trap: 'Wins were mostly on iOS. After the main in-app paywall the same offer lost about half the revenue per user.' },
-    { id: 'copy', t: 'Headline and copy tweaks', r: { ltv: [0, 5] }, fits: () => true, what: 'New headline, button text, small reorders.', trap: 'Only a third of text and visual changes raised LTV at all. Fold them into a bigger change.' },
+    { id: 'copy', t: 'Headline and copy tweaks', r: { conv: [3, 8], arpu: [1, 3] }, fits: () => true, what: 'New headline, button text, small reorders.', trap: 'Only about a third of visual or text-only tests lifted LTV at all (Adapty, 105,000 paywalls). Fold them into a bigger change.' },
   ],
   onboarding: [
     { id: 'goals', t: 'Ask goals, tailor what follows', r: { trials: [8.5, 25], conv: [8, 17], arpu: [13, 35] }, fits: () => true, what: '2–4 questions; the plan, the next screens and the paywall headline use the answers.', trap: 'Questions that change nothing feel like a survey and add drop-off.' },
