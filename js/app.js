@@ -147,7 +147,12 @@ function summary(p) {
 }
 
 // ------------------------------------------------------------------ screens
-function startScreen() {
+function startScreen() {   // test build: the landing is the start screen (exported from the canvas boards L4M / L4D)
+  const L = window.LANDING;
+  if (!L) return oldStartScreen();
+  return `<main class="landing"><div class="l-m">${L.m}</div><div class="l-d">${L.d}</div></main>`;
+}
+function oldStartScreen() {
   return top() + `<main class="page">
   <section class="hero"><img src="assets/character.png" alt=""><div><small>For designers who ship onboarding and paywalls</small><strong>Will your test see your change?</strong></div></section>
   <div class="stack">${pick(G.plan, 'Plan a test', 'How bold your change must be to show up, how long the test runs, the day you decide. Four questions.', 'area')}
@@ -608,9 +613,11 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-copytext],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
+  if (el.dataset.copytext) return copy(el.dataset.copytext);
   if (el.dataset.go) {
+    e.preventDefault();
     const [r, arg] = el.dataset.go.split(':');
     if (arg === 'read') return go(r, true);                 // back to the numbers, with them in the link
     if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('traffic'); }
@@ -702,6 +709,8 @@ function scale() {
   const z = window.innerWidth > 1440 ? window.innerWidth / 1440 : 1;
   document.body.style.zoom = z === 1 ? '' : String(z);
   document.documentElement.style.setProperty('--vh', window.innerHeight / z + 'px');   // the rail's height limit in unzoomed pixels
+  document.documentElement.style.setProperty('--lmz', String(Math.min(1, window.innerWidth / 390)));     // landing (test build): the 390 board fits narrow phones
+  document.documentElement.style.setProperty('--ldz', String(Math.min(1, window.innerWidth / 1440)));    // and the 1440 board fits 1200–1440 windows
 }
 let lastWide = wide();
 window.addEventListener('resize', () => { scale(); if (wide() !== lastWide) { lastWide = wide(); lastPage = null; render(); } else document.querySelectorAll('.pill').forEach((p) => p._placed = false), placePills(); });

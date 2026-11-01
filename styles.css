@@ -462,3 +462,14 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 
 /* plain-text description for readers without JavaScript and for agents; never flashes before the app */
 #about { display: none; }
+
+/* ------------------------------------------------------------------ landing (test build): the start screen, exported from the canvas boards */
+.landing { display: block; width: 100%; overflow-x: hidden; }
+.landing .l-d { display: none; }
+.landing .l-m > div { zoom: var(--lmz, 1); margin: 0 auto; }
+@media (min-width: 1200px) {
+  .landing .l-m { display: none; }
+  .landing .l-d { display: block; }
+  .landing .l-d > div { zoom: var(--ldz, 1); margin: 0 auto; }
+}
+.landing a { -webkit-tap-highlight-color: transparent; }
