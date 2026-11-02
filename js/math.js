@@ -17,16 +17,19 @@ export function zInv(p) {
 }
 
 const POWER = 0.8, ALPHA = 0.05, WATCH_DAYS = 7, NOT_WORSE_MARGIN = 0.05;
-// Onboarding, decided on paid: install→paid is taken as the same share of install→trial as in RevenueCat SOSA 2026
-// medians (2.0% paid vs 5.8% trial), because the planner asks for the trial rate only.
-const PAID_PER_TRIAL = 2.0 / 5.8;
+// Defaults: onboarding from RevenueCat SOSA 2026 medians (install→trial 5.8%, install→paid 2.0%); paywall from Adapty
+// State of Paywalls 2026, US median app (view→paid 2.75%, view→trial start 6.94% in apps with trials).
 
 export const DEFAULTS = {
   area: 'paywall',        // paywall | onboarding
-  views: 50000,           // paywall views a week
+  views: 50000,           // people who see the paywall a week (the test splits people, not views)
   conv: 2.75,             // % of paywall views that end in a payment
   users: 20000,           // new users a week (onboarding)
   trialRate: 5.8,         // % of new users who start a trial
+  paidRate: 2.0,          // % of new users who make a first payment (onboarding, decided on paid)
+  trialView: 6.94,        // % of paywall views that start a trial (paywall, decided on trial starts)
+  split: 50,              // % of test traffic that stays on A (two versions): 50 | 70 | 80 | 90
+  target: 0,              // smallest change worth catching, % (0 = suggested from the ideas)
   trial: 3,               // free trial days: 0 | 3 | 7 | 14
   traffic: 100,           // % of traffic in the test
   versions: 2,            // 2 | 3
@@ -34,10 +37,11 @@ export const DEFAULTS = {
   goal: 'win',            // win | notworse
   weeks: 4,
   start: '',             // ISO date; empty = next Monday (whole weeks from a clean start)
+  what: '',              // what changes in B, in the team's words (goes into the plan card, share text and verdict)
   // paywall plans: type (week | month | year | once), price, share of buyers (weights, shown as %), free-trial days
   plans: [{ t: 'week', p: 6.99, s: 50, tr: 3 }, { t: 'year', p: 39.99, s: 50, tr: 3 }],
 };
-export const PLAN_TYPES = { week: ['Week', 'weekly', 'wk'], month: ['Month', 'monthly', 'mo'], year: ['Year', 'annual', 'yr'], once: ['One-time', 'one-time', 'once'] };
+export const PLAN_TYPES = { week: ['Week', 'weekly', 'wk'], month: ['Month', 'monthly', 'mo'], year: ['Year', 'annual', 'yr'], once: ['Lifetime', 'lifetime', 'lifetime'] };
 export const fresh = () => JSON.parse(JSON.stringify(DEFAULTS));   // DEFAULTS holds an array: never share it
 export const shares = (plans) => { const t = plans.reduce((a, x) => a + x.s, 0) || 1; return plans.map((x) => x.s / t); };
 export const planTrial = (x) => (x.t === 'once' ? 0 : x.tr);
@@ -53,25 +57,30 @@ function k2OneSided(versions) {
   return 2 * (zInv(1 - a) + zInv(POWER)) ** 2;
 }
 
-export function decideOptions(area) { return area === 'onboarding' ? ['trials', 'paid'] : ['money', 'paid']; }
+export function decideOptions(area) { return area === 'onboarding' ? ['trials', 'paid'] : ['money', 'paid', 'trials']; }
+// shares of test traffic per version: A keeps `split`% with two versions; three versions split evenly
+export function splitOf(s) { return s.versions === 2 ? [s.split / 100, 1 - s.split / 100] : [1 / 3, 1 / 3, 1 / 3]; }
+// how much an uneven split costs against an even one: (1/a + 1/b) / 4, so 50/50 = 1, 80/20 ≈ 1.56
+const spread = (s) => { const [a, b] = splitOf(s); return s.versions === 2 ? (1 / a + 1 / b) / 4 : 1; };
 
 // Everything the test screen shows, from the inputs.
 export function planOf(s) {
   const onb = s.area === 'onboarding';
   const decide = decideOptions(s.area).includes(s.decide) ? s.decide : decideOptions(s.area)[0];
   const exposure = (onb ? s.users : s.views) * s.traffic / 100;          // people (or views) a week in the test
-  const perVersionWeek = exposure / s.versions;
+  const perVersionWeek = exposure / s.versions / spread(s);              // effective people per version (an uneven split counts for less)
   let p, cv2, metricName, today, unit;
-  if (!onb) {
+  if (!onb && decide === 'trials') { p = s.trialView / 100; cv2 = (1 - p) / p; metricName = 'trial starts'; today = p; unit = 'rate'; }
+  else if (!onb) {
     p = s.conv / 100;
     if (decide === 'money') {
       const w = shares(s.plans), mu = s.plans.reduce((a, x, i) => a + w[i] * x.p, 0);
       const v = s.plans.reduce((a, x, i) => a + w[i] * x.p ** 2, 0) - mu * mu;
       cv2 = (v / mu ** 2 + 1) / p - 1;
-      metricName = 'money per paywall view'; today = mu * p; unit = 'money';
+      metricName = 'revenue per paywall viewer'; today = mu * p; unit = 'money';
     } else { cv2 = (1 - p) / p; metricName = 'paid conversion'; today = p; unit = 'rate'; }
   } else {
-    p = decide === 'trials' ? s.trialRate / 100 : s.trialRate / 100 * PAID_PER_TRIAL;
+    p = decide === 'trials' ? s.trialRate / 100 : s.paidRate / 100;
     cv2 = (1 - p) / p; metricName = decide === 'trials' ? 'trial starts' : 'paid conversion'; today = p; unit = 'rate';
   }
   const K = k2(s.versions);
@@ -89,8 +98,15 @@ export function planOf(s) {
   const thr = mdeAt(weeks);
   const start = s.start && /^\d{4}-\d{2}-\d{2}$/.test(s.start) ? new Date(s.start + 'T00:00:00') : nextMonday(new Date());
   const decideDate = addDays(start, weeks * 7 + wait + watch);
-  return { onb, decide, metricName, unit, today, thr, options, weeks, notWorse, start, decideDate, collect: weeks * 7, wait, watch,
-           perVersion: perVersionWeek * weeks, exposure, p };
+  // decided on trial starts: an early read; paid is checked once the last trials have billed
+  const trialLen = onb ? s.trial : longestTrial(s.plans), checkPaid = decide === 'trials' && trialLen > 0 ? addDays(start, weeks * 7 + trialLen) : null;
+  // planning by date: the traffic share each length needs to catch `target`% (null when even 100% isn't enough)
+  const base = onb ? s.users : s.views, sh = splitOf(s);
+  const need = (tg, w, c = cv2, vers = s.versions) => K * c * vers * spread(s) / (base * w * (tg / 100) ** 2) * 100;
+  const byDate = (tg) => [2, 4, 6, 8].map((w) => { const t = need(tg, w); return { weeks: w, traffic: t <= 100 ? Math.max(1, Math.ceil(t)) : null, best: Math.sqrt(K * cv2 * s.versions * spread(s) / (base * w)) * 100 }; });
+  return { onb, decide, metricName, unit, today, thr, options, weeks, notWorse, start, decideDate, collect: weeks * 7, wait, watch, checkPaid,
+           perVersion: perVersionWeek * weeks * spread(s), exposure, p, byDate, need, split: sh,
+           seeB: s.traffic * (1 - sh[0]), base };
 }
 
 export function nextMonday(d) {
@@ -135,9 +151,13 @@ function pairOf(s, plan, A, X, z, tag) {
   else if (plan.decide === 'trials') [lift, lo, hi] = propRel(A.trials, A.people, X.trials, X.people, z);
   else [lift, lo, hi] = propRel(payA, A.people, payX, X.people, z);
   out.metric = { lift: lift * 100, lo: lo * 100, hi: hi * 100 };
-  if (plan.decide === 'paid' && payA && payX && s.area === 'paywall') {      // money per view stays a guardrail
+  if (plan.decide === 'paid' && payA && payX && s.area === 'paywall') {      // revenue per view stays a guardrail
     const [g, , gHi] = relCI(mA, vA, A.people, mX, vX, X.people, z);
-    out.checks.push({ label: `Money per view ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
+    out.checks.push({ label: `Revenue per viewer ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
+  }
+  if (plan.decide === 'trials' && payA && payX) {        // trial starts decide; paid, once in, must not go the other way
+    const [pl, , ph] = propRel(payA, A.people, payX, X.people, z);
+    out.checks.push({ label: `Paid ${sign(pl * 100)}${tag}`, ok: ph > 0, detail: `${(payA / A.people * 100).toFixed(2)}% → ${(payX / X.people * 100).toFixed(2)}%` });
   }
   if (A.refunds != null && X.refunds != null && payA && payX) {
     const zr = z2(A.refunds, payA, X.refunds, payX);
@@ -157,12 +177,15 @@ function pairOf(s, plan, A, X, z, tag) {
 // With three versions each of B and C is read against A, ranges widened for two comparisons (same Bonferroni split as the plan).
 export function readOf(s, r, plan) {
   const letters = r.C ? ['A', 'B', 'C'] : ['A', 'B'];
-  const k = letters.length, n = letters.reduce((t, v) => t + r[v].people, 0), e = n / k;
-  const chi = letters.reduce((t, v) => t + (r[v].people - e) ** 2 / e, 0);
+  const k = letters.length, n = letters.reduce((t, v) => t + r[v].people, 0), want = k === 2 ? splitOf(s) : [1 / 3, 1 / 3, 1 / 3];
+  const chi = letters.reduce((t, v, i) => t + (r[v].people - n * want[i]) ** 2 / (n * want[i]), 0);
   const pSrm = k === 2 ? erfc(Math.sqrt(chi / 2)) : Math.exp(-chi / 2);       // chi-square, 1 or 2 degrees of freedom
-  const srmOk = pSrm >= 0.001;
   const split = letters.map((v) => r[v].people / n * 100);
-  const out = { checks: [{ label: 'Fair split', ok: srmOk, detail: split.map((x) => x.toFixed(1)).join(' / ') }] };
+  // On big tests chi-square flags tiny gaps (49.9 / 50.1 on 1.6M people). A gap under 1% of a group's expected size can move the
+  // result by about that much at most, so it's a warning, not a broken test. A bigger gap with p < 0.001 still breaks it.
+  const drift = Math.max(...split.map((x, i) => Math.abs(x / (100 * want[i]) - 1)));
+  const srmOff = pSrm < 0.001, srmOk = !srmOff || drift < 0.01;
+  const out = { checks: [{ label: srmOff && srmOk ? 'Split slightly off' : 'Fair split', ok: srmOk, warn: srmOff && srmOk, detail: split.map((x) => x.toFixed(1)).join(' / ') }] };
   const payments = plan.decide !== 'trials';
   if (payments) out.checks.push({ label: 'Trials billed', ok: r.billed, detail: r.billed ? 'Decision day passed' : 'Not yet' });
   const z = zInv(1 - ALPHA / (k - 1) / 2);
@@ -182,7 +205,7 @@ export function readOf(s, r, plan) {
   else if (payments && !r.billed) v = 'too_early';
   else v = lead.verdict;
   out.verdict = v;
-  out.split = { a: split[0], b: split[1], c: split[2], all: split };
+  out.split = { a: split[0], b: split[1], c: split[2], all: split, want: want.map((x) => x * 100), warn: srmOff && srmOk, drift };
   return out;
 }
 

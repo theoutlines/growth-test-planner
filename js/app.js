@@ -1,4 +1,4 @@
-import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, shares, planTrial } from './math.js';
+import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, shares, planTrial, addDays, longestTrial } from './math.js';
 import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL, METRIC, DECIDE_METRIC, TESTS, COUNT } from './data.js';
 
 // ------------------------------------------------------------------ state
@@ -11,7 +11,7 @@ let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError
 const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-const KEYS = { a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', t: 'trial', s: 'traffic', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start' };
+const KEYS = { h: 'what', a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', pr: 'paidRate', tv: 'trialView', t: 'trial', s: 'traffic', sp: 'split', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', tg: 'target' };
 // plans in a link: w6.99-50-3_y39.99-50-3 (type letter, price, share, trial days)
 const TL = { week: 'w', month: 'm', year: 'y', once: 'o' }, LT = { w: 'week', m: 'month', y: 'year', o: 'once' };
 const plansOut = (pl) => pl.map((x) => `${TL[x.t]}${x.p}-${Math.round(x.s)}-${x.tr}`).join('_');
@@ -23,8 +23,9 @@ const plansIn = (str) => {
 const legacyPlans = (pw, pa, mix, tr) => [{ t: 'week', p: Number(pw) || 6.99, s: 100 - (Number(mix) || 50), tr: Number(tr) || 0 }, { t: 'year', p: Number(pa) || 39.99, s: Number(mix) || 50, tr: Number(tr) || 0 }];
 function toQuery(withRead) {
   const q = new URLSearchParams();
-  for (const [k, f] of Object.entries(KEYS)) if (S[f] !== DEFAULTS[f] || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
-  if (plansOut(S.plans) !== plansOut(DEFAULTS.plans)) q.set('pl', plansOut(S.plans));
+  const other = S.area === 'paywall' ? ['users', 'trialRate', 'paidRate', 'trial'] : ['views', 'conv', 'trialView'];   // keys of the other kind of test stay out
+  for (const [k, f] of Object.entries(KEYS)) if ((S[f] !== DEFAULTS[f] && !other.includes(f)) || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
+  if (S.area === 'paywall' && plansOut(S.plans) !== plansOut(DEFAULTS.plans)) q.set('pl', plansOut(S.plans));
   if (withRead) {
     for (const v of LETTERS()) q.set('x' + v.toLowerCase(), [READ[v].people, READ[v].trials, READ[v].refunds, ...S.plans.map((_, i) => READ[v]['p' + i])].map((x) => x ?? '').join('.'));
     q.set('bl', READ.billed ? 1 : 0);
@@ -38,6 +39,8 @@ function fromQuery(qs) {
   if (!['paywall', 'onboarding'].includes(S.area)) S.area = 'paywall';
   if (!['win', 'notworse'].includes(S.goal)) S.goal = 'win';
   if (![2, 3].includes(S.versions)) S.versions = 2;
+  if (![50, 70, 80, 90].includes(S.split)) S.split = 50;
+  S.traffic = Math.max(1, Math.min(100, Math.round(S.traffic) || 100));
   if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0];   // a link with only a=onboarding still has a choice picked
   if (q.has('pl')) S.plans = plansIn(q.get('pl')) || fresh().plans;
   else if (q.has('pw') || q.has('pa') || q.has('m')) S.plans = legacyPlans(q.get('pw'), q.get('pa'), q.get('m'), S.trial);
@@ -66,20 +69,22 @@ const t1 = (x) => x.toFixed(1);
 // ------------------------------------------------------------------ icons (filled where they are pictures)
 const I = {
   back: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  chev: '<svg class="chev" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chev: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" class="chev" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',   // chevrons (owner, 2026-11-02): one shape, stroke 2, 60% white; 16 trailing a row, 14 inline after text
   ext: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M8 4h8v8M16 4 7 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  chevS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   up: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 12.5l6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   down: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7.5l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   minus: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-  chevD: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevD: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevU: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 12 10 7.5 14.5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevDS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   x: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   share: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3.5M6.5 7l3.5-3.5L13.5 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10.5v4.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   copy: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M13 4.5v-.5A1.5 1.5 0 0 0 11.5 2.5h-7A1.5 1.5 0 0 0 3 4v7a1.5 1.5 0 0 0 1.5 1.5H5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
   money: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path fill-rule="evenodd" d="M1 5h20v12H1zM11 7.5l3.5 3.5-3.5 3.5-3.5-3.5z" fill="#FFFFFF"/></svg>',
   flag: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 1h3v20H3zM6 2h13l-4 5 4 5H6z" fill="#FFFFFF"/></svg>',
 };
-const ACC = '#FF6B3D';
+const ACC = '#FF4C00';
 const G = {
   onboarding: `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="10" y="10" width="13" height="4" fill="#FFF"/><rect x="25.5" y="10" width="13" height="4" fill="#FFF"/><rect x="41" y="10" width="13" height="4" fill="#4A4A4A"/><rect x="10" y="21" width="36" height="7" fill="#FFF"/><rect x="10" y="35" width="44" height="12" fill="#4A4A4A"/><rect x="10" y="51" width="44" height="12" fill="${ACC}"/><rect x="10" y="67" width="44" height="12" fill="#4A4A4A"/></svg>`,
   paywall: `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="10" y="12" width="40" height="7" fill="#FFF"/><rect x="10" y="23" width="28" height="4" fill="#4A4A4A"/><rect x="10" y="36" width="21" height="28" fill="${ACC}"/><rect x="33" y="36" width="21" height="28" fill="#4A4A4A"/><rect x="14" y="42" width="10" height="4" fill="#FFF"/><rect x="37" y="42" width="10" height="4" fill="#7A7A7A"/><rect x="10" y="70" width="44" height="10" fill="#FFF"/></svg>`,
@@ -93,6 +98,10 @@ const SL = {
   users: { lo: 1000, hi: 500000, l: '1k', h: '500k', fmt: n0, round: (v) => v < 10000 ? Math.round(v / 100) * 100 : Math.round(v / 1000) * 1000 },
   conv: { lo: 0.5, hi: 10, l: '0.5', h: '10', fmt: (v) => String(+v.toFixed(2)), round: (v) => Math.round(v * 20) / 20, unit: '%' },
   trialRate: { lo: 0.5, hi: 25, l: '0.5', h: '25', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
+  paidRate: { lo: 0.2, hi: 15, l: '0.2', h: '15', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
+  trialView: { lo: 0.5, hi: 40, l: '0.5', h: '40', fmt: (v) => String(+v.toFixed(2)), round: (v) => Math.round(v * 20) / 20, unit: '%' },
+  target: { lo: 1, hi: 50, l: '1', h: '50', fmt: (v) => String(Math.round(v)), round: (v) => Math.max(1, Math.round(v)), unit: '%', linear: true },
+  traffic: { lo: 1, hi: 100, l: '1', h: '100', fmt: (v) => String(Math.round(v)), round: (v) => Math.max(1, Math.round(v)), unit: '%', linear: true },
 };
 // each plan's share of buyers slides 0–100 and the other plans make room, so the shares always add up to 100
 for (let i = 0; i < 4; i++) {
@@ -114,15 +123,19 @@ const valOf = (k, pct) => SL[k].round(SL[k].linear ? SL[k].lo + (SL[k].hi - SL[k
 function bigValue(k) {
   const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length));
   return `<div class="big"><label class="num"><span class="sr">Value</span><input data-type="${k}" inputmode="decimal" value="${txt}" style="font-size:${size}px;width:${Math.max(2, txt.length) * size * 0.56}px">${SL[k].unit ? `<span class="unit">${SL[k].unit}</span>` : ''}</label>
-  ${track(k)}</div>`;
+  ${track(k)}${rangeNote(k)}</div>`;
 }
+// a typed rate above the slider's top is almost always a typo (2.75 → 32.75): say so, softly, next to the number
+const RATE = { conv: 1, trialRate: 1, paidRate: 1, trialView: 1 };
+const rangeText = (k) => (RATE[k] && S[k] > SL[k].hi ? `${SL[k].fmt(S[k])}% is unusually high, most apps are under ${SL[k].h}%. Typo?` : '');
+const rangeNote = (k) => (RATE[k] ? `<span class="rng" data-rng-of="${k}">${rangeText(k)}</span>` : '');
 function track(k, sm) {
   const p = pctOf(k, S[k]);
   return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="fill" style="width:${p}%"></div><div class="handle" style="left:${p}%"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
 }
 const chips = (k, label) => (label ? `<span class="chips-label">${label}</span>` : '') + `<div class="chips">${CHIPS[k].map(([v, a, b]) => `<button class="chip" data-set="${k}" data-val="${v}">${a} <span>${b}</span></button>`).join('')}</div>`;
 const seg = (label, key, opts) => `<div class="seg"><span>${label}</span><div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))"><span class="pill" data-js-style aria-hidden="true"></span>${opts.map(([v, t]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(S[key]) === String(v)}">${t}</button>`).join('')}</div></div>`;
-const railSlider = (label, k, small) => `<div class="rs${small ? ' small' : ''}"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}</div>`;   // drag the track or type the number
+const railSlider = (label, k, small) => `<div class="rs${small ? ' small' : ''}"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}${rangeNote(k)}</div>`;   // drag the track or type the number
 
 // ------------------------------------------------------------------ shared pieces
 const top = (action) => `<header class="top"><a class="brand" href="#/" aria-label="Growth Test Planner, start"><i></i>Growth Test Planner</a>${action || ''}</header>`;
@@ -138,9 +151,11 @@ function trialText() {          // paywall: each plan has its own trial
   return t.length > 1 ? 'trials vary by plan' : t[0] ? `${t[0]}-day trial` : 'no trial';
 }
 function summary(p) {
-  const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} views a week`, `${S.conv}% pay`];
+  const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, S.decide === 'paid' ? `${S.paidRate}% pay` : `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} people a week`, S.decide === 'trials' ? `${S.trialView}% start a trial` : `${S.conv}% pay`];
   bits.push(trialText());
+  bits.push(`decide on ${{ money: 'revenue', paid: 'conversion', trials: 'trials' }[S.decide] || S.decide}`);   // the plan card no longer says it
   if (S.traffic !== 100) bits.push(`${S.traffic}% of traffic`);
+  if (S.versions === 2 && S.split !== 50) bits.push(`${S.split}/${100 - S.split} split`);
   if (S.versions === 3) bits.push('A/B/C');
   if (S.goal === 'notworse') bits.push('prove not worse');
   return bits.join(' · ');
@@ -160,34 +175,40 @@ function oldStartScreen() {
   <p class="fine" style="text-align:center;margin:0">Free. Nothing you type leaves this page.</p></main>`;
 }
 function areaScreen() {
-  return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. Three quick questions follow.')}
+  return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. Three more questions follow.')}
   <div class="stack">${pick(G.onboarding, 'Onboarding', 'Questions, personalisation, the first screens. We’ll count new users.', 'area:onboarding')}
-  ${pick(G.paywall, 'Paywall', 'Plans, trial, layout, copy. We’ll count paywall views.', 'area:paywall')}</div></main>`;
+  ${pick(G.paywall, 'Paywall', 'Plans, trial, layout, copy. We’ll count people who see it.', 'area:paywall')}</div></main>`;
 }
 function trafficScreen() {
   const onb = S.area === 'onboarding';
-  return top() + `<main class="page q">${onb ? heading('How many new users start onboarding a week?', 'Count people, not screens. The test splits them as they arrive.') : heading('How many times a week is this paywall shown?', 'Count views, not people. More views means a shorter test.')}
+  return top() + `<main class="page q">${onb ? heading('How many new users start onboarding a week?', 'Count people, not screens. The test splits them as they arrive.') : heading('How many people see this paywall a week?', 'Count people, not views: the test splits people, and repeat views add no one new.')}
   ${bigValue(onb ? 'users' : 'views')}${chips(onb ? 'users' : 'views')}<div class="grow"></div>${nav(onb ? 'Next: how many start a trial' : 'Next: how many pay', 2, 'conv', 'area')}</main>`;
 }
 function convScreen() {
   const onb = S.area === 'onboarding';
-  return top() + `<main class="page q">${onb ? heading('Out of 100 new users, how many start a trial?', 'Your current onboarding, last 30 days.') : heading('Out of 100 paywall views, how many end in a payment?', 'Your current paywall, last 30 days.')}
+  return top() + `<main class="page q">${onb ? heading('Out of 100 new users, how many start a trial?', 'Your current onboarding, last 30 days.') : heading('Out of 100 people who see it, how many pay?', 'Your current paywall, last 30 days.')}
   ${bigValue(onb ? 'trialRate' : 'conv')}<div style="display:flex;flex-direction:column;gap:8px">${chips(onb ? 'trialRate' : 'conv', 'Not sure? Start from a typical app')}</div>
-  <div class="grow"></div>${nav('Next: free trial', 3, 'trial', 'traffic')}</main>`;
+  <div class="grow"></div>${nav(onb ? 'Next: free trial' : 'Next: your plans', 3, 'trial', 'traffic')}</main>`;
 }
 function trialScreen() {
   const onb = S.area === 'onboarding';
+  if (!onb) {        // paywall: the last question is its plans (price, trial and share of sales each), owner 2026-11-02
+    const lt = longestTrial(S.plans);
+    return top() + `<main class="page q">${heading('What does this paywall sell?', 'Each plan’s price, free trial and share of sales. They set how long the test waits and how noisy revenue is.')}
+  ${plansInline(true)}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill` : 'No trial: no extra wait'}</span>
+  <div class="grow"></div>${nav('Show my test', 4, 'test', 'conv')}</main>`;
+  }
   const tiles = TRIALS.map(([d, sub]) => `<button class="tile" data-set="trial" data-val="${d}" aria-pressed="${S.trial === d}"><span class="n"><b>${d === 0 ? 'None' : d >= 14 ? '14+' : d}</b>${d ? '<span>days</span>' : ''}</span><span class="days" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i${i < d ? ' class="on"' : ''}></i>`).join('')}</span><em>${sub}</em></button>`).join('');
   const wait = onb ? '' : `<span class="wait">${S.trial ? `You decide ${S.trial >= 14 ? '14+' : S.trial} days after the test stops` : 'No extra wait'}</span>`;
   return top() + `<main class="page q">${heading('How long is the free trial?', 'People who start a trial pay only when it ends, so the test waits for them.')}
-  <div class="tiles">${tiles}</div>${wait}<p class="note">${onb ? 'Judged on trial starts, the test doesn’t wait for the trial. Judged on paid, it waits for the longest one.' : 'Different trials on different plans? Pick the longest. The test waits for the last trial to end before anyone can pay.'}</p>
+  <div class="tiles">${tiles}</div>${wait}<p class="note">${onb ? 'Judged on trial starts, the test doesn’t wait for the trial. Judged on paid, it waits for the longest one.' : 'Different trials on different plans? Pick the longest here, then set each plan in Plans on the next screen.'}</p>
   <div class="grow"></div>${nav('Show my test', 4, 'test', 'conv')}</main>`;
 }
 
 function thresholdBlock(p) {
   if (p.notWorse) return `<section class="thr"><h1>To show B is no more than <span>5% worse</span>, run ${p.notWorse.weeks} weeks</h1><p class="sub">Proving “not worse” takes ${t1(p.notWorse.times)}× the people of catching a 10% win. Use it when the change has to ship anyway and you only need to know it doesn’t hurt.</p></section>`;
   const abs = p.unit === 'money'
-    ? `Money per paywall view: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
+    ? `Revenue per paywall viewer: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
     : `${p.metricName[0].toUpperCase() + p.metricName.slice(1)}: ${(p.today * 100).toFixed(2)}% today, ${(p.today * 100 * (1 + p.thr / 100)).toFixed(2)}% or more to show up. Smaller changes look like noise.`;
   return `<section class="thr"><h1>Your test catches changes of <span data-swap>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
   <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
@@ -197,14 +218,43 @@ function planBlock(p) {
   if (p.wait) legs.push([`${p.wait} days for the last trials`, ACC]);
   if (p.watch) legs.push([`${p.watch} days to watch refunds`, 'rgba(255,255,255,.28)']);
   const unitP = p.onb ? ' new users' : '';
-  const rows = [['People per version', k100(p.perVersion) + unitP]];
-  rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
-  rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
-  const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change plans"><span>Plans</span><span>${S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')} ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
-  return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span></span>
+  const rows = [S.versions === 2 && S.split !== 50 ? ['People', `A ${k100(p.perVersion * p.split[0] * 2)} · B ${k100(p.perVersion * p.split[1] * 2)}`] : ['People per version', k100(p.perVersion) + unitP]];
+  // no “Judge by” or “Plans” rows: the headline names the metric and the form holds the plans (owner, 2026-11-02)
+  rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'revenue per viewer, refunds')]);
+  const prices = '';
+  return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevDS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
-  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
+  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div><label class="what"><span>What changes in B</span><input data-what maxlength="120" placeholder="e.g. annual plan as the hero" value="${esc(S.what)}" aria-label="What changes in B"></label></section>`;
+}
+// Plan by date (owner, 2026-11-02): the change worth catching → how much traffic each length needs, and who sees B.
+function suggestedTarget(p) {
+  const lows = ideasFor(p).filter((r) => r.same && !r.lost && r.lo > 0).map((r) => r.lo).sort((a, b) => a - b);
+  return lows.length ? Math.max(2, Math.round(lows[Math.floor((lows.length - 1) / 2)])) : 10;   // the middle low end of ideas measured on this metric
+}
+function dateBlock(p) {     // optional (owner, 2026-11-02: “feels optional, MDE is jargon”): one row that opens in place
+  if (p.notWorse) return '';
+  const tg = S.target > 0 ? S.target : suggestedTarget(p), rows = p.byDate(tg), r = rows.find((x) => x.weeks === S.weeks) || rows[1];
+  const sum = r.traffic ? `+${tg}% needs ${r.traffic}% of traffic` : `+${tg}% is out of reach`;
+  const head = `<button class="bd-acc" data-bd-toggle aria-expanded="${!!UI.bdOpen}"><span><b>Plan for a specific change</b><small>${UI.bdOpen ? 'Pick the change, see the traffic it needs' : sum}</small></span>${UI.bdOpen ? I.chevU : I.chevD}</button>`;
+  if (!UI.bdOpen) return `<section class="card bydate">${head}</section>`;
+  const src = !(S.target > 0) || UI.targetFrom === '~' ? 'Suggested from the ideas below' : UI.targetFrom ? `Low end of “${esc(UI.targetFrom)}”` : '';
+  let body;
+  if (r.traffic) {
+    const pct = r.traffic * (1 - p.split[0]), on = S.traffic === r.traffic;
+    body = `<p class="bdans">Needs <b data-swap>${r.traffic}%</b> of traffic for ${S.weeks} weeks. ${S.versions === 3 ? 'B and C get' : 'B gets'} ${t1(pct)}% of ${p.onb ? 'new users' : 'viewers'}, about ${k100(p.base * S.weeks * pct / 100)}.</p>
+    ${on ? '<span class="bdset done">Traffic set</span>' : `<button class="btn sec2 bdset" data-bydate="${S.weeks}.${r.traffic}">Set traffic to ${r.traffic}%</button>`}`;
+  } else {
+    const earliest = rows.find((x) => x.traffic), alt = [];
+    if (earliest) alt.push(`Run longer: ${earliest.weeks} weeks at ${earliest.traffic}% of traffic`);
+    if (p.decide !== 'trials') { const f = planOf({ ...S, decide: 'trials' }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Decide on trials: ${f.traffic}% for ${S.weeks} weeks`); }
+    if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Drop C: ${f.traffic}% for ${S.weeks} weeks`); }
+    if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50');
+    if (!alt.length) alt.push('Aim for a bigger change, or test where more people pass');
+    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches ${t1(r.best)}% and up. Try:</p><ul class="bdalt">${alt.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+  }
+  if (!(S.target > 0)) { S.target = tg; UI.targetFrom = '~'; }   // the slider shows a real value; '~' = still the suggestion
+  return `<section class="card bydate open">${head}<div class="bdbody">${railSlider('Smallest change to catch', 'target')}${src ? `<span class="bdsrc">${src}</span>` : ''}${body}</div></section>`;
 }
 // Ideas that fit this test: filtered by its plans and trial, ranked by the metric it decides on, six at most.
 function ideasFor(p) {
@@ -253,19 +303,49 @@ function ideaCard(p) {
   const catches = it.lost ? 'This lost in published tests. Don’t run it hoping for a win.' : S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
   const range = (it.about ? 'about ' : '') + (it.lo === it.hi ? `${sgn(it.lo)}%` : `${sgn(it.lo)}% to ${sgn(it.hi)}%`);
   const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}${S.area === 'onboarding' && (COUNT[it.id] || {})[k] === 0 ? ' in Adapty’s library' : ''}`).join(', ');
-  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>`;
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:500;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>${!it.lost && it.same && S.goal !== 'notworse' && it.lo > 0 ? `<button class="btn sec2" data-plan-idea="${it.id}">Plan for this idea: catch +${it.lo}%</button>` : ''}`;
 }
+// Plans inside the form (owner, 2026-11-02): they shape the answer only when deciding on money, so they sit in the form then;
+// otherwise one Free trial control does the job (it sets every plan's trial).
+const PLAN_ORDER = { week: 0, month: 1, year: 2, once: 3 };
+const sortPlans = () => S.plans.sort((a, b) => PLAN_ORDER[a.t] - PLAN_ORDER[b.t]);   // rows and the share bar read short to long (owner, 2026-11-02)
+function plansInline(step) {
+  const many = S.plans.length > 1, w = shares(S.plans), open = step || UI.plansOpen;
+  const sum = S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ');
+  const head = `<button class="pi-acc" data-plans-toggle aria-expanded="${!!open}" aria-label="Plans: ${sum}"><span>${sum}</span>${open ? I.chevU : I.chevD}</button>`;   // a label over a field, like every other control
+  if (!open) return `<div class="plans-inline" id="plans-inline"><span class="lab">Plans</span><div class="pi-box">${head}</div></div>`;
+  const types = (x) => Object.entries(PLAN_TYPES).map(([k, v]) => `<option value="${k}"${x.t === k ? ' selected' : ''}>${v[0]}</option>`).join('') + (many ? '<option value="-">Remove</option>' : '');
+  const trials = (x) => [[0, 'None'], [3, '3d'], [7, '7d'], [14, '14d+']].map(([d, t]) => `<option value="${d}"${planTrial(x) === d ? ' selected' : ''}>${t}</option>`).join('');
+  const mixCol = false;      // the share of sales sits under the rows as sliders: four columns don't fit 320
+  const row = (x, i) => `<div class="pi-row${mixCol ? ' mix' : ''}"><div class="pi-f dd"><select data-plan-type="${i}" aria-label="Plan ${i + 1} type">${types(x)}</select>${I.chevD}</div>
+    <label class="pi-f"><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label>
+    ${x.t === 'once' ? '<span class="pi-f pi-na">—</span>' : `<div class="pi-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[x.t][1]} plan">${trials(x)}</select>${I.chevD}</div>`}
+    ${mixCol ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Share of sales, ${PLAN_TYPES[x.t][1]} plan"><span>%</span></label>` : ''}</div>`;
+  // share of sales: one bar for all plans, a segment per plan in the same order as the rows; drag a divider (owner, 2026-11-02: a lone slider read as “50% of what?”)
+  const mix = many ? `<div class="mix"><span class="mixlab">Share of sales</span><div class="mixnames" aria-hidden="true">${S.plans.map((x, i) => `<span>${PLAN_TYPES[x.t][0]} <b>${Math.round(w[i] * 100)}%</b></span>`).join('')}</div><div class="mixbar" data-mixbar>${S.plans.map((x, i) => `<span class="mseg" style="flex:${Math.max(0.001, w[i])} 0 0"></span>${i < S.plans.length - 1 ? `<span class="mh" data-mix-handle="${i}" role="slider" tabindex="0" aria-label="Between ${PLAN_TYPES[x.t][0]} and ${PLAN_TYPES[S.plans[i + 1].t][0]}" aria-valuetext="${PLAN_TYPES[x.t][0]} ${Math.round(w[i] * 100)}%, ${PLAN_TYPES[S.plans[i + 1].t][0]} ${Math.round(w[i + 1] * 100)}%"></span>` : ''}`).join('')}</div></div>` : '';
+  const body = `<div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}`;
+  if (step) return `<div class="plans-inline plans-step" id="plans-inline">${body}</div>`;   // the wizard's plans question: the same editor, always open
+  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}</div></div></div>`;
+}
+// the hint speaks only about the metric picked (owner, 2026-11-02)
+const DECIDE_HINT = {
+  paywall: { money: 'Revenue per paywall viewer. Use it for changes to prices, plans or the trial offer.', paid: 'Share of viewers who pay. Answers faster for copy and layout changes.', trials: 'Trial start rate. Answers fastest, but a trial isn’t revenue yet.' },
+  onboarding: { trials: 'Trial start rate. Answers in weeks.', paid: 'Share of new users who pay. Waits for the trial to end.' },
+};
 function controls() {
   const onb = S.area === 'onboarding';
-  const dec = decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]);
+  const dec = decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]);
+  // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
-  ${onb ? railSlider('New users a week', 'users') + railSlider('New users who start a trial', 'trialRate') : railSlider('Paywall views a week', 'views') + railSlider('Views that end in payment', 'conv')}
-  ${onb ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : ''}
-  ${seg('Traffic in test', 'traffic', [[100, '100%'], [50, '50%'], [20, '20%']])}
+  ${seg('Decide on', 'decide', dec)}<span class="hint">${DECIDE_HINT[S.area][S.decide] || ''}</span>
+  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
+  ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
+    : railSlider('People who see it a week', 'views') + (S.decide === 'trials' ? railSlider('Viewers who start a trial', 'trialView') : railSlider('Viewers who pay', 'conv'))}
+  ${onb || S.decide !== 'money' ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : plansInline()}
+  ${railSlider('Traffic in test', 'traffic')}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
-  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster.'}</span>
-  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>`;
+  ${S.versions === 2 ? seg('Split A / B', 'split', [[50, '50/50'], [70, '70/30'], [80, '80/20'], [90, '90/10']]) : ''}</div>`;
 }
 // Start date: edited in the plan, where it's read (defaults to next Monday: whole weeks, a few days to set up)
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -277,12 +357,12 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
     <div class="plrow"><label class="rr"><span>Price</span><div style="grid-template-columns:1fr"><label><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label></div></label>
     ${x.t === 'once' ? '' : pseg('Free trial', i, 'tr', [[0, 'None'], [3, '3'], [7, '7'], [14, '14+']])}</div>
     ${many ? railSlider('Buyers who pick it', 'sh' + i, true) : ''}</section>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:600">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
   ${S.plans.map(one).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}`;
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much', 'Lifts other apps saw in published tests.')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -301,33 +381,35 @@ function testScreen() {
 
 // ------------------------------------------------------------------ share
 const LINK = (withRead) => `${location.origin}${location.pathname}#/${withRead ? 'verdict' : 'test'}?${toQuery(withRead)}`;
+// what B changes, in the team's words, as part of the sentence (owner, 2026-11-02: not a “B:” line stuck on top)
+const lcFirst = (t) => (t.length > 1 && t[1] === t[1].toUpperCase() && /[A-Z]/.test(t[1]) ? t : t[0].toLowerCase() + t.slice(1));
 function planTones(p) {
-  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall';
-  const vol = S.area === 'onboarding' ? `${n0(S.users)} new users a week` : `${n0(S.views)} views a week`;
+  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall', b = S.what.trim();
+  const vol = S.area === 'onboarding' ? `${n0(S.users)} new users a week` : `${n0(S.views)} people a week`;
   const link = LINK(false);
   if (S.goal === 'notworse') {
     return {
-      Short: `${cap(what)} test: ${day(p.start)} → ${day(p.decideDate)}.\nGoal: show B is no more than 5% worse on ${p.metricName}.\nNo early stop unless something breaks. ${link}`,
-      Friendly: `Hey team, here’s the plan for the ${what} test.\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. We only need to show B doesn’t hurt: no more than 5% worse on ${p.metricName}.\nThat takes ${p.weeks} weeks with our ${vol}. ${link}`,
-      Detailed: `${cap(what)} test plan\nStart ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. Goal: B no more than 5% worse on ${p.metricName}.\n${link}`,
+      Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${day(p.start)} → ${day(p.decideDate)}.\nGoal: show B is no more than 5% worse on ${p.metricName}.\nNo early stop unless something breaks. ${link}`,
+      Friendly: `Hey team, here’s the plan for the ${what} test.${b ? ` B tries ${lcFirst(b)}, A stays as it is.` : ''}\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. We only need to show B doesn’t hurt: no more than 5% worse on ${p.metricName}.\nThat takes ${p.weeks} weeks with our ${vol}. ${link}`,
+      Detailed: `${cap(what)} test plan\n${b ? `A: current ${what}. B: ${b}.\n` : ''}Start ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. Goal: B no more than 5% worse on ${p.metricName}.\n${link}`,
     };
   }
   return {
-    Short: `${cap(what)} test: ${day(p.start)} → ${day(p.decideDate)}.\nSees changes ≥ ${t1(p.thr)}% in ${p.metricName}. Copy tweaks won’t show.\nNo early stop unless something breaks. ${link}`,
-    Friendly: `Hey team, here’s the plan for the ${what} test.\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. That’s ${p.weeks} weeks of traffic${p.wait ? ' plus time for the last trials to bill and refunds to show' : ''}.\nWith our ${vol} it only sees changes of ${t1(p.thr)}% or more, so let’s test something bold, not a copy tweak.\nWe judge on ${p.metricName} and only stop early if something breaks. ${link}`,
-    Detailed: `${cap(what)} test plan\nStart ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. The test sees changes of ${t1(p.thr)}% or more in ${p.metricName}.\nStop early only for harm.\n${link}`,
+    Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${day(p.start)} → ${day(p.decideDate)}.\nSees changes ≥ ${t1(p.thr)}% in ${p.metricName}. Copy tweaks won’t show.\nNo early stop unless something breaks. ${link}`,
+    Friendly: `Hey team, here’s the plan for the ${what} test.${b ? ` B tries ${lcFirst(b)}, A stays as it is.` : ''}\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. That’s ${p.weeks} weeks of traffic${p.wait ? ' plus time for the last trials to bill and refunds to show' : ''}.\nWith our ${vol} it only sees changes of ${t1(p.thr)}% or more, so let’s test something bold, not a copy tweak.\nWe judge on ${p.metricName} and only stop early if something breaks. ${link}`,
+    Detailed: `${cap(what)} test plan\n${b ? `A: current ${what}. B: ${b}.\n` : ''}Start ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. The test sees changes of ${t1(p.thr)}% or more in ${p.metricName}.\nStop early only for harm.\n${link}`,
   };
 }
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 const more = (c) => `${Math.abs(Math.round(c * 100))}% ${c >= 0 ? 'more' : 'fewer'}`;
 function resultTones(p, v) {
-  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall', link = LINK(true);
+  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall', link = LINK(true), b = S.what.trim();
   const checks = v.r.checks.map((c) => `${c.label.toLowerCase()}${c.ok ? '' : ' (failed)'}`).join(', ');
   const range = v.range ? ` (${v.range})` : '';
   return {
-    Short: `${cap(what)} test: ${v.title}${range}.\n${v.next}. ${link}`,
-    Friendly: `Hey team, the ${what} test is in: ${v.title}.\n${v.sub}\nChecks: ${checks}.\n${v.next}. ${link}`,
-    Detailed: `${cap(what)} test result\nDecided on ${p.metricName}, as planned. ${v.sub}${v.versions ? `\n${v.versions.map((x) => `${x.v} vs A: ${sign(x.metric.lift)} (${sign(x.metric.lo)} to ${sign(x.metric.hi)})`).join('; ')}.` : ''}\nChecks: ${checks}.${v.source ? `\nWhere it came from: ${v.source}` : ''}\nNext: ${v.next}. ${v.small}\n${link}`,
+    Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${v.title}${range}.\n${v.next}. ${link}`,
+    Friendly: `Hey team, the ${what} test is in.${b ? ` B tried ${lcFirst(b)}.` : ''} ${v.title}.\n${v.sub}\nChecks: ${checks}.\n${v.next}. ${link}`,
+    Detailed: `${cap(what)} test result\n${b ? `A: current ${what}. B: ${b}.\n` : ''}Decided on ${p.metricName}, as planned. ${v.sub}${v.versions ? `\n${v.versions.map((x) => `${x.v} vs A: ${sign(x.metric.lift)} (${sign(x.metric.lo)} to ${sign(x.metric.hi)})`).join('; ')}.` : ''}\nChecks: ${checks}.${v.source ? `\nWhere it came from: ${v.source}` : ''}\nNext: ${v.next}. ${v.small}\n${link}`,
   };
 }
 function shareBody(texts, title, sub) {
@@ -339,7 +421,7 @@ function shareBody(texts, title, sub) {
 function shareScreen(result) {
   const p = planOf(S);
   const v = result ? verdictOf(p) : null;
-  const texts = result ? resultTones(p, v) : planTones(p);
+  const texts = result ? resultTones(p, v) : planTones(p);   // what B changes is woven into each tone
   const title = result ? 'Send the result to your team' : 'Send it to your team';
   const sub = result ? 'Pick a tone, edit if you like. Numbers come from your result.' : 'Pick a tone, edit if you like. The link opens this exact test.';
   if (wide()) {
@@ -354,8 +436,10 @@ function shareScreen(result) {
 function readRows(p) {
   const onb = p.onb;
   const rows = [[onb ? 'New users' : 'Saw the paywall', 'people', onb ? 'People per version, from the moment they were split.' : 'People per version.']];
-  if (p.decide === 'trials') rows.push(['Started a trial', 'trials', 'Trial starts per version.']);
-  else S.plans.forEach((x, i) => rows.push([`Paid · ${PLAN_TYPES[x.t][1]} $${x.p}`, 'p' + i, i === 0 ? 'First payments after the last trials billed.' : i === S.plans.length - 1 ? 'Prices come from your plan.' : '']));
+  if (p.decide === 'trials') {
+    rows.push(['Started a trial', 'trials', 'Trial starts per version.']);
+    rows.push(['Paid', 'p0', 'After the last trials bill. Checks the trial win holds.', 'optional']);
+  } else S.plans.forEach((x, i) => rows.push([`Paid · ${PLAN_TYPES[x.t][1]} $${x.p}`, 'p' + i, i === 0 ? 'First payments after the last trials billed.' : i === S.plans.length - 1 ? 'Prices come from your plan.' : '']));
   rows.push(['Refunds', 'refunds', 'Leave empty if you don’t have it yet.', 'optional']);
   return rows;
 }
@@ -365,18 +449,20 @@ function readRow([label, f, why, opt]) {
 }
 const VARIANT_URL = 'https://github.com/theoutlines/growth-skills/tree/main/plugins/growth-skills/skills/variant-check';
 // paywall tests: before launch, check the variant against what won in published tests (the variant-check skill)
-const variantCard = () => `<a class="card skill" href="${VARIANT_URL}" target="_blank" rel="noopener"><b>Variant ready? Check it before launch</b><span>${S.area === 'onboarding' ? 'Give Claude your A and B flows' : 'Give Claude your A and B screens'}: can this test see the change, and what did the winning versions have that B lacks. Free Growth Skills plugin.</span><em>Get the plugin →</em></a>`;
-const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="noopener"><b>Test data in Amplitude or Mixpanel?</b><span>Let Claude pull it and read it for you with the free Growth Skills plugin. Nothing to type.</span><em>Get the plugin →</em></a>`;
+// promo cards (owner, 2026-11-02, option A): our glyph on the left, short copy, a real button
+const promo = (href, glyph, title, text) => `<a class="card skill" href="${href}" target="_blank" rel="noopener">${glyph}<span class="sk"><b>${title}</b><span>${text}</span><span class="btn sec2 skbtn">Get the plugin</span></span></a>`;
+const variantCard = () => promo(VARIANT_URL, `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="8" y="16" width="21" height="40" rx="4" fill="#4A4A4A"/><rect x="12" y="22" width="13" height="4" fill="#FFF"/><rect x="12" y="44" width="13" height="7" fill="#777"/><rect x="35" y="16" width="21" height="40" rx="4" fill="#FFF"/><rect x="39" y="22" width="13" height="4" fill="#151515"/><rect x="39" y="44" width="13" height="7" fill="${ACC}"/><rect x="8" y="64" width="48" height="3" fill="#4A4A4A"/><rect x="8" y="64" width="34" height="3" fill="${ACC}"/><rect x="8" y="72" width="22" height="3" fill="#4A4A4A"/></svg>`, 'Variant ready? Check it before launch', `Claude checks your A and B ${S.area === 'onboarding' ? 'flows' : 'screens'}: will this test see the change?`);
+const SKILL = promo(SKILL_URL, `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="10" y="14" width="30" height="5" fill="#FFF"/><rect x="10" y="62" width="44" height="2" fill="#4A4A4A"/><rect x="12" y="40" width="8" height="22" fill="#4A4A4A"/><rect x="24" y="32" width="8" height="30" fill="#777"/><rect x="36" y="24" width="8" height="38" fill="${ACC}"/><rect x="10" y="70" width="28" height="4" fill="#4A4A4A"/></svg>`, 'Test data in Amplitude or Mixpanel?', 'Let Claude pull it and read it for you. Nothing to type.');
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
   const p = planOf(S);
-  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>` : '';
+  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}</div>` : '';
   const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${readRows(p).map(readRow).join('')}
   ${p.decide !== 'trials' ? `<div class="seg"><span>Have the last free trials billed?</span><div class="opts" style="grid-template-columns:1fr 1fr"><span class="pill" data-js-style aria-hidden="true"></span><button data-billed data-val="1" aria-pressed="${READ.billed}">Yes</button><button data-billed data-val="0" aria-pressed="${!READ.billed}">Not yet</button></div></div>` : ''}
-  <section class="card planacc"><button class="acc-head" data-toggle-plan aria-expanded="${UI.readPlan}"><span><small>Reading as planned</small><b>${cap(p.metricName)} · ${S.goal === 'notworse' ? 'prove not worse' : 'find a win'}</b></span>${I.down}</button>${plan}</section>
+  <section class="card planacc"><button class="acc-head" data-toggle-plan aria-expanded="${UI.readPlan}"><span><small>Reading as planned</small><b>${cap(p.metricName)} · ${S.goal === 'notworse' ? 'prove not worse' : 'find a win'}</b></span>${I.chevD}</button>${plan}</section>
   ${PRIVACY}${UI.readError ? `<p class="err">${UI.readError}</p>` : ''}<button class="btn" data-read-go>Read my result</button>`;
   return top() + `<main class="page">${body}</main>` + `<aside class="rail">${SKILL}</aside>`;
 }
@@ -398,7 +484,9 @@ function verdictOf(p) {
   const inp = readInputs(p); if (!inp) return null;
   const r = readOf(S, inp, p), m = r.metric;
   const range = `${sign(m.lo)} to ${sign(m.hi)}`;
-  const tag = `Decision day · ${S.goal === 'notworse' ? 'goal: not worse than A by 5%' : (p.decide === 'money' ? 'money per paywall view' : 'decided on ' + p.metricName)}`;
+  const tag = `Decision day · ${S.goal === 'notworse' ? 'goal: not worse than A by 5%' : (p.decide === 'money' ? 'revenue per paywall viewer' : 'decided on ' + p.metricName)}`;
+  const paidBad = p.decide === 'trials' && r.checks.some((c) => c.label.startsWith('Paid') && !c.ok);
+  const early = p.decide === 'trials' && !inp[LETTERS()[1]].paid.some((n) => n > 0) && r.verdict.startsWith('win');
   const L = r.lead, three = r.versions.length > 1, other = three ? r.versions.find((x) => x.v !== L) : null;
   const both = (vd) => three && r.versions.every((x) => x.verdict === vd);
   const also = three && r.verdict.startsWith('win') && other.verdict === 'win' ? ` ${other.v} won too (${sign(other.metric.lift)}), ${L} by more.` : '';
@@ -412,7 +500,7 @@ function verdictOf(p) {
     not_worse: both('not_worse') ? ['Both safe to ship', `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, both inside your −5% limit.`, 'Ship the one you prefer', 'You only had to show they don’t hurt, and they don’t. Don’t present either as a win: the test wasn’t sized to find one.']
       : [three ? `${L} is safe to ship` : 'Safe to ship', `At worst ${L} is ${sign(m.lo)}, inside your −5% limit. Most likely ${sign(m.lift)}.${three ? ` ${other.v} can’t rule out harm (at worst ${sign(other.metric.lo)}).` : ''}`, `Ship ${L}`, 'You only had to show it doesn’t hurt, and it doesn’t. Don’t present it as a win: the test wasn’t sized to find one.'],
     maybe_worse: ['Can’t rule out harm', three ? `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, past your −5% limit.` : `At worst B is ${sign(m.lo)}, past your −5% limit. Most likely ${sign(m.lift)}.`, 'Keep A, or run it longer', `More people would narrow the range. Until then, ${three ? 'either' : 'B'} might cost more than 5%.`],
-    broken: ['Test broken', `The groups split ${r.split.all.map((x) => t1(x)).join(' / ')} instead of ${three ? 'even thirds' : '50 / 50'}. Something sent different people to each version.`, 'Fix the split, then rerun', 'Common causes: one version loads slower, or is shown only on some devices or app versions.'],
+    broken: ['Test broken', `The groups split ${r.split.all.map((x) => t1(x)).join(' / ')} instead of ${three ? 'even thirds' : r.split.want.map((x) => Math.round(x)).join(' / ')}. Something sent different people to each version.`, 'Fix the split, then rerun', 'Common causes: one version loads slower, or is shown only on some devices or app versions.'],
     too_early: ['Too early', `The last free trials haven’t billed, so paid numbers will still grow in ${three ? 'every version' : 'both versions'}.`, `Come back on ${day(p.decideDate)}`, 'Reading now anchors on a number that will change.'],
   }[r.verdict];
   let source = '';
@@ -420,10 +508,13 @@ function verdictOf(p) {
     const s = r.source, a = Math.round(s.topA * 100), b = Math.round(s.topB * 100);
     if (p.decide === 'money' && s.fromMix != null && s.fromMix > 0.5 && s.fromMix <= 1) source = `About ${Math.round(s.fromMix * 100)}% from plans: the ${s.top} plan went from ${a}% to ${b}% of buyers. ${more(s.conv)} people paid. ${L} ${m.lift >= 0 ? `sold the ${s.top} plan better` : `sold the ${s.top} plan worse`}.`;
     else if (s.fromConv != null && s.fromConv >= 0 && s.fromMix >= 0) source = `${cap(more(s.conv))} people paid; the plan mix barely moved (${s.top} ${a}% → ${b}%). So ${L} changed how many people pay, not which plan they pick.`;
-    else source = `Paid conversion ${sign(s.conv * 100)}, money per payer ${sign(s.perPayer * 100)}. They pulled in different directions; the net is their difference.`;
+    else source = `Paid conversion ${sign(s.conv * 100)}, revenue per payer ${sign(s.perPayer * 100)}. They pulled in different directions; the net is their difference.`;
   }
-  const note = r.verdict === 'broken' ? 'Fix this before you trust any number.' : r.checks.some((c) => !c.ok) ? 'Something went wrong. Fix it before you trust the result.'
+  const note = r.verdict === 'broken' ? 'Fix this before you trust any number.' : paidBad ? 'More trials, fewer payments: the extra trials didn’t pay.' : r.checks.some((c) => !c.ok) ? 'Something went wrong. Fix it before you trust the result.'
+    : r.split.warn ? `Groups split ${r.split.all.map((x) => t1(x)).join(' / ')}. On a test this big that gap is visible but small: it can shift the result by less than 1%. Read on, but find what dropped people from one group.`
     : r.verdict === 'cant_tell' ? 'The test is sound. It just can’t see a change this small.' : 'The test can be trusted.';
+  if (paidBad && r.verdict === 'win_with_cost') { const pc = r.checks.find((c) => c.label.startsWith('Paid') && !c.ok); V[0] = `${L} wins on trials, not on paid`; V[1] = `Trial starts most likely ${sign(m.lo)} to ${sign(m.hi)}, but ${pc.label.replace(/ · \w$/, '').toLowerCase()}.`; V[2] = 'Keep A'; V[3] = `${L} started more trials that didn’t pay. Find what made them cancel before you try it again.`; }
+  if (early) { V[2] = `${L} leads on trial starts. Check paid before you ship`; V[3] = `A trial start isn’t a payment. ${p.checkPaid ? `On ${day(p.checkPaid)} the last trials have billed: add paid` : 'Add paid'} to your numbers, and ship ${L} if it doesn’t go the other way.`; }
   return { r, kind: r.verdict.startsWith('win') && r.verdict === 'win' ? 'win' : 'flat', title: V[0], sub: V[1], next: V[2], small: V[3], tag, source,
     showBar: !['broken', 'too_early'].includes(r.verdict), range: ['broken', 'too_early'].includes(r.verdict) ? '' : range, note,
     srcLabel: (p.decide === 'money' && m.lift > 0 ? 'Where the money came from' : 'Where the difference came from') + (three ? ` · ${L}` : ''),
@@ -434,7 +525,7 @@ function rangeBar(m, win, margin) {
   const x = (v) => Math.max(0, Math.min(100, (v - dmin0 + pad) / (dmax0 - dmin0 + 2 * pad) * 100));
   const cross = lo < 0 && hi > 0;
   const zero = margin == null ? `<span class="zero" style="left:${x(0)}%;top:${cross ? -2 : 2}px;height:${cross ? 6 : 26}px"></span>` : `<span class="lim" style="left:${x(margin)}%"></span>`;
-  const lbl = margin == null ? `<span style="left:${x(0)}%;transform:translateX(-50%)">no change</span>` : `<span style="left:${x(margin)}%;padding-left:6px;color:${ACC};font-weight:600">${sign(margin)} limit</span>`;
+  const lbl = margin == null ? `<span style="left:${x(0)}%;transform:translateX(-50%)">no change</span>` : `<span style="left:${x(margin)}%;padding-left:6px;color:${ACC};font-weight:500">${sign(margin)} limit</span>`;
   return `<div class="rb" role="img" aria-label="Likely change from ${sign(lo)} to ${sign(hi)}, best guess ${sign(m.lift)}"><div class="lbls">${lbl}</div><div class="bar"><span class="base"></span>${zero}<span class="range" style="left:${x(lo)}%;width:${x(hi) - x(lo)}%"><span>${sign(lo)}</span><span>${sign(hi)}</span></span></div></div>`;
 }
 function vsPlot(versions, lead, margin) {     // A/B/C: both versions on one scale, one "no change" (or limit) line through both rows
@@ -452,11 +543,13 @@ function verdictScreen() {
   const p = planOf(S), v = verdictOf(p);
   if (!v) return resultsScreen();
   const win = v.kind === 'win';
-  const card = `<section class="verdict${win ? ' win' : ''}"><span class="tag">${v.tag}</span><span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
-  const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? '' : ' bad'}" title="${esc(c.detail)}">${c.ok ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
+  const card = `<section class="verdict${win ? ' win' : ''}"><span class="tag">${v.tag}</span>${S.what ? `<span class="vwhat">B: ${esc(S.what)}</span>` : ''}<span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
+  const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? (c.warn ? ' warn' : '') : ' bad'}" title="${esc(c.detail)}">${c.ok && !c.warn ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
   const vs = v.versions ? vsPlot(v.versions, v.r.lead, S.goal === 'notworse' ? -5 : null) : '';
-  const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + (wide() ? '' : numbersRow());   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
+  const from = ['win', 'win_with_cost', 'not_worse'].includes(v.r.verdict) && v.r.verdict !== 'win_with_cost' ? v.r.lead : 'A';
+  const next = v.r.verdict === 'broken' || v.r.verdict === 'too_early' ? '' : `<button class="btn sec2 nexttest" data-next-from="${from}">Plan the next test from ${from}’s numbers</button>`;
+  const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + next + (wide() ? '' : numbersRow());   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
   const rail = `<aside class="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
   const share = wide() ? `<button class="share-float" data-go="share-result">${I.share}<span>Share result</span></button>`
     : `<div class="dock"><button class="btn sec2" data-go="share-result">${I.share}<span>Share result</span></button></div>`;   // mobile: pinned to the bottom of the screen (owner, 2026-11-02)
@@ -554,7 +647,17 @@ function placePills() {                                // transitions.dev 16 · 
 }
 // a control that changes size without a window resize (fonts load, a scrollbar comes or goes, the sheet settles): re-place its pill without sliding
 const pillRO = 'ResizeObserver' in window ? new ResizeObserver((es) => { es.forEach((e) => { const p = e.target.querySelector(':scope > .pill'); if (p) p._placed = false; }); placePills(); }) : null;
-function afterPaint() { placePills(); if (pillRO) document.querySelectorAll('.pill').forEach((p) => { const box = p.parentElement; if (!box._ro) { box._ro = true; pillRO.observe(box); } }); }
+function layoutMix() {        // every plan name stays visible: centred over its segment, pushed apart when segments are narrow
+  document.querySelectorAll('[data-mixbar]').forEach((bar) => {
+    const names = [...(bar.previousElementSibling?.children || [])], segs = [...bar.querySelectorAll('.mseg')], W = bar.clientWidth; if (!names.length || !W) return;
+    const bl = bar.getBoundingClientRect().left, wd = names.map((n) => n.offsetWidth), gap = 8;
+    const left = segs.map((sg, i) => { const r = sg.getBoundingClientRect(); return r.left - bl + r.width / 2 - wd[i] / 2; });
+    for (let i = 0; i < left.length; i++) left[i] = Math.max(i ? left[i - 1] + wd[i - 1] + gap : 0, left[i]);
+    for (let i = left.length - 1; i >= 0; i--) left[i] = Math.min(i < left.length - 1 ? left[i + 1] - wd[i] - gap : W - wd[i], left[i]);
+    names.forEach((n, i) => { n.style.left = Math.max(0, left[i]) + 'px'; });
+  });
+}
+function afterPaint() { layoutMix(); placePills(); if (pillRO) document.querySelectorAll('.pill').forEach((p) => { const box = p.parentElement; if (!box._ro) { box._ro = true; pillRO.observe(box); } }); }
 const PAGE = (r) => (wide() && r === 'share' ? 'test' : wide() && r === 'share-result' ? 'verdict' : r);   // desktop share is a modal over its page
 let lastPage = null;
 function closeThen(after) {                            // overlays leave before the state changes
@@ -615,7 +718,7 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-scroll],[data-ltab],[data-copytext],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-scroll],[data-ltab],[data-copytext],[data-bd-toggle],[data-plan-idea],[data-next-from],[data-plans-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.scroll) {   // landing: in-page links (header, Add to Claude) scroll inside the visible copy of the landing
     e.preventDefault();
@@ -651,10 +754,36 @@ app.addEventListener('click', (e) => {
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
+  if ('bdToggle' in el.dataset) { UI.bdOpen = !UI.bdOpen; if (!UI.bdOpen && !UI.targetFrom) { /* keep the number */ } return render(); }
+  if (el.dataset.planIdea) {             // the idea's low end becomes the change to catch; the page shows the traffic it needs
+    const it = ideasFor(planOf(S)).find((x) => x.id === el.dataset.planIdea); if (!it) return;
+    S.target = it.lo; UI.targetFrom = it.t; UI.bdOpen = true; save(); history.replaceState(null, '', '#/test?' + toQuery());
+    return closeThen(() => { UI.overlay = null; render(); document.querySelector('.bydate')?.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); });
+  }
+  if (el.dataset.nextFrom) {              // the next test starts from what this one measured
+    const p = planOf(S), inp = readInputs(p), x = inp && inp[el.dataset.nextFrom]; if (!x) return;
+    const r2 = (v) => Math.round(v * 100) / 100, paid = x.paid.reduce((t, n) => t + n, 0);
+    if (S.area === 'paywall') {
+      if (paid) { S.conv = r2(paid / x.people * 100); S.plans.forEach((pl, i) => { pl.s = Math.round(x.paid[i] / paid * 100); }); }
+      if (x.trials) S.trialView = r2(x.trials / x.people * 100);
+    } else {
+      if (x.trials) S.trialRate = r2(x.trials / x.people * 100);
+      if (paid) S.paidRate = r2(paid / x.people * 100);
+    }
+    READ = { A: {}, B: {}, C: {}, billed: true }; S.what = ''; S.target = 0; S.start = ''; UI.targetFrom = ''; save();
+    return go('test');
+  }
+  if ('plansToggle' in el.dataset) { UI.plansOpen = !UI.plansOpen; return render(); }
+  if ('plansGo' in el.dataset) {
+    if (S.decide !== 'money') { S.decide = 'money'; save(); }
+    if (wide()) { render(); const t = document.getElementById('plans-inline'); if (t) { t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 900); } return; }
+    UI.overlay = 'edit'; render(); setTimeout(() => document.getElementById('plans-inline')?.scrollIntoView({ block: 'center' }), 60); return;
+  }
+  if (el.dataset.bydate) { const [w, t] = el.dataset.bydate.split('.').map(Number); S.weeks = w; S.traffic = t; syncTrack('traffic'); return planChanged(); }
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
-  if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: t === 'once' ? 0 : S.plans[0].tr }); setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); return planChanged(); }
+  if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: 0 }); /* a new plan starts without a trial */ setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); sortPlans(); return planChanged(); }
   if ('moreIdeas' in el.dataset) { UI.allIdeas = !UI.allIdeas; return render(); }
   if (el.dataset.idea) { UI.overlay = 'idea'; UI.idea = el.dataset.idea; return render(); }
   if (el.dataset.overlay) { UI.overlay = el.dataset.overlay; return render(); }
@@ -681,14 +810,25 @@ app.addEventListener('input', (e) => {
     if (route().r === 'verdict' && readInputs(planOf(S))) { history.replaceState(null, '', '#/verdict?' + toQuery(true)); swapMain(verdictScreen()); }
   }
   UI.instant = true; setTimeout(() => { UI.instant = false; });
+  if (t.dataset.type === 'target') UI.targetFrom = '';
   if (t.dataset.type) { const k = t.dataset.type, v = num(t.value); if (v != null && (v > 0 || SL[k].linear)) { S[k] = SL[k].linear ? Math.min(100, v) : Math.min(SL[k].hi * 10, v); save(); syncTrack(k, t); refreshMain(); } }
   if ('date' in t.dataset) { if (/^\d{4}-\d{2}-\d{2}$/.test(t.value)) { S.start = t.value; save(); history.replaceState(null, '', '#/' + route().r + '?' + toQuery(route().r === 'verdict')); render(); } }
+  if ('what' in t.dataset) { S.what = t.value.slice(0, 120); save(); const { r } = route(); if (r === 'test') history.replaceState(null, '', '#/test?' + toQuery()); return; }
+  if ('target' in t.dataset) { UI.targetFrom = ''; const v = num(t.value); if (v != null && v > 0 && v <= 500) { S.target = v; save(); refreshMain(); } }
   if (t.dataset.planPrice) { const v = num(t.value); if (v != null && v > 0) { S.plans[+t.dataset.planPrice].p = v; save(); refreshMain(); } }
 });
-app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if (pt !== undefined) { const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; return planChanged(); } if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
+app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if (pt !== undefined) { if (e.target.value === '-') { S.plans.splice(+pt, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); } const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; sortPlans(); return planChanged(); }
+  const ptr = e.target.dataset.planTrial; if (ptr !== undefined) { S.plans[+ptr].tr = Number(e.target.value); return planChanged(); }
+  const psh = e.target.dataset.planShare; if (psh !== undefined) { const v = num(e.target.value); if (v != null) { setShare(+psh, v); return planChanged(); } } if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
+const numField = (t) => t && t.tagName === 'INPUT' && ('type' in t.dataset || 'target' in t.dataset || 'planPrice' in t.dataset || 'planShare' in t.dataset || 'read' in t.dataset);
+// tapping a number selects it whole, so typing replaces it instead of landing in the middle (2.75 → 32.75)
+app.addEventListener('mousedown', (e) => { const t = e.target; if (!numField(t) || document.activeElement === t) return; e.preventDefault(); t.focus(); t.select(); });
+app.addEventListener('focusin', (e) => { if (numField(e.target)) e.target.select(); });   // keyboard (Tab) gets the same
 app.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && UI.overlay) { closeThen(() => { UI.overlay = null; render(); }); return; }
   if (e.target.dataset.type && e.key === 'Enter') e.target.blur();
+  const mh = e.target.closest('[data-mix-handle]');
+  if (mh && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const i = +mh.dataset.mixHandle, w = shares(S.plans).map((x) => x * 100); mixSet(i, w.slice(0, i + 1).reduce((t, x) => t + x, 0) + (e.key === 'ArrowRight' ? 5 : -5)); planChanged(); setTimeout(() => document.querySelector(`[data-mix-handle="${i}"]`)?.focus()); e.preventDefault(); return; }
   const tr = e.target.closest('[data-slide]');
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
 });
@@ -696,6 +836,7 @@ function syncTrack(k, except) {
   if (/^sh\d$/.test(k) && !syncTrack.busy) { syncTrack.busy = true; S.plans.forEach((_, i) => { if ('sh' + i !== k) syncTrack('sh' + i); }); syncTrack.busy = false; }
   document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { const p = pctOf(k, S[k]); tr.querySelector('.fill').style.width = p + '%'; tr.querySelector('.handle').style.left = p + '%'; tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
   document.querySelectorAll(`[data-val-of="${k}"]`).forEach((el) => { el.textContent = SL[k].fmt(S[k]) + (SL[k].unit || ''); });
+  document.querySelectorAll(`[data-rng-of="${k}"]`).forEach((el) => { el.textContent = rangeText(k); });
   const txt = SL[k].fmt(S[k]);
   document.querySelectorAll(`[data-type="${k}"]`).forEach((inp) => {
     if (inp === except) return;                                  // never rewrite the field someone is typing in
@@ -712,12 +853,29 @@ function refreshMain() {           // update the answer without touching the con
 }
 // dragging a track
 let drag = null;
+// share-of-sales bar: a divider moves sales between the two plans it sits between
+let mixDrag = null;
+function mixSet(i, boundary) {      // boundary: % from the bar's left edge
+  const w = shares(S.plans).map((x) => x * 100), c0 = w.slice(0, i).reduce((t, x) => t + x, 0), pair = w[i] + w[i + 1];
+  const a = Math.round(Math.max(0, Math.min(pair, boundary - c0))); w[i] = a; w[i + 1] = Math.round(pair) - a;
+  S.plans.forEach((x, j) => { x.s = Math.round(w[j]); });
+  const bar = document.querySelector('[data-mixbar]'); if (bar) { const t = S.plans.reduce((q, x) => q + x.s, 0) || 1; bar.querySelectorAll('.mseg').forEach((sg, j) => { sg.style.flex = `${Math.max(0.001, S.plans[j].s / t)} 0 0`; }); bar.previousElementSibling?.querySelectorAll('b').forEach((n, j) => { n.textContent = Math.round(S.plans[j].s / t * 100) + '%'; }); layoutMix(); }
+  refreshMain();
+}
 app.addEventListener('pointerdown', (e) => {
+  let h = e.target.closest('[data-mix-handle]');
+  const mb = !h && e.target.closest('[data-mixbar]');
+  if (mb) {                                   // a press anywhere on the bar grabs the nearest divider and moves it there
+    const hs = [...mb.querySelectorAll('[data-mix-handle]')];
+    h = hs.reduce((b, x) => Math.abs(x.getBoundingClientRect().left - e.clientX) < Math.abs(b.getBoundingClientRect().left - e.clientX) ? x : b, hs[0]);
+    if (h) { const b = mb.getBoundingClientRect(); mixSet(+h.dataset.mixHandle, (e.clientX - b.left) / b.width * 100); }
+  }
+  if (h) { mixDrag = { i: +h.dataset.mixHandle, bar: h.closest('[data-mixbar]') }; h.setPointerCapture(e.pointerId); UI.instant = true; e.preventDefault(); return; }
   const tr = e.target.closest('[data-slide]'); if (!tr) return;
   drag = { tr, k: tr.dataset.slide }; tr.classList.add('dragging'); UI.instant = true; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
 });
-app.addEventListener('pointermove', (e) => { if (drag) move(e); });
-app.addEventListener('pointerup', () => { if (drag) { drag.tr.classList.remove('dragging'); drag = null; UI.instant = false; save(); if (route().r !== 'test') render(); } });
+app.addEventListener('pointermove', (e) => { if (mixDrag) { const b = mixDrag.bar.getBoundingClientRect(); mixSet(mixDrag.i, (e.clientX - b.left) / b.width * 100); return; } if (drag) move(e); });
+app.addEventListener('pointerup', () => { if (mixDrag) { mixDrag = null; UI.instant = false; planChanged(); return; } if (drag) { drag.tr.classList.remove('dragging'); drag = null; UI.instant = false; save(); if (route().r !== 'test') render(); } });
 function move(e) {
   const b = drag.tr.getBoundingClientRect();
   const p = Math.max(0, Math.min(100, (e.clientX - b.left) / b.width * 100));
