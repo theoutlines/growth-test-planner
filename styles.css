@@ -477,3 +477,5 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .landing .ltab { transition: background-color var(--duration-quick, 150ms) ease-out, color var(--duration-quick, 150ms) ease-out; }
 .landing .ltab:focus { outline: none; }
 .landing .lscroll::-webkit-scrollbar { display: none; }
+@media (hover: hover) { .landing nav a:hover { color: #fff !important; } .landing footer a:hover { color: rgba(255,255,255,.85) !important; } }
+.landing nav a, .landing footer a { transition: color var(--duration-quick, 150ms) ease-out; }

@@ -613,8 +613,14 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-ltab],[data-copytext],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-scroll],[data-ltab],[data-copytext],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
+  if (el.dataset.scroll) {   // landing: in-page links (header, Add to Claude) scroll inside the visible copy of the landing
+    e.preventDefault();
+    const t = (el.closest('.l-m, .l-d') || app).querySelector(`[data-anchor="${el.dataset.scroll}"]`);
+    if (!t || el.dataset.scroll === 'top') return window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
+    return t.scrollIntoView({ block: 'start', behavior: reduced() ? 'auto' : 'smooth' });
+  }
   if (el.dataset.copytext) return copy(el.dataset.copytext);
   if (el.dataset.ltab) {             // landing tabs: switch the panel in place, no re-render
     const g = el.dataset.ltabGroup, root = el.closest('section') || app;
