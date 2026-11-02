@@ -31,9 +31,9 @@ BODY = {
 'paywall-ab-test-duration': f'''
 <p class="lead">Long enough for the change you expect to be bigger than the noise, in whole weeks, plus the longest free trial and about a week for refunds before you decide. For most subscription apps that is 4 to 8 weeks of traffic, and the smaller your traffic, the bolder the change has to be.</p>
 <h2>What a test can catch, by traffic and weeks</h2>
-<p>The smallest change in revenue per paywall view an A/B test can tell apart from chance (95% confidence, 80% power), for a paywall where 2.75% of views end in a payment and buyers split half and half between weekly $6.99 and annual $39.99:</p>
-{t('Views a week', PAY_MONEY)}
-<p class="note">Judged on paid conversion instead, the same paywall catches a little less: 50,000 views a week catch +7.5% in 4 weeks (+9.1% on revenue per view). Your own numbers change these figures; the planner works them out for your traffic, conversion, prices and trial.</p>
+<p>The smallest change in revenue per paywall viewer an A/B test can tell apart from chance (95% confidence, 80% power), for a paywall where 2.75% of the people who see it pay and buyers split half and half between weekly $6.99 and annual $39.99:</p>
+{t('People who see it a week', PAY_MONEY)}
+<p class="note">Judged on paid conversion instead, the same paywall catches a little less: 50,000 people a week catch +7.5% in 4 weeks (+9.1% on revenue per viewer). Your own numbers change these figures; the planner works them out for your traffic, conversion, prices and trial.</p>
 <h2>How to pick the length</h2>
 <ul>
 <li><b>Start from what you expect the change to do.</b> A headline or button tweak rarely moves revenue by more than a few percent. Making the annual plan the hero has moved revenue per user by +25% to +40% in Adapty's A/B test library. If your test only catches +9%, test the bolder change.</li>
@@ -42,7 +42,7 @@ BODY = {
 <li><b>Don't stop early on a good day.</b> Peeking and stopping the moment B looks ahead turns noise into wins. Pick the length first, then wait.</li>
 </ul>
 <h2>Judge on revenue or on conversion?</h2>
-<p>Prices, plans or trial changes: revenue per paywall view, because conversion can fall while revenue rises. Copy and layout changes: paid conversion answers faster.</p>
+<p>Prices, plans or trial changes: revenue per paywall viewer, because conversion can fall while revenue rises. Copy and layout changes: paid conversion answers faster.</p>
 <a class="cta" href="{PLAN_PW}">Plan your paywall test</a>
 ''',
 'free-trial-ab-test': f'''
@@ -53,22 +53,22 @@ BODY = {
 <p class="note">The week after the last trials bill is for refunds: a version that wins on first payments can still lose once refunds land.</p>
 <h2>Why waiting matters</h2>
 <ul>
-<li><b>Trials aren't payments.</b> A version can win trial starts by making the price harder to see and then lose on paid. Read the result on paid conversion or revenue per view.</li>
+<li><b>Trials aren't payments.</b> A version can win trial starts by making the price harder to see and then lose on paid. Read the result on paid conversion or revenue per viewer.</li>
 <li><b>The last trials bill late.</b> Someone who starts a 7-day trial on the last day of the test pays a week later.</li>
 <li><b>Refunds come after.</b> Watch refunds as a guardrail: if B's refund share is clearly higher, its win may not hold.</li>
-<li><b>Testing the trial itself?</b> Adding a trial, changing its length or putting it on the annual plan changes who pays and when; judge it on revenue per paywall view after the longest trial has billed.</li>
+<li><b>Testing the trial itself?</b> Adding a trial, changing its length or putting it on the annual plan changes who pays and when; judge it on revenue per paywall viewer after the longest trial has billed.</li>
 </ul>
 <a class="cta" href="{PLAN_PW}">Find your decision day</a>
 ''',
 'minimum-detectable-effect': f'''
 <p class="lead">The minimum detectable effect (MDE) is the smallest change your A/B test can tell apart from chance. It shrinks as traffic and weeks grow. If the change you're testing is likely smaller than your MDE, the test will most likely end "can't tell", however good the idea.</p>
 <h2>Typical MDEs for subscription apps</h2>
-<p>Paywall, judged on revenue per paywall view (2.75% of views pay, weekly $6.99 and annual $39.99 half and half), at 95% confidence and 80% power:</p>
-{t('Views a week', PAY_MONEY)}
+<p>Paywall, judged on revenue per paywall viewer (2.75% of the people who see it pay, weekly $6.99 and annual $39.99 half and half), at 95% confidence and 80% power:</p>
+{t('People who see it a week', PAY_MONEY)}
 <p>Onboarding, judged on trial starts (5.8% of new users start a trial):</p>
 {t('Users a week', ONB_TR)}
 <h2>How it's worked out</h2>
-<p>Per-version sample size n = 2·(z₁₋α/₂ + z₁₋β)²·CV² / MDE², solved for the MDE a given number of people can see. For conversion CV² = (1 − p)/p; for revenue per view it also counts the spread of prices people buy. Three versions use a Bonferroni correction. The planner shows the MDE for 2, 4, 6 and 8 weeks next to published test ideas, so you can see which ones your test is big enough to catch.</p>
+<p>Per-version sample size n = 2·(z₁₋α/₂ + z₁₋β)²·CV² / MDE², solved for the MDE a given number of people can see. For conversion CV² = (1 − p)/p; for revenue per viewer it also counts the spread of prices people buy. Three versions use a Bonferroni correction. The planner shows the MDE for 2, 4, 6 and 8 weeks next to published test ideas, so you can see which ones your test is big enough to catch.</p>
 <h2>What to do when your MDE is high</h2>
 <ul>
 <li>Test a bolder change: change what the screen shows or the offer, not just the words.</li>
