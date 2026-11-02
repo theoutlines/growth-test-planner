@@ -111,7 +111,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .tile .n span { font-size: 15px; color: var(--t60); }
 .days { display: grid; grid-template-columns: repeat(14, minmax(0,1fr)); gap: 3px; }
 .days i { height: 10px; background: var(--s10); }
-.days i.on { background: rgba(255,76,0,.5); }
+.days i.on { background: rgba(255,255,255,.35); }
 .tile[aria-pressed="true"] .days i.on { background: var(--acc); }
 .tile em { font-style: normal; font-size: 13px; line-height: 1.35; color: var(--t60); }
 .wait { display: block; height: 20px; margin-top: -10px; padding: 0 4px; font-size: 15px; font-weight: 500; color: var(--acc); }
