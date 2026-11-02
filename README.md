@@ -30,4 +30,4 @@ Deployed on Cloudflare Pages from `main`.
 
 ## Licence
 
-Code: MIT. Fonts: Uncut Sans and Geist Mono, SIL Open Font License 1.1 (see `LICENSES/`). The character illustration is © Ivan Polushin, not covered by the MIT licence.
+Code: MIT. Fonts: Uncut Sans and Geist Mono, SIL Open Font License 1.1 (see `LICENSES/`). The character illustration and the author photo are © Ivan Polushin, not covered by the MIT licence.
