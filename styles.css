@@ -535,9 +535,6 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .pi-box .rs .track { background: var(--s07); }
 .pi-box .addplan { margin-top: 4px; }
 /* traffic you need: one answer for the weeks picked above */
-.bdans { display: flex; flex-direction: column; gap: 4px; }
-.bdans b { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
-.bdans > span { font-size: 15px; line-height: 1.45; color: var(--t60); }
 .bdset { height: 44px; font-size: 15px; }
 .bdset.done { display: flex; align-items: center; justify-content: center; border-radius: 12px; color: var(--t50); box-shadow: inset 0 0 0 1px var(--s08); }
 .bdalt { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.45; color: var(--t60); }
@@ -564,8 +561,8 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .big .rng { text-align: center; }
 
 /* plan card: what changes in B (travels into share text and the verdict) */
-.plan .what { display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; margin-bottom: 2px; border-bottom: 1px solid var(--s08); }
-.plan .what > span { font-size: 13px; color: var(--t50); }
+.plan .what { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--s08); }
+.plan .what > span { font-size: 14px; font-weight: 500; color: var(--t75); }
 .plan .what input { height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 0; outline: 0; background: var(--s05); color: var(--w); font: inherit; font-size: 16px; }
 .plan .what input::placeholder { color: var(--t45); }
 .plan .what input:focus { background: var(--s10); }
@@ -575,3 +572,16 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .plans-step { gap: 8px; }
 .plans-step .pi-f { background: var(--s07); }
 .plans-step .mixbar { background: var(--s07); }
+
+/* optional “Catch a smaller change?” row (owner, 2026-11-02) */
+.bydate { padding: 0; gap: 0; }
+.bd-acc { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 64px; padding: 12px 16px 12px 18px; text-align: left; color: var(--w); border-radius: 18px; }
+.bd-acc > span { display: flex; flex-direction: column; gap: 2px; }
+.bd-acc b { font-size: 16px; font-weight: 600; }
+.bd-acc small { font-size: 14px; color: var(--t60); }
+.bd-acc svg { flex: none; opacity: .6; }
+.bd-acc:hover { background: var(--s05); }
+.bdbody { display: flex; flex-direction: column; gap: 12px; padding: 4px 18px 18px; }
+.bdbody .bdsrc { margin-top: -6px; }
+.bydate .bdans { margin: 0; font-size: 16px; line-height: 1.45; color: var(--t75); }
+.bydate .bdans b { color: var(--w); font-weight: 600; }
