@@ -590,6 +590,7 @@ function render() {
     app.replaceChildren(...tmp.childNodes);
     if (!reduced()) app.querySelectorAll('main.page, .rail').forEach((el) => { el.classList.add('enter'); el.addEventListener('animationend', () => el.classList.remove('enter'), { once: true }); });
   }
+  if (r === '' && !reduced()) revealHero();
   lastPage = page; UI.areaSwap = false;
   if (/^(area|traffic|conv|trial)$/.test(r)) UI.lastStep = { area: 1, traffic: 2, conv: 3, trial: 4 }[r];
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
@@ -621,11 +622,23 @@ app.addEventListener('click', (e) => {
     if (!t || el.dataset.scroll === 'top') return window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
     return t.scrollIntoView({ block: 'start', behavior: reduced() ? 'auto' : 'smooth' });
   }
-  if (el.dataset.copytext) return copy(el.dataset.copytext);
+  if (el.dataset.copytext) {
+    if (el.closest('.landing')) {   // text morph: Copy → Copied, then back
+      morphText(el, 'Copied'); clearTimeout(el._back); el._back = setTimeout(() => morphText(el, 'Copy'), 1400);
+    }
+    return copy(el.dataset.copytext);
+  }
   if (el.dataset.ltab) {             // landing tabs: switch the panel in place, no re-render
     const g = el.dataset.ltabGroup, root = el.closest('section') || app;
     root.querySelectorAll(`[data-ltab-group="${g}"]`).forEach((t) => t.setAttribute('aria-selected', String(t === el)));
-    root.querySelectorAll(`[data-lpanel-group="${g}"]`).forEach((p) => { p.hidden = p.dataset.lpanel !== el.dataset.ltab; });
+    root.querySelectorAll(`[data-lpanel-group="${g}"]`).forEach((p) => {
+      const on = p.dataset.lpanel === el.dataset.ltab, was = !p.hidden;
+      p.hidden = !on;
+      if (on && !was) {   // panel reveal: the new panel rises in; the old one is gone at once
+        p.classList.add('t-panel-slide'); p.dataset.open = 'false'; void p.offsetHeight;
+        requestAnimationFrame(() => { p.dataset.open = 'true'; });
+      }
+    });
     el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduced() ? 'auto' : 'smooth' });
     return;
   }
@@ -710,6 +723,52 @@ function move(e) {
   S[drag.k] = valOf(drag.k, p); syncTrack(drag.k);
   refreshMain();
 }
+// transitions.dev text morph: the letters both texts share stay put; only the part that differs cross-blurs
+const msVar = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0;
+function morphText(el, next) {
+  const prev = el.dataset.text ?? el.textContent;
+  if (prev === next) return;
+  el.dataset.text = next;
+  clearTimeout(el._morphTimer);
+  let a = 0;
+  while (a < prev.length && a < next.length && prev[a] === next[a]) a++;
+  let b = 0;
+  while (b < prev.length - a && b < next.length - a &&
+         prev[prev.length - 1 - b] === next[next.length - 1 - b]) b++;
+  const swap = document.createElement('span');
+  swap.className = 't-morph-swap';
+  const out = document.createElement('span');
+  out.className = 't-morph-old';
+  out.setAttribute('aria-hidden', 'true');
+  out.textContent = prev.slice(a, prev.length - b);
+  const inn = document.createElement('span');
+  inn.className = 't-morph-new';
+  inn.textContent = next.slice(a, next.length - b);
+  swap.append(out, inn);
+  el.textContent = '';
+  el.append(next.slice(0, a), swap, next.slice(next.length - b));
+  swap.style.width = out.getBoundingClientRect().width + 'px';
+  void swap.offsetWidth;
+  swap.classList.add('is-morphing');
+  swap.style.width = inn.getBoundingClientRect().width + 'px';
+  el._morphTimer = setTimeout(() => { el.textContent = next; }, Math.max(msVar('--text-morph-dur'), msVar('--text-morph-resize-dur')) + 40);
+}
+
+// transitions.dev texts reveal: the landing hero rises in once per page load
+let heroShown = false;
+function revealHero() {
+  if (heroShown) return;
+  const tops = [...app.querySelectorAll('.landing h1')].map((h) => h.parentElement);
+  if (!tops.length) return;
+  heroShown = true;
+  tops.forEach((box) => {
+    box.classList.add('t-stagger');
+    [...box.children].slice(0, 5).forEach((c, i) => c.classList.add('t-stagger-line', `t-stagger-line--${i + 1}`));
+    void box.offsetHeight;
+    requestAnimationFrame(() => box.classList.add('is-shown'));
+  });
+}
+
 function copy(text) {
   const done = () => { const t = document.createElement('div'); t.className = 'toast'; t.textContent = 'Copied'; document.body.appendChild(t); setTimeout(() => t.remove(), 1400); };
   if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text).then(done).catch(() => fallback());

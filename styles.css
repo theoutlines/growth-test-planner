@@ -464,7 +464,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 #about { display: none; }
 
 /* ------------------------------------------------------------------ landing (test build): the start screen, exported from the canvas boards */
-.landing { display: block; width: 100%; overflow-x: hidden; }
+.landing { display: block; width: 100%; overflow-x: clip; }   /* clip, not hidden: hidden makes a scroll box and the header would not stick */
 .landing .l-d { display: none; }
 .landing .l-m > div { zoom: var(--lmz, 1); margin: 0 auto; }
 @media (min-width: 1200px) {
@@ -479,3 +479,112 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .landing .lscroll::-webkit-scrollbar { display: none; }
 @media (hover: hover) { .landing nav a:hover { color: #fff !important; } .landing footer a:hover { color: rgba(255,255,255,.85) !important; } }
 .landing nav a, .landing footer a { transition: color var(--duration-quick, 150ms) ease-out; }
+/* landing header: sticky; transparent at rest, the planner's eased dark gradient once the page scrolls */
+.landing .lhead::after { content: ''; position: absolute; left: 0; right: 0; top: 0; bottom: -56px; z-index: -1; pointer-events: none;
+  background: linear-gradient(var(--bg) 0%, rgba(21,21,21,.96) 30%, rgba(21,21,21,.85) 45%, rgba(21,21,21,.66) 58%, rgba(21,21,21,.44) 70%, rgba(21,21,21,.24) 81%, rgba(21,21,21,.09) 91%, rgba(21,21,21,0) 100%);
+  opacity: 0; transition: opacity var(--duration-quick, 150ms) var(--ease-smooth-out, ease-out); }
+.scrolled .landing .lhead::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .landing .lhead::after { transition: none; } }
+
+/* ---------- landing micro-motion (transitions.dev) ---------- */
+:root {
+  --stagger-dur: 500ms; --stagger-distance: 12px; --stagger-stagger: 40ms; --stagger-blur: 3px; --stagger-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --panel-open-dur: 400ms; --panel-close-dur: 350ms; --panel-translate-y: 100px; --panel-blur: 2px; --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --text-morph-dur: 180ms; --text-morph-resize-dur: 240ms; --text-morph-blur: 2px; --text-morph-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+.landing { --panel-translate-y: var(--distance-medium, 12px); }   /* a tab panel rises a little, not a whole sheet */
+
+/* Texts reveal: the hero lines rise in once, on first load */
+.t-stagger-line {
+  display: block;
+  opacity: 0;
+  transform: translateY(var(--stagger-distance));
+  filter: blur(var(--stagger-blur));
+  transition:
+    opacity   var(--stagger-dur) var(--stagger-ease),
+    transform var(--stagger-dur) var(--stagger-ease),
+    filter    var(--stagger-dur) var(--stagger-ease);
+  will-change: transform, opacity, filter;
+}
+.t-stagger-line--2 { transition-delay: var(--stagger-stagger); }
+.t-stagger-line--3 { transition-delay: calc(var(--stagger-stagger) * 2); }
+.t-stagger-line--4 { transition-delay: calc(var(--stagger-stagger) * 3); }
+.t-stagger-line--5 { transition-delay: calc(var(--stagger-stagger) * 4); }
+.t-stagger.is-shown .t-stagger-line {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+.t-stagger.is-hiding .t-stagger-line {
+  opacity: 0;
+  transform: translateY(0);
+  filter: blur(0);
+  transition:
+    opacity 200ms ease,
+    transform 0s linear,
+    filter 0s linear;
+  transition-delay: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-stagger-line { transition: none !important; }
+}
+
+/* Panel reveal: a demo or install panel rises in with a soft blur when its tab is picked */
+.t-panel-slide {
+  transform: translateY(var(--panel-translate-y));
+  opacity: 0;
+  filter: blur(var(--panel-blur));
+  pointer-events: none;
+  transition:
+    transform var(--panel-close-dur) var(--panel-ease),
+    opacity   var(--panel-close-dur) var(--panel-ease),
+    filter    var(--panel-close-dur) var(--panel-ease);
+  will-change: transform, opacity, filter;
+}
+.t-panel-slide[data-open="true"] {
+  transform: translateY(0);
+  opacity: 1;
+  filter: blur(0);
+  pointer-events: auto;
+  transition:
+    transform var(--panel-open-dur) var(--panel-ease),
+    opacity   var(--panel-open-dur) var(--panel-ease),
+    filter    var(--panel-open-dur) var(--panel-ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-panel-slide { transition: none !important; }
+}
+
+/* Text morph: Copy → Copied keeps "Cop" and cross-blurs the rest */
+.t-morph {
+  white-space: nowrap;
+}
+.t-morph-swap {
+  display: inline-grid;
+  vertical-align: bottom;
+  justify-items: start;
+  transition: width var(--text-morph-resize-dur) var(--text-morph-ease);
+}
+.t-morph-swap > span {
+  grid-area: 1 / 1;
+  white-space: pre;
+  transition:
+    opacity var(--text-morph-dur) var(--text-morph-ease),
+    filter  var(--text-morph-dur) var(--text-morph-ease);
+}
+.t-morph-new {
+  opacity: 0;
+  filter: blur(var(--text-morph-blur));
+}
+.t-morph-swap.is-morphing .t-morph-old {
+  opacity: 0;
+  filter: blur(var(--text-morph-blur));
+}
+.t-morph-swap.is-morphing .t-morph-new {
+  opacity: 1;
+  filter: blur(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-morph-swap,
+  .t-morph-swap > span { transition: none !important; }
+}
