@@ -8,7 +8,7 @@ Live: https://planner.theoutlines.xyz
 - **Read a finished test.** Three numbers per version. Trust checks first (fair split, trials billed, refunds), then the result with its likely range, where the money came from, and what to do.
 - **Share** the plan or the result as a message for your team chat, in three tones.
 
-Nothing you type leaves the page: the numbers are computed in your browser, the last inputs are kept in this browser only, and a shared link carries them after `#`, which browsers never send to a server.
+What you type stays on the page (the only thing sent is an anonymous daily count of which idea people pick for B): the numbers are computed in your browser, the last inputs are kept in this browser only, and a shared link carries them after `#`, which browsers never send to a server.
 
 ## How the numbers work
 

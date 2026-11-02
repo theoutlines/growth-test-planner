@@ -463,7 +463,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .dd select:hover { background: var(--s08); }
 .dd select:focus-visible { outline: 2px solid rgba(255,255,255,.5); outline-offset: 2px; }
 .dd select option { background: #2A2A2A; color: #fff; }
-.dd svg { position: absolute; right: 14px; top: 14px; pointer-events: none; opacity: .7; }
+.dd svg { position: absolute; right: 14px; top: 14px; pointer-events: none; opacity: .6; }
 
 /* plain-text description for readers without JavaScript and for agents; never flashes before the app */
 #about { display: none; }
@@ -713,3 +713,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .bdbody .bdsrc { margin-top: -6px; }
 .bydate .bdans { margin: 0; font-size: 16px; line-height: 1.45; color: var(--t75); }
 .bydate .bdans b { color: var(--w); font-weight: 500; }
+
+/* What changes in B: a pick from the chart's ideas (owner, 2026-11-02) */
+.plan .what .dd select { font-weight: 400; }
+.plan .what .dd.empty select { color: var(--t45); }
