@@ -562,3 +562,16 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .rng { font-size: 13px; line-height: 1.4; color: var(--acc); }
 .rng:empty { display: none; }
 .big .rng { text-align: center; }
+
+/* plan card: what changes in B (travels into share text and the verdict) */
+.plan .what { display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; margin-bottom: 2px; border-bottom: 1px solid var(--s08); }
+.plan .what > span { font-size: 13px; color: var(--t50); }
+.plan .what input { height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 0; outline: 0; background: var(--s05); color: var(--w); font: inherit; font-size: 16px; }
+.plan .what input::placeholder { color: var(--t45); }
+.plan .what input:focus { background: var(--s10); }
+.verdict .vwhat { font-size: 15px; line-height: 1.35; opacity: .85; margin-top: -4px; }
+.bdsrc { font-size: 13px; line-height: 1.4; color: var(--t50); margin-top: -8px; }
+.nexttest { height: 48px; font-size: 15px; }
+.plans-step { gap: 8px; }
+.plans-step .pi-f { background: var(--s07); }
+.plans-step .mixbar { background: var(--s07); }
