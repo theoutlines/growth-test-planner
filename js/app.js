@@ -303,12 +303,17 @@ function plansInline() {
   const mix = many ? `<div class="mix"><span class="mixlab">Share of sales</span><div class="mixnames" aria-hidden="true">${S.plans.map((x, i) => `<span>${PLAN_TYPES[x.t][0]} <b>${Math.round(w[i] * 100)}%</b></span>`).join('')}</div><div class="mixbar" data-mixbar>${S.plans.map((x, i) => `<span class="mseg" style="flex:${Math.max(0.001, w[i])} 0 0"></span>${i < S.plans.length - 1 ? `<span class="mh" data-mix-handle="${i}" role="slider" tabindex="0" aria-label="Between ${PLAN_TYPES[x.t][0]} and ${PLAN_TYPES[S.plans[i + 1].t][0]}" aria-valuetext="${PLAN_TYPES[x.t][0]} ${Math.round(w[i] * 100)}%, ${PLAN_TYPES[S.plans[i + 1].t][0]} ${Math.round(w[i + 1] * 100)}%"></span>` : ''}`).join('')}</div></div>` : '';
   return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}</div></div></div>`;
 }
+// the hint speaks only about the metric picked (owner, 2026-11-02)
+const DECIDE_HINT = {
+  paywall: { money: 'Revenue per paywall view. Use it for changes to prices, plans or the trial offer.', paid: 'Share of views that pay. Answers faster for copy and layout changes.', trials: 'Trial start rate. Answers fastest, but a trial isn’t revenue yet.' },
+  onboarding: { trials: 'Trial start rate. Answers in weeks.', paid: 'Share of new users who pay. Waits for the trial to end.' },
+};
 function controls() {
   const onb = S.area === 'onboarding';
   const dec = decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]);
   // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
-  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trials: trial start rate, answers in weeks. Conversion: share of new users who pay, waits for the trial to end.' : 'Revenue: per paywall view, for changes to prices, plans or the trial offer. Conversion: share of views that pay, faster for copy and layout. Trials: trial start rate, fastest, but not revenue yet.'}</span>
+  ${seg('Decide on', 'decide', dec)}<span class="hint">${DECIDE_HINT[S.area][S.decide] || ''}</span>
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
   ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
     : railSlider('Paywall views a week', 'views') + (S.decide === 'trials' ? railSlider('Views that start a trial', 'trialView') : railSlider('Views that end in payment', 'conv'))}
