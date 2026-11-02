@@ -2,7 +2,7 @@ import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, share
 import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL, METRIC, DECIDE_METRIC, TESTS, COUNT } from './data.js';
 
 // ------------------------------------------------------------------ state
-// Nothing typed here leaves the browser. The last inputs are kept in localStorage (this browser only);
+// Nothing typed here leaves the browser; the only thing sent is an anonymous daily count of which idea is picked in “What changes in B” (functions/api/e.js). The last inputs are kept in localStorage (this browser only);
 // a shared link carries them after "#", which browsers never send to the server.
 const S = fresh();
 let READ = { A: {}, B: {}, C: {}, billed: true };
@@ -11,7 +11,7 @@ let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError
 const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-const KEYS = { h: 'what', a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', pr: 'paidRate', tv: 'trialView', t: 'trial', s: 'traffic', sp: 'split', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', tg: 'target' };
+const KEYS = { hi: 'whatId', h: 'what', a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', pr: 'paidRate', tv: 'trialView', t: 'trial', s: 'traffic', sp: 'split', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', tg: 'target' };
 // plans in a link: w6.99-50-3_y39.99-50-3 (type letter, price, share, trial days)
 const TL = { week: 'w', month: 'm', year: 'y', once: 'o' }, LT = { w: 'week', m: 'month', y: 'year', o: 'once' };
 const plansOut = (pl) => pl.map((x) => `${TL[x.t]}${x.p}-${Math.round(x.s)}-${x.tr}`).join('_');
@@ -25,6 +25,7 @@ function toQuery(withRead) {
   const q = new URLSearchParams();
   const other = S.area === 'paywall' ? ['users', 'trialRate', 'paidRate', 'trial'] : ['views', 'conv', 'trialView'];   // keys of the other kind of test stay out
   for (const [k, f] of Object.entries(KEYS)) if ((S[f] !== DEFAULTS[f] && !other.includes(f)) || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
+  if (S.whatId && S.whatId !== 'other') q.delete('h');   // a picked idea travels as its id; its title comes from data.js
   if (S.area === 'paywall' && plansOut(S.plans) !== plansOut(DEFAULTS.plans)) q.set('pl', plansOut(S.plans));
   if (withRead) {
     for (const v of LETTERS()) q.set('x' + v.toLowerCase(), [READ[v].people, READ[v].trials, READ[v].refunds, ...S.plans.map((_, i) => READ[v]['p' + i])].map((x) => x ?? '').join('.'));
@@ -53,6 +54,8 @@ function fromQuery(qs) {
     }
   }
   if (q.has('bl')) READ.billed = q.get('bl') === '1';
+  const pick = IDEAS[S.area].find((x) => x.id === S.whatId);
+  if (pick) S.what = pick.t; else if (S.whatId !== 'other') S.whatId = S.what ? 'other' : '';   // old links carry only the words
 }
 function route() { const h = location.hash.replace(/^#\/?/, ''); const [r, qs] = h.split('?'); return { r: ROUTES.includes(r) ? r : '', qs: qs || '' }; }
 function go(r, withRead) { UI.overlay = null; location.hash = '#/' + r + (['test', 'share', 'results', 'verdict', 'share-result'].includes(r) ? '?' + toQuery(withRead || r === 'verdict' || r === 'share-result') : ''); }
@@ -167,7 +170,7 @@ function startScreen() {
   <section class="hero"><img src="assets/character.png" alt=""><div><small>For designers who ship onboarding and paywalls</small><strong>Will your test see your change?</strong></div></section>
   <div class="stack">${pick(G.plan, 'Plan a test', 'How bold your change must be to show up, how long the test runs, the day you decide. Four questions.', 'area')}
   ${pick(G.read, 'Read a finished test', 'Win, loss or too early to tell, with the likely range. Same terms as the plan.', 'results')}</div>
-  <p class="fine" style="text-align:center;margin:0">Free. Nothing you type leaves this page.</p></main>`;
+  <p class="fine" style="text-align:center;margin:0">Free. What you type stays on this page.</p></main>`;
 }
 function areaScreen() {
   return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. Three more questions follow.')}
@@ -220,8 +223,23 @@ function planBlock(p) {
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevDS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
-  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div><label class="what"><span>What changes in B</span><input data-what maxlength="120" placeholder="e.g. annual plan as the hero" value="${esc(S.what)}" aria-label="What changes in B"></label></section>`;
+  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div>${whatField(p)}</section>`;
 }
+// What changes in B (owner, 2026-11-02): pick from the chart's ideas, or Something else with your own words.
+// Only the pick is counted (anonymous, per day); the words never leave the page.
+function whatOptions(p) {
+  const shown = ideasFor(p).filter((x) => !x.lost), ids = new Set(shown.map((x) => x.id));
+  return [...shown, ...IDEAS[S.area].filter((x) => !x.lost && !ids.has(x.id))];
+}
+function whatField(p) {
+  const id = S.whatId === 'other' || IDEAS[S.area].some((x) => x.id === S.whatId) ? S.whatId : (S.what ? 'other' : '');
+  const opts = whatOptions(p).map((x) => `<option value="${x.id}"${id === x.id ? ' selected' : ''}>${esc(x.t)}</option>`).join('');
+  return `<div class="what"><span>What changes in B</span><div class="dd${id ? '' : ' empty'}"><select data-what-pick aria-label="What changes in B"><option value=""${id ? '' : ' selected'} disabled>Pick what B changes</option>${opts}<option value="other"${id === 'other' ? ' selected' : ''}>Something else</option></select>${I.chevD}</div>
+  ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}</div>`;
+}
+const count = (e, v) => {   // anonymous daily count; skipped when the browser asks not to be tracked
+  try { if (navigator.globalPrivacyControl || navigator.doNotTrack === '1') return; navigator.sendBeacon('/api/e', new Blob([JSON.stringify({ e, v, a: S.area })], { type: 'application/json' })); } catch { /* never in the way */ }
+};
 // Plan by date (owner, 2026-11-02): the change worth catching → how much traffic each length needs, and who sees B.
 function suggestedTarget(p) {
   const lows = ideasFor(p).filter((r) => r.same && !r.lost && r.lo > 0).map((r) => r.lo).sort((a, b) => a - b);
@@ -357,7 +375,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}<p class="note">We count which idea people pick, with no names or cookies. What you type stays on this page.</p>${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -448,7 +466,7 @@ const VARIANT_URL = 'https://github.com/theoutlines/growth-skills/tree/main/plug
 const promo = (href, glyph, title, text) => `<a class="card skill" href="${href}" target="_blank" rel="noopener">${glyph}<span class="sk"><b>${title}</b><span>${text}</span><span class="btn sec2 skbtn">Get the plugin</span></span></a>`;
 const variantCard = () => promo(VARIANT_URL, `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="8" y="16" width="21" height="40" rx="4" fill="#4A4A4A"/><rect x="12" y="22" width="13" height="4" fill="#FFF"/><rect x="12" y="44" width="13" height="7" fill="#777"/><rect x="35" y="16" width="21" height="40" rx="4" fill="#FFF"/><rect x="39" y="22" width="13" height="4" fill="#151515"/><rect x="39" y="44" width="13" height="7" fill="${ACC}"/><rect x="8" y="64" width="48" height="3" fill="#4A4A4A"/><rect x="8" y="64" width="34" height="3" fill="${ACC}"/><rect x="8" y="72" width="22" height="3" fill="#4A4A4A"/></svg>`, 'Variant ready? Check it before launch', `Claude checks your A and B ${S.area === 'onboarding' ? 'flows' : 'screens'}: will this test see the change?`);
 const SKILL = promo(SKILL_URL, `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="10" y="14" width="30" height="5" fill="#FFF"/><rect x="10" y="62" width="44" height="2" fill="#4A4A4A"/><rect x="12" y="40" width="8" height="22" fill="#4A4A4A"/><rect x="24" y="32" width="8" height="30" fill="#777"/><rect x="36" y="24" width="8" height="38" fill="${ACC}"/><rect x="10" y="70" width="28" height="4" fill="#4A4A4A"/></svg>`, 'Test data in Amplitude or Mixpanel?', 'Let Claude pull it and read it for you. Nothing to type.');
-const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
+const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">What you type stays on this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
   const p = planOf(S);
   const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}</div>` : '';
@@ -809,7 +827,15 @@ app.addEventListener('input', (e) => {
   if ('target' in t.dataset) { UI.targetFrom = ''; const v = num(t.value); if (v != null && v > 0 && v <= 500) { S.target = v; save(); refreshMain(); } }
   if (t.dataset.planPrice) { const v = num(t.value); if (v != null && v > 0) { S.plans[+t.dataset.planPrice].p = v; save(); refreshMain(); } }
 });
-app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if (pt !== undefined) { if (e.target.value === '-') { S.plans.splice(+pt, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); } const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; sortPlans(); return planChanged(); }
+app.addEventListener('change', (e) => {
+  if ('whatPick' in e.target.dataset) {
+    const v = e.target.value, it = IDEAS[S.area].find((x) => x.id === v);
+    S.whatId = v; S.what = it ? it.t : (S.whatId === 'other' && !IDEAS[S.area].some((x) => x.t === S.what) ? S.what : '');
+    count('what', v); save(); planChanged();
+    if (v === 'other') requestAnimationFrame(() => document.querySelector('[data-what]')?.focus());
+    return;
+  }
+  const pt = e.target.dataset.planType; if (pt !== undefined) { if (e.target.value === '-') { S.plans.splice(+pt, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); } const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; sortPlans(); return planChanged(); }
   const ptr = e.target.dataset.planTrial; if (ptr !== undefined) { S.plans[+ptr].tr = Number(e.target.value); return planChanged(); }
   const psh = e.target.dataset.planShare; if (psh !== undefined) { const v = num(e.target.value); if (v != null) { setShare(+psh, v); return planChanged(); } } if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
 const numField = (t) => t && t.tagName === 'INPUT' && ('type' in t.dataset || 'target' in t.dataset || 'planPrice' in t.dataset || 'planShare' in t.dataset || 'read' in t.dataset);

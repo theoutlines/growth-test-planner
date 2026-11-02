@@ -37,6 +37,7 @@ export const DEFAULTS = {
   goal: 'win',            // win | notworse
   weeks: 4,
   start: '',             // ISO date; empty = next Monday (whole weeks from a clean start)
+  whatId: '',            // the idea picked in What changes in B (an id from data.js), 'other', or ''
   what: '',              // what changes in B, in the team's words (goes into the plan card, share text and verdict)
   // paywall plans: type (week | month | year | once), price, share of buyers (weights, shown as %), free-trial days
   plans: [{ t: 'week', p: 6.99, s: 50, tr: 3 }, { t: 'year', p: 39.99, s: 50, tr: 3 }],
