@@ -632,6 +632,23 @@ function morphNode(a, b) {
   for (let i = 0; i < bc.length; i++) { if (i < ac.length) morphNode(ac[i], bc[i]); else a.appendChild(bc[i]); }
   for (let i = bc.length; i < ac.length; i++) ac[i].remove();
 }
+// transitions.dev 21 · accordion expand: the body grows from 0 to its height and shrinks back before the state flips
+function accToggle(head, bodySel, flip) {
+  const box = head.parentElement, body = box.querySelector(':scope > ' + bodySel);
+  const ease = 'cubic-bezier(0.22, 1, 0.36, 1)', dur = cssMs('--duration-fast');
+  if (body && !reduced()) {                          // closing
+    body.style.overflow = 'hidden';
+    const cs = getComputedStyle(body);
+    body.animate([{ height: body.offsetHeight + 'px', paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 }, { height: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 }], { duration: dur, easing: ease }).onfinish = () => { flip(); render(); };
+    return;
+  }
+  flip(); render();
+  const nb = box.querySelector(':scope > ' + bodySel);
+  if (!nb || reduced()) return;
+  nb.style.overflow = 'hidden';
+  const ns = getComputedStyle(nb);
+  nb.animate([{ height: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 }, { height: nb.offsetHeight + 'px', paddingTop: ns.paddingTop, paddingBottom: ns.paddingBottom, opacity: 1 }], { duration: dur, easing: ease }).onfinish = () => { nb.style.overflow = ''; };
+}
 function placePills() {                                // transitions.dev 16 · tabs sliding (measured pill)
   document.querySelectorAll('.pill').forEach((pill) => {
     const box = pill.parentElement;
@@ -646,7 +663,15 @@ function placePills() {                                // transitions.dev 16 · 
   });
 }
 // a control that changes size without a window resize (fonts load, a scrollbar comes or goes, the sheet settles): re-place its pill without sliding
-const pillRO = 'ResizeObserver' in window ? new ResizeObserver((es) => { es.forEach((e) => { const p = e.target.querySelector(':scope > .pill'); if (p) p._placed = false; }); placePills(); }) : null;
+const pillRO = 'ResizeObserver' in window ? new ResizeObserver((es) => {
+  es.forEach((e) => {
+    const box = e.target, sz = Math.round(e.contentRect.width) + 'x' + Math.round(e.contentRect.height);
+    const was = box._sz; box._sz = sz;
+    if (was === undefined || was === sz) return;   // the first report on observe() is not a resize: resetting here killed every slide
+    const p = box.querySelector(':scope > .pill'); if (p) p._placed = false;
+  });
+  placePills();
+}) : null;
 function layoutMix() {        // every plan name stays visible: centred over its segment, pushed apart when segments are narrow
   document.querySelectorAll('[data-mixbar]').forEach((bar) => {
     const names = [...(bar.previousElementSibling?.children || [])], segs = [...bar.querySelectorAll('.mseg')], W = bar.clientWidth; if (!names.length || !W) return;
@@ -754,7 +779,7 @@ app.addEventListener('click', (e) => {
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
-  if ('bdToggle' in el.dataset) { UI.bdOpen = !UI.bdOpen; if (!UI.bdOpen && !UI.targetFrom) { /* keep the number */ } return render(); }
+  if ('bdToggle' in el.dataset) return accToggle(el, '.bdbody', () => { UI.bdOpen = !UI.bdOpen; });
   if (el.dataset.planIdea) {             // the idea's low end becomes the change to catch; the page shows the traffic it needs
     const it = ideasFor(planOf(S)).find((x) => x.id === el.dataset.planIdea); if (!it) return;
     S.target = it.lo; UI.targetFrom = it.t; UI.bdOpen = true; save(); history.replaceState(null, '', '#/test?' + toQuery());
@@ -773,7 +798,7 @@ app.addEventListener('click', (e) => {
     READ = { A: {}, B: {}, C: {}, billed: true }; S.what = ''; S.target = 0; S.start = ''; UI.targetFrom = ''; save();
     return go('test');
   }
-  if ('plansToggle' in el.dataset) { UI.plansOpen = !UI.plansOpen; return render(); }
+  if ('plansToggle' in el.dataset) return accToggle(el, '.pi-body', () => { UI.plansOpen = !UI.plansOpen; });
   if ('plansGo' in el.dataset) {
     if (S.decide !== 'money') { S.decide = 'money'; save(); }
     if (wide()) { render(); const t = document.getElementById('plans-inline'); if (t) { t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 900); } return; }
@@ -796,7 +821,7 @@ app.addEventListener('click', (e) => {
     return copy(text);
   }
   if ('billed' in el.dataset) { READ.billed = el.dataset.val === '1'; return render(); }
-  if ('togglePlan' in el.dataset) { UI.readPlan = !UI.readPlan; return render(); }
+  if ('togglePlan' in el.dataset) return accToggle(el, '.acc-body', () => { UI.readPlan = !UI.readPlan; });
   if ('readGo' in el.dataset) {
     const p = planOf(S);
     if (!readInputs(p)) { UI.readError = p.decide === 'trials' ? 'Fill in people and trial starts for every version.' : 'Fill in people and at least one kind of payment for every version.'; return render(); }
