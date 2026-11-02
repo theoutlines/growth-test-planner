@@ -22,7 +22,7 @@ const POWER = 0.8, ALPHA = 0.05, WATCH_DAYS = 7, NOT_WORSE_MARGIN = 0.05;
 
 export const DEFAULTS = {
   area: 'paywall',        // paywall | onboarding
-  views: 50000,           // paywall views a week
+  views: 50000,           // people who see the paywall a week (the test splits people, not views)
   conv: 2.75,             // % of paywall views that end in a payment
   users: 20000,           // new users a week (onboarding)
   trialRate: 5.8,         // % of new users who start a trial
@@ -37,6 +37,7 @@ export const DEFAULTS = {
   goal: 'win',            // win | notworse
   weeks: 4,
   start: '',             // ISO date; empty = next Monday (whole weeks from a clean start)
+  what: '',              // what changes in B, in the team's words (goes into the plan card, share text and verdict)
   // paywall plans: type (week | month | year | once), price, share of buyers (weights, shown as %), free-trial days
   plans: [{ t: 'week', p: 6.99, s: 50, tr: 3 }, { t: 'year', p: 39.99, s: 50, tr: 3 }],
 };
@@ -76,7 +77,7 @@ export function planOf(s) {
       const w = shares(s.plans), mu = s.plans.reduce((a, x, i) => a + w[i] * x.p, 0);
       const v = s.plans.reduce((a, x, i) => a + w[i] * x.p ** 2, 0) - mu * mu;
       cv2 = (v / mu ** 2 + 1) / p - 1;
-      metricName = 'revenue per paywall view'; today = mu * p; unit = 'money';
+      metricName = 'revenue per paywall viewer'; today = mu * p; unit = 'money';
     } else { cv2 = (1 - p) / p; metricName = 'paid conversion'; today = p; unit = 'rate'; }
   } else {
     p = decide === 'trials' ? s.trialRate / 100 : s.paidRate / 100;
@@ -152,7 +153,7 @@ function pairOf(s, plan, A, X, z, tag) {
   out.metric = { lift: lift * 100, lo: lo * 100, hi: hi * 100 };
   if (plan.decide === 'paid' && payA && payX && s.area === 'paywall') {      // revenue per view stays a guardrail
     const [g, , gHi] = relCI(mA, vA, A.people, mX, vX, X.people, z);
-    out.checks.push({ label: `Revenue per view ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
+    out.checks.push({ label: `Revenue per viewer ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
   }
   if (plan.decide === 'trials' && payA && payX) {        // trial starts decide; paid, once in, must not go the other way
     const [pl, , ph] = propRel(payA, A.people, payX, X.people, z);
