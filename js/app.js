@@ -237,6 +237,8 @@ function whatField(p) {
   return `<div class="what"><span>What changes in B</span><div class="dd${id ? '' : ' empty'}"><select data-what-pick aria-label="What changes in B"><option value=""${id ? '' : ' selected'} disabled>Pick what B changes</option>${opts}<option value="other"${id === 'other' ? ' selected' : ''}>Something else</option></select>${I.chevD}</div>
   ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}</div>`;
 }
+const counted = new Set();
+const countOnce = (e, v) => { const k = e + ':' + v + ':' + S.area; if (counted.has(k)) return; counted.add(k); count(e, v); };   // once per page load
 const count = (e, v) => {   // anonymous daily count; skipped when the browser asks not to be tracked
   try { if (navigator.globalPrivacyControl || navigator.doNotTrack === '1') return; navigator.sendBeacon('/api/e', new Blob([JSON.stringify({ e, v, a: S.area })], { type: 'application/json' })); } catch { /* never in the way */ }
 };
@@ -463,7 +465,7 @@ function readRow([label, f, why, opt]) {
 const VARIANT_URL = 'https://github.com/theoutlines/growth-skills/tree/main/plugins/growth-skills/skills/variant-check';
 // paywall tests: before launch, check the variant against what won in published tests (the variant-check skill)
 // promo cards (owner, 2026-11-02, option A): our glyph on the left, short copy, a real button
-const promo = (href, glyph, title, text) => `<a class="card skill" href="${href}" target="_blank" rel="noopener">${glyph}<span class="sk"><b>${title}</b><span>${text}</span><span class="btn sec2 skbtn">Get the plugin</span></span></a>`;
+const promo = (href, glyph, title, text) => `<a class="card skill" data-promo="${href === VARIANT_URL ? 'variant' : 'data'}" href="${href}" target="_blank" rel="noopener">${glyph}<span class="sk"><b>${title}</b><span>${text}</span><span class="btn sec2 skbtn">Get the plugin</span></span></a>`;
 const variantCard = () => promo(VARIANT_URL, `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="8" y="16" width="21" height="40" rx="4" fill="#4A4A4A"/><rect x="12" y="22" width="13" height="4" fill="#FFF"/><rect x="12" y="44" width="13" height="7" fill="#777"/><rect x="35" y="16" width="21" height="40" rx="4" fill="#FFF"/><rect x="39" y="22" width="13" height="4" fill="#151515"/><rect x="39" y="44" width="13" height="7" fill="${ACC}"/><rect x="8" y="64" width="48" height="3" fill="#4A4A4A"/><rect x="8" y="64" width="34" height="3" fill="${ACC}"/><rect x="8" y="72" width="22" height="3" fill="#4A4A4A"/></svg>`, 'Variant ready? Check it before launch', `Claude checks your A and B ${S.area === 'onboarding' ? 'flows' : 'screens'}: will this test see the change?`);
 const SKILL = promo(SKILL_URL, `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="10" y="14" width="30" height="5" fill="#FFF"/><rect x="10" y="62" width="44" height="2" fill="#4A4A4A"/><rect x="12" y="40" width="8" height="22" fill="#4A4A4A"/><rect x="24" y="32" width="8" height="30" fill="#777"/><rect x="36" y="24" width="8" height="38" fill="${ACC}"/><rect x="10" y="70" width="28" height="4" fill="#4A4A4A"/></svg>`, 'Test data in Amplitude or Mixpanel?', 'Let Claude pull it and read it for you. Nothing to type.');
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">What you type stays on this page. We don’t store it or send it anywhere.</p>`;
@@ -556,6 +558,7 @@ function verdictScreen() {
   const p = planOf(S), v = verdictOf(p);
   if (!v) return resultsScreen();
   const win = v.kind === 'win';
+  countOnce('verdict', v.r.verdict.replace(/[^A-Za-z]/g, '') || 'none');
   const card = `<section class="verdict${win ? ' win' : ''}"><span class="tag">${v.tag}</span>${S.what ? `<span class="vwhat">B: ${esc(S.what)}</span>` : ''}<span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
   const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? (c.warn ? ' warn' : '') : ' bad'}" title="${esc(c.detail)}">${c.ok && !c.warn ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
@@ -732,6 +735,10 @@ function render() {
     app.replaceChildren(...tmp.childNodes);
     if (!reduced()) app.querySelectorAll('main.page, .rail').forEach((el) => { el.classList.add('enter'); el.addEventListener('animationend', () => el.classList.remove('enter'), { once: true }); });
   }
+  if (page !== lastPage) {
+    countOnce('page', { '': 'start', 'share-result': 'shareresult' }[page] ?? page);
+    if (page === 'test') { countOnce('decide', S.decide); countOnce('goal', S.goal); }
+  }
   lastPage = page; UI.areaSwap = false;
   if (/^(area|traffic|conv|trial)$/.test(r)) UI.lastStep = { area: 1, traffic: 2, conv: 3, trial: 4 }[r];
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
@@ -743,6 +750,7 @@ function onRoute() { const { r, qs } = route(); if (qs) fromQuery(qs); UI.overla
 
 function set(key, raw) {
   const v = typeof DEFAULTS[key] === 'number' ? Number(raw) : raw;
+  if (['area', 'decide', 'goal', 'weeks', 'versions', 'split', 'trial'].includes(key) && S[key] !== v) count(key, String(v));
   if (key === 'area' && S.area !== v) UI.areaSwap = true;
   S[key] = v;
   if (key === 'trial') S.plans.forEach((x) => { if (x.t !== 'once') x.tr = v; });   // the trial question sets every plan; the plans editor can differ
@@ -754,6 +762,7 @@ function set(key, raw) {
 }
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
+app.addEventListener('click', (e) => { const pr = e.target.closest('[data-promo]'); if (pr) count('promo', pr.dataset.promo); });
 app.addEventListener('click', (e) => {
   const el = e.target.closest('[data-bd-toggle],[data-plan-idea],[data-next-from],[data-plans-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
@@ -764,8 +773,9 @@ app.addEventListener('click', (e) => {
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
-  if ('bdToggle' in el.dataset) return accToggle(el, '.bdbody', () => { UI.bdOpen = !UI.bdOpen; });
-  if (el.dataset.planIdea) {             // the idea's low end becomes the change to catch; the page shows the traffic it needs
+  if ('bdToggle' in el.dataset) { if (!UI.bdOpen) count('bydate', 'open'); return accToggle(el, '.bdbody', () => { UI.bdOpen = !UI.bdOpen; }); }
+  if (el.dataset.planIdea) {
+    count('ideaplan', el.dataset.planIdea);             // the idea's low end becomes the change to catch; the page shows the traffic it needs
     const it = ideasFor(planOf(S)).find((x) => x.id === el.dataset.planIdea); if (!it) return;
     S.target = it.lo; UI.targetFrom = it.t; UI.bdOpen = true; save(); history.replaceState(null, '', '#/test?' + toQuery());
     return closeThen(() => { UI.overlay = null; render(); document.querySelector('.bydate')?.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); });
@@ -789,18 +799,19 @@ app.addEventListener('click', (e) => {
     if (wide()) { render(); const t = document.getElementById('plans-inline'); if (t) { t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 900); } return; }
     UI.overlay = 'edit'; render(); setTimeout(() => document.getElementById('plans-inline')?.scrollIntoView({ block: 'center' }), 60); return;
   }
-  if (el.dataset.bydate) { const [w, t] = el.dataset.bydate.split('.').map(Number); S.weeks = w; S.traffic = t; syncTrack('traffic'); return planChanged(); }
+  if (el.dataset.bydate) { count('bydate', 'set'); const [w, t] = el.dataset.bydate.split('.').map(Number); S.weeks = w; S.traffic = t; syncTrack('traffic'); return planChanged(); }
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
   if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: 0 }); /* a new plan starts without a trial */ setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); sortPlans(); return planChanged(); }
   if ('moreIdeas' in el.dataset) { UI.allIdeas = !UI.allIdeas; return render(); }
-  if (el.dataset.idea) { UI.overlay = 'idea'; UI.idea = el.dataset.idea; return render(); }
+  if (el.dataset.idea) { count('idea', el.dataset.idea); UI.overlay = 'idea'; UI.idea = el.dataset.idea; return render(); }
   if (el.dataset.overlay) { UI.overlay = el.dataset.overlay; return render(); }
   if ('close' in el.dataset) return closeThen(() => { UI.overlay = null; render(); });
   if (el.dataset.tone) { UI.tone = el.dataset.tone; return render(); }
-  if ('copy' in el.dataset) return copy(document.getElementById('msgtext').innerText);
+  if ('copy' in el.dataset) { count('share', UI.tone); return copy(document.getElementById('msgtext').innerText); }
   if ('nativeShare' in el.dataset) {
+    count('share', UI.tone);
     const text = document.getElementById('msgtext').innerText;
     if (navigator.share) return navigator.share({ text }).catch(() => {});
     return copy(text);
