@@ -97,6 +97,7 @@ const SL = {
   trialRate: { lo: 0.5, hi: 25, l: '0.5', h: '25', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
   paidRate: { lo: 0.2, hi: 15, l: '0.2', h: '15', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
   trialView: { lo: 0.5, hi: 40, l: '0.5', h: '40', fmt: (v) => String(+v.toFixed(2)), round: (v) => Math.round(v * 20) / 20, unit: '%' },
+  target: { lo: 1, hi: 50, l: '1', h: '50', fmt: (v) => String(Math.round(v)), round: (v) => Math.max(1, Math.round(v)), unit: '%', linear: true },
   traffic: { lo: 1, hi: 100, l: '1', h: '100', fmt: (v) => String(Math.round(v)), round: (v) => Math.max(1, Math.round(v)), unit: '%', linear: true },
 };
 // each plan's share of buyers slides 0–100 and the other plans make room, so the shares always add up to 100
@@ -213,35 +214,39 @@ function planBlock(p) {
   // no “Judge by” or “Plans” rows: the headline names the metric and the form holds the plans (owner, 2026-11-02)
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'revenue per viewer, refunds')]);
   const prices = '';
-  return `<section class="card plan"><label class="what"><span>What changes in B</span><input data-what maxlength="120" placeholder="e.g. annual plan as the hero" value="${esc(S.what)}" aria-label="What changes in B"></label><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
+  return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
-  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
+  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div><label class="what"><span>What changes in B</span><input data-what maxlength="120" placeholder="e.g. annual plan as the hero" value="${esc(S.what)}" aria-label="What changes in B"></label></section>`;
 }
 // Plan by date (owner, 2026-11-02): the change worth catching → how much traffic each length needs, and who sees B.
 function suggestedTarget(p) {
   const lows = ideasFor(p).filter((r) => r.same && !r.lost && r.lo > 0).map((r) => r.lo).sort((a, b) => a - b);
   return lows.length ? Math.max(2, Math.round(lows[Math.floor((lows.length - 1) / 2)])) : 10;   // the middle low end of ideas measured on this metric
 }
-function dateBlock(p) {     // answers for the weeks picked above (one time choice on the page, owner 2026-11-02)
+function dateBlock(p) {     // optional (owner, 2026-11-02: “feels optional, MDE is jargon”): one row that opens in place
   if (p.notWorse) return '';
   const tg = S.target > 0 ? S.target : suggestedTarget(p), rows = p.byDate(tg), r = rows.find((x) => x.weeks === S.weeks) || rows[1];
-  const earliest = rows.find((x) => x.traffic);
+  const sum = r.traffic ? `+${tg}% needs ${r.traffic}% of traffic` : `+${tg}% is out of reach`;
+  const head = `<button class="bd-acc" data-bd-toggle aria-expanded="${!!UI.bdOpen}"><span><b>Plan for a specific change</b><small>${UI.bdOpen ? 'Pick the change, see the traffic it needs' : sum}</small></span>${UI.bdOpen ? I.up.replace('width="22" height="22"', 'width="16" height="16"') : I.chevD}</button>`;
+  if (!UI.bdOpen) return `<section class="card bydate">${head}</section>`;
+  const src = !(S.target > 0) || UI.targetFrom === '~' ? 'Suggested from the ideas below' : UI.targetFrom ? `Low end of “${esc(UI.targetFrom)}”` : '';
   let body;
   if (r.traffic) {
     const pct = r.traffic * (1 - p.split[0]), on = S.traffic === r.traffic;
-    body = `<div class="bdans"><b><span data-swap>${r.traffic}%</span> of traffic</b><span>for ${S.weeks} weeks. ${S.versions === 3 ? 'B and C get' : 'B gets'} ${t1(pct)}% of ${p.onb ? 'new users' : 'viewers'}, about ${k100(p.base * S.weeks * pct / 100)}.</span></div>
+    body = `<p class="bdans">Needs <b data-swap>${r.traffic}%</b> of traffic for ${S.weeks} weeks. ${S.versions === 3 ? 'B and C get' : 'B gets'} ${t1(pct)}% of ${p.onb ? 'new users' : 'viewers'}, about ${k100(p.base * S.weeks * pct / 100)}.</p>
     ${on ? '<span class="bdset done">Traffic set</span>' : `<button class="btn sec2 bdset" data-bydate="${S.weeks}.${r.traffic}">Set traffic to ${r.traffic}%</button>`}`;
   } else {
-    const alt = [];
+    const earliest = rows.find((x) => x.traffic), alt = [];
     if (earliest) alt.push(`Run longer: ${earliest.weeks} weeks at ${earliest.traffic}% of traffic`);
     if (p.decide !== 'trials') { const f = planOf({ ...S, decide: 'trials' }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Decide on trials: ${f.traffic}% for ${S.weeks} weeks`); }
     if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Drop C: ${f.traffic}% for ${S.weeks} weeks`); }
     if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50');
-    if (alt.length === 0) alt.push('Aim for a bigger change, or test where more people pass');
-    body = `<div class="bdans"><b>Out of reach in ${S.weeks} weeks</b><span>Even 100% of traffic catches ${t1(r.best)}% and up. Try:</span></div><ul class="bdalt">${alt.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+    if (!alt.length) alt.push('Aim for a bigger change, or test where more people pass');
+    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches ${t1(r.best)}% and up. Try:</p><ul class="bdalt">${alt.map((x) => `<li>${x}</li>`).join('')}</ul>`;
   }
-  return `<section class="card bydate"><label class="tgt"><span>Change to catch (MDE)</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length)}ch" aria-label="Change to catch, percent">%</span></label><span class="bdsrc">${S.target > 0 ? (UI.targetFrom ? `Low end of “${esc(UI.targetFrom)}”` : 'Your number') : 'Suggested: a typical low end of the ideas below. Tap an idea to plan for it.'}</span>${body}</section>`;
+  if (!(S.target > 0)) { S.target = tg; UI.targetFrom = '~'; }   // the slider shows a real value; '~' = still the suggestion
+  return `<section class="card bydate open">${head}<div class="bdbody">${railSlider('Smallest change to catch', 'target')}${src ? `<span class="bdsrc">${src}</span>` : ''}${body}</div></section>`;
 }
 // Ideas that fit this test: filtered by its plans and trial, ranked by the metric it decides on, six at most.
 function ideasFor(p) {
@@ -349,7 +354,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${p.notWorse ? '' : sec('Traffic you need')}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -701,7 +706,7 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-plan-idea],[data-next-from],[data-plans-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-bd-toggle],[data-plan-idea],[data-next-from],[data-plans-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
@@ -710,9 +715,10 @@ app.addEventListener('click', (e) => {
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
+  if ('bdToggle' in el.dataset) { UI.bdOpen = !UI.bdOpen; if (!UI.bdOpen && !UI.targetFrom) { /* keep the number */ } return render(); }
   if (el.dataset.planIdea) {             // the idea's low end becomes the change to catch; the page shows the traffic it needs
     const it = ideasFor(planOf(S)).find((x) => x.id === el.dataset.planIdea); if (!it) return;
-    S.target = it.lo; UI.targetFrom = it.t; save(); history.replaceState(null, '', '#/test?' + toQuery());
+    S.target = it.lo; UI.targetFrom = it.t; UI.bdOpen = true; save(); history.replaceState(null, '', '#/test?' + toQuery());
     return closeThen(() => { UI.overlay = null; render(); document.querySelector('.bydate')?.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); });
   }
   if (el.dataset.nextFrom) {              // the next test starts from what this one measured
@@ -765,6 +771,7 @@ app.addEventListener('input', (e) => {
     if (route().r === 'verdict' && readInputs(planOf(S))) { history.replaceState(null, '', '#/verdict?' + toQuery(true)); swapMain(verdictScreen()); }
   }
   UI.instant = true; setTimeout(() => { UI.instant = false; });
+  if (t.dataset.type === 'target') UI.targetFrom = '';
   if (t.dataset.type) { const k = t.dataset.type, v = num(t.value); if (v != null && (v > 0 || SL[k].linear)) { S[k] = SL[k].linear ? Math.min(100, v) : Math.min(SL[k].hi * 10, v); save(); syncTrack(k, t); refreshMain(); } }
   if ('date' in t.dataset) { if (/^\d{4}-\d{2}-\d{2}$/.test(t.value)) { S.start = t.value; save(); history.replaceState(null, '', '#/' + route().r + '?' + toQuery(route().r === 'verdict')); render(); } }
   if ('what' in t.dataset) { S.what = t.value.slice(0, 120); save(); const { r } = route(); if (r === 'test') history.replaceState(null, '', '#/test?' + toQuery()); return; }
