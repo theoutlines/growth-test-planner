@@ -143,7 +143,7 @@ function trialText() {          // paywall: each plan has its own trial
   return t.length > 1 ? 'trials vary by plan' : t[0] ? `${t[0]}-day trial` : 'no trial';
 }
 function summary(p) {
-  const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} views a week`, `${S.conv}% pay`];
+  const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, S.decide === 'paid' ? `${S.paidRate}% pay` : `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} views a week`, S.decide === 'trials' ? `${S.trialView}% start a trial` : `${S.conv}% pay`];
   bits.push(trialText());
   if (S.traffic !== 100) bits.push(`${S.traffic}% of traffic`);
   if (S.versions === 2 && S.split !== 50) bits.push(`${S.split}/${100 - S.split} split`);
