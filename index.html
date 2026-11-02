@@ -34,11 +34,11 @@
 
 <h2>Questions it answers</h2>
 <h3>How long should a paywall A/B test run?</h3>
-<p>As long as it takes for the change you expect to be bigger than the noise, in whole weeks, plus the longest free trial and about a week for refunds before you decide. Example: 50,000 paywall views a week, 2.75% of views end in a payment, weekly $6.99 and annual $39.99 sold half and half. Judged on revenue per paywall view, an A/B test catches changes of +12.9% or more after 2 weeks, +9.1% after 4, +7.5% after 6 and +6.5% after 8. With a 3-day trial the decision comes 3 + 7 days after traffic stops.</p>
+<p>As long as it takes for the change you expect to be bigger than the noise, in whole weeks, plus the longest free trial and about a week for refunds before you decide. Example: 50,000 people see the paywall a week, 2.75% of them pay, weekly $6.99 and annual $39.99 sold half and half. Judged on revenue per paywall viewer, an A/B test catches changes of +12.9% or more after 2 weeks, +9.1% after 4, +7.5% after 6 and +6.5% after 8. With a 3-day trial the decision comes 3 + 7 days after traffic stops.</p>
 <h3>What is the smallest change my test can detect?</h3>
 <p>It's the minimum detectable effect: the smallest lift the test can tell apart from chance at 95% confidence and 80% power. It shrinks as traffic and weeks grow. A copy tweak usually moves revenue by a few percent, so a test that only catches +9% won't see it: test something bolder or run longer.</p>
-<h3>Should I judge a paywall test on conversion or on revenue per view?</h3>
-<p>Prices, plans or trial changes: revenue per paywall view, because conversion can fall while revenue rises. Copy and layout changes: paid conversion answers faster.</p>
+<h3>Should I judge a paywall test on conversion or on revenue per viewer?</h3>
+<p>Prices, plans or trial changes: revenue per paywall viewer, because conversion can fall while revenue rises. Copy and layout changes: paid conversion answers faster.</p>
 <h3>Onboarding test: trial starts or paid conversion?</h3>
 <p>Trial starts answer in weeks. Paid conversion is what you care about, but you wait for the trial to end. Example: 20,000 new users a week, 5.8% start a trial: a 4-week test catches +8.0% or more on trial starts.</p>
 <h3>Why wait after the test stops?</h3>
@@ -57,7 +57,7 @@
 </ul>
 
 <h2>How the numbers work</h2>
-<p>Per-version sample size n = 2·(z₁₋α/₂ + z₁₋β)²·CV² / MDE² at 95% confidence and 80% power, solved for the change a given number of people can see. Revenue per view uses the price mix; conversion uses (1 − p)/p. Three versions use a Bonferroni correction. "Prove it's not worse" is one-sided with a 5% margin. Reading uses a chi-square split check, a delta-method range for money per person and a log-ratio range for conversion.</p>
+<p>Per-version sample size n = 2·(z₁₋α/₂ + z₁₋β)²·CV² / MDE² at 95% confidence and 80% power, solved for the change a given number of people can see. Revenue per viewer uses the price mix; conversion uses (1 − p)/p. Three versions use a Bonferroni correction. "Prove it's not worse" is one-sided with a 5% margin. Reading uses a chi-square split check, a delta-method range for money per person and a log-ratio range for conversion.</p>
 
 <h2>Made by</h2>
 <p>Ivan Polushin, growth and monetisation design lead. Code: <a href="https://github.com/theoutlines/growth-test-planner">github.com/theoutlines/growth-test-planner</a> (MIT). To check a variant before launch or read a test straight from Amplitude, Mixpanel, RevenueCat or Adapty, use the free <a href="https://github.com/theoutlines/growth-skills">Growth Skills</a> plugin for Claude.</p>
