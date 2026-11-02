@@ -188,7 +188,7 @@ function trialScreen() {
 function thresholdBlock(p) {
   if (p.notWorse) return `<section class="thr"><h1>To show B is no more than <span>5% worse</span>, run ${p.notWorse.weeks} weeks</h1><p class="sub">Proving “not worse” takes ${t1(p.notWorse.times)}× the people of catching a 10% win. Use it when the change has to ship anyway and you only need to know it doesn’t hurt.</p></section>`;
   const abs = p.unit === 'money'
-    ? `Money per paywall view: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
+    ? `Revenue per paywall view: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
     : `${p.metricName[0].toUpperCase() + p.metricName.slice(1)}: ${(p.today * 100).toFixed(2)}% today, ${(p.today * 100 * (1 + p.thr / 100)).toFixed(2)}% or more to show up. Smaller changes look like noise.`;
   return `<section class="thr"><h1>Your test catches changes of <span data-swap>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
   <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
@@ -200,8 +200,9 @@ function planBlock(p) {
   const unitP = p.onb ? ' new users' : '';
   const rows = [S.versions === 2 && S.split !== 50 ? ['People', `A ${k100(p.perVersion * p.split[0] * 2)} · B ${k100(p.perVersion * p.split[1] * 2)}`] : ['People per version', k100(p.perVersion) + unitP]];
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
-  rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
-  const prices = !p.onb ? `<button class="rowbtn" data-plans-go aria-label="Change plans"><span>Plans</span><span>${S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')} ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
+  rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'revenue per view, refunds')]);
+  if (!p.onb) rows.push(['Plans', S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')]);   // a summary; the plans are edited in the form
+  const prices = '';
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
@@ -235,7 +236,7 @@ function dateBlock(p) {
     alt.push(`Aim bigger: 8 weeks catch ${t1(rows[3].best)}%`);
     foot = `<div class="bdfoot"><b>Out of reach at 100%. Try:</b><ul>${alt.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
   }
-  return `<section class="card bydate"><label class="tgt"><span>Change to catch</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length)}ch" aria-label="Change to catch, percent">%</span></label>
+  return `<section class="card bydate"><label class="tgt"><span>Change to catch (MDE)</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length)}ch" aria-label="Change to catch, percent">%</span></label>
   <div class="bdrows"><div class="bdcols"><span>Decide</span><span>Traffic</span></div>${rows.map(row).join('')}</div>${foot}</section>`;
 }
 // Ideas that fit this test: filtered by its plans and trial, ranked by the metric it decides on, six at most.
@@ -291,21 +292,26 @@ function ideaCard(p) {
 // Plans inside the form (owner, 2026-11-02): they shape the answer only when deciding on money, so they sit in the form then;
 // otherwise one Free trial control does the job (it sets every plan's trial).
 function plansInline() {
-  const many = S.plans.length > 1, w = shares(S.plans);
+  const many = S.plans.length > 1, w = shares(S.plans), open = UI.plansOpen;
+  const sum = S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ');
+  const head = `<button class="pi-acc" data-plans-toggle aria-expanded="${!!open}"><span>Plans</span><span>${sum}${open ? I.up.replace('width="22" height="22"', 'width="16" height="16"') : I.chevD}</span></button>`;
+  if (!open) return `<div class="plans-inline" id="plans-inline">${head}</div>`;
   const types = (x) => Object.entries(PLAN_TYPES).map(([k, v]) => `<option value="${k}"${x.t === k ? ' selected' : ''}>${v[0]}</option>`).join('') + (many ? '<option value="-">Remove</option>' : '');
   const trials = (x) => [[0, 'None'], [3, '3d'], [7, '7d'], [14, '14d+']].map(([d, t]) => `<option value="${d}"${planTrial(x) === d ? ' selected' : ''}>${t}</option>`).join('');
-  const row = (x, i) => `<div class="pi-row"><div class="pi-f dd"><select data-plan-type="${i}" aria-label="Plan ${i + 1} type">${types(x)}</select>${I.chevD}</div>
+  const mixCol = false;      // the share of sales sits under the rows as sliders: four columns don't fit 320
+  const row = (x, i) => `<div class="pi-row${mixCol ? ' mix' : ''}"><div class="pi-f dd"><select data-plan-type="${i}" aria-label="Plan ${i + 1} type">${types(x)}</select>${I.chevD}</div>
     <label class="pi-f"><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label>
     ${x.t === 'once' ? '<span class="pi-f pi-na">—</span>' : `<div class="pi-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[x.t][1]} plan">${trials(x)}</select>${I.chevD}</div>`}
-    ${many ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Buyers who pick the ${PLAN_TYPES[x.t][1]} plan, percent"><span>%</span></label>` : '<span class="pi-f pi-na">100%</span>'}</div>`;
-  return `<div class="plans-inline" id="plans-inline"><span class="lab">Plans</span><div class="pi-head"><span>Plan</span><span>Price</span><span>Trial</span><span>Buyers</span></div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}</div>`;
+    ${mixCol ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Share of sales, ${PLAN_TYPES[x.t][1]} plan"><span>%</span></label>` : ''}</div>`;
+  const mix = S.plans.length === 2 ? railSlider(`${PLAN_TYPES[S.plans[1].t][0]} share of sales`, 'sh1', true) : many ? S.plans.map((x, i) => railSlider(`${PLAN_TYPES[x.t][0]} share of sales`, 'sh' + i, true)).join('') : '';
+  return `<div class="plans-inline open" id="plans-inline">${head}<div class="pi-head${mixCol ? ' mix' : ''}"><span></span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${mix}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}</div>`;
 }
 function controls() {
   const onb = S.area === 'onboarding';
-  const dec = decideOptions(S.area).map((v) => [v, { money: 'Money', paid: 'Paid', trials: 'Trials' }[v]]);
+  const dec = decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]);
   // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
-  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trials: share who start a trial, answers in weeks. Paid: share who pay, waits for the trial to end.' : 'Money: earnings per view, for changes to prices, plans or the trial offer. Paid: share who pay, faster for copy and layout. Trials: share who start a trial, fastest, but not money yet.'}</span>
+  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trials: trial start rate, answers in weeks. Conversion: share of new users who pay, waits for the trial to end.' : 'Revenue: per paywall view, for changes to prices, plans or the trial offer. Conversion: share of views that pay, faster for copy and layout. Trials: trial start rate, fastest, but not revenue yet.'}</span>
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
   ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
     : railSlider('Paywall views a week', 'views') + (S.decide === 'trials' ? railSlider('Views that start a trial', 'trialView') : railSlider('Views that end in payment', 'conv'))}
@@ -419,7 +425,7 @@ const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="no
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
   const p = planOf(S);
-  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money', paid: 'Paid', trials: 'Trials' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}</div>` : '';
+  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}</div>` : '';
   const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
@@ -447,7 +453,7 @@ function verdictOf(p) {
   const inp = readInputs(p); if (!inp) return null;
   const r = readOf(S, inp, p), m = r.metric;
   const range = `${sign(m.lo)} to ${sign(m.hi)}`;
-  const tag = `Decision day · ${S.goal === 'notworse' ? 'goal: not worse than A by 5%' : (p.decide === 'money' ? 'money per paywall view' : 'decided on ' + p.metricName)}`;
+  const tag = `Decision day · ${S.goal === 'notworse' ? 'goal: not worse than A by 5%' : (p.decide === 'money' ? 'revenue per paywall view' : 'decided on ' + p.metricName)}`;
   const paidBad = p.decide === 'trials' && r.checks.some((c) => c.label.startsWith('Paid') && !c.ok);
   const early = p.decide === 'trials' && !inp[LETTERS()[1]].paid.some((n) => n > 0) && r.verdict.startsWith('win');
   const L = r.lead, three = r.versions.length > 1, other = three ? r.versions.find((x) => x.v !== L) : null;
@@ -471,7 +477,7 @@ function verdictOf(p) {
     const s = r.source, a = Math.round(s.topA * 100), b = Math.round(s.topB * 100);
     if (p.decide === 'money' && s.fromMix != null && s.fromMix > 0.5 && s.fromMix <= 1) source = `About ${Math.round(s.fromMix * 100)}% from plans: the ${s.top} plan went from ${a}% to ${b}% of buyers. ${more(s.conv)} people paid. ${L} ${m.lift >= 0 ? `sold the ${s.top} plan better` : `sold the ${s.top} plan worse`}.`;
     else if (s.fromConv != null && s.fromConv >= 0 && s.fromMix >= 0) source = `${cap(more(s.conv))} people paid; the plan mix barely moved (${s.top} ${a}% → ${b}%). So ${L} changed how many people pay, not which plan they pick.`;
-    else source = `Paid conversion ${sign(s.conv * 100)}, money per payer ${sign(s.perPayer * 100)}. They pulled in different directions; the net is their difference.`;
+    else source = `Paid conversion ${sign(s.conv * 100)}, revenue per payer ${sign(s.perPayer * 100)}. They pulled in different directions; the net is their difference.`;
   }
   const note = r.verdict === 'broken' ? 'Fix this before you trust any number.' : paidBad ? 'More trials, fewer payments: the extra trials didn’t pay.' : r.checks.some((c) => !c.ok) ? 'Something went wrong. Fix it before you trust the result.'
     : r.split.warn ? `Groups split ${r.split.all.map((x) => t1(x)).join(' / ')}. On a test this big that gap is visible but small: it can shift the result by less than 1%. Read on, but find what dropped people from one group.`
@@ -668,7 +674,7 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-plans-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
@@ -677,6 +683,7 @@ app.addEventListener('click', (e) => {
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
+  if ('plansToggle' in el.dataset) { UI.plansOpen = !UI.plansOpen; return render(); }
   if ('plansGo' in el.dataset) {
     if (S.decide !== 'money') { S.decide = 'money'; save(); }
     if (wide()) { render(); const t = document.getElementById('plans-inline'); if (t) { t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 900); } return; }
