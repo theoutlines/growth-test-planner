@@ -475,7 +475,7 @@ main.page.docked { padding-bottom: 104px; }   /* the last row and the footer sta
 .bydate { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
 .bydate .tgt { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 15px; color: var(--t75); }
 .bydate .tbox { display: inline-flex; align-items: center; height: 44px; padding: 0 12px; border-radius: 10px; background: var(--s05); font-size: 20px; font-weight: 600; color: var(--w); font-variant-numeric: tabular-nums; }
-.bydate .tbox input { padding: 0; background: none; border: 0; outline: 0; color: inherit; font: inherit; font-size: 20px; text-align: right; caret-color: var(--acc); }
+.bydate .tbox input { padding: 0; background: none; border: 0; outline: 0; color: inherit; font: inherit; font-size: 20px; text-align: left; caret-color: var(--acc); }
 .bydate .tbox:focus-within { background: var(--s10); }
 .bdsub { font-size: 13px; color: var(--t50); margin-top: -4px; }
 .bdrows { display: flex; flex-direction: column; gap: 6px; }
