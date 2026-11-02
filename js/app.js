@@ -297,8 +297,9 @@ function plansInline() {
     <label class="pi-f"><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label>
     ${x.t === 'once' ? '<span class="pi-f pi-na">—</span>' : `<div class="pi-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[x.t][1]} plan">${trials(x)}</select>${I.chevD}</div>`}
     ${mixCol ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Share of sales, ${PLAN_TYPES[x.t][1]} plan"><span>%</span></label>` : ''}</div>`;
-  const mix = S.plans.length === 2 ? railSlider(`${PLAN_TYPES[S.plans[1].t][0]} share of sales`, 'sh1', true) : many ? S.plans.map((x, i) => railSlider(`${PLAN_TYPES[x.t][0]} share of sales`, 'sh' + i, true)).join('') : '';
-  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${mix}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}</div></div></div>`;
+  // share of sales: one bar for all plans, a segment per plan in the same order as the rows; drag a divider (owner, 2026-11-02: a lone slider read as “50% of what?”)
+  const mix = many ? `<div class="mix"><span class="mixlab">Share of sales</span><div class="mixnames" aria-hidden="true">${S.plans.map((x, i) => `<span style="flex:${Math.max(0.001, w[i])} 0 0">${PLAN_TYPES[x.t][0]}</span>`).join('')}</div><div class="mixbar" data-mixbar>${S.plans.map((x, i) => `<span class="mseg" style="flex:${Math.max(0.001, w[i])} 0 0"><i>${Math.round(w[i] * 100)}%</i></span>${i < S.plans.length - 1 ? `<span class="mh" data-mix-handle="${i}" role="slider" tabindex="0" aria-label="Between ${PLAN_TYPES[x.t][0]} and ${PLAN_TYPES[S.plans[i + 1].t][0]}" aria-valuetext="${PLAN_TYPES[x.t][0]} ${Math.round(w[i] * 100)}%, ${PLAN_TYPES[S.plans[i + 1].t][0]} ${Math.round(w[i + 1] * 100)}%"></span>` : ''}`).join('')}</div></div>` : '';
+  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}</div></div></div>`;
 }
 function controls() {
   const onb = S.area === 'onboarding';
@@ -725,6 +726,8 @@ app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if
 app.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && UI.overlay) { closeThen(() => { UI.overlay = null; render(); }); return; }
   if (e.target.dataset.type && e.key === 'Enter') e.target.blur();
+  const mh = e.target.closest('[data-mix-handle]');
+  if (mh && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const i = +mh.dataset.mixHandle, w = shares(S.plans).map((x) => x * 100); mixSet(i, w.slice(0, i + 1).reduce((t, x) => t + x, 0) + (e.key === 'ArrowRight' ? 5 : -5)); planChanged(); setTimeout(() => document.querySelector(`[data-mix-handle="${i}"]`)?.focus()); e.preventDefault(); return; }
   const tr = e.target.closest('[data-slide]');
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
 });
@@ -748,12 +751,23 @@ function refreshMain() {           // update the answer without touching the con
 }
 // dragging a track
 let drag = null;
+// share-of-sales bar: a divider moves sales between the two plans it sits between
+let mixDrag = null;
+function mixSet(i, boundary) {      // boundary: % from the bar's left edge
+  const w = shares(S.plans).map((x) => x * 100), c0 = w.slice(0, i).reduce((t, x) => t + x, 0), pair = w[i] + w[i + 1];
+  const a = Math.round(Math.max(0, Math.min(pair, boundary - c0))); w[i] = a; w[i + 1] = Math.round(pair) - a;
+  S.plans.forEach((x, j) => { x.s = Math.round(w[j]); });
+  const bar = document.querySelector('[data-mixbar]'); if (bar) { const t = S.plans.reduce((q, x) => q + x.s, 0) || 1; bar.querySelectorAll('.mseg').forEach((sg, j) => { sg.style.flex = `${Math.max(0.001, S.plans[j].s / t)} 0 0`; sg.querySelector('i').textContent = Math.round(S.plans[j].s / t * 100) + '%'; }); bar.previousElementSibling?.querySelectorAll('span').forEach((n, j) => { n.style.flex = `${Math.max(0.001, S.plans[j].s / t)} 0 0`; }); }
+  refreshMain();
+}
 app.addEventListener('pointerdown', (e) => {
+  const h = e.target.closest('[data-mix-handle]');
+  if (h) { mixDrag = { i: +h.dataset.mixHandle, bar: h.closest('[data-mixbar]') }; h.setPointerCapture(e.pointerId); UI.instant = true; e.preventDefault(); return; }
   const tr = e.target.closest('[data-slide]'); if (!tr) return;
   drag = { tr, k: tr.dataset.slide }; tr.classList.add('dragging'); UI.instant = true; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
 });
-app.addEventListener('pointermove', (e) => { if (drag) move(e); });
-app.addEventListener('pointerup', () => { if (drag) { drag.tr.classList.remove('dragging'); drag = null; UI.instant = false; save(); if (route().r !== 'test') render(); } });
+app.addEventListener('pointermove', (e) => { if (mixDrag) { const b = mixDrag.bar.getBoundingClientRect(); mixSet(mixDrag.i, (e.clientX - b.left) / b.width * 100); return; } if (drag) move(e); });
+app.addEventListener('pointerup', () => { if (mixDrag) { mixDrag = null; UI.instant = false; planChanged(); return; } if (drag) { drag.tr.classList.remove('dragging'); drag = null; UI.instant = false; save(); if (route().r !== 'test') render(); } });
 function move(e) {
   const b = drag.tr.getBoundingClientRect();
   const p = Math.max(0, Math.min(100, (e.clientX - b.left) / b.width * 100));
