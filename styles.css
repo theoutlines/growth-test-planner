@@ -98,7 +98,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .next { position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; overflow: hidden; font-size: 16px; font-weight: 500; background: var(--s10); }
 .next i { position: absolute; inset: 0 auto 0 0; background: rgba(255,255,255,.22); }
 .next span { position: relative; }
-.next.full, .btn { background: var(--acc); color: var(--on-acc); }
+.next.full, .btn { background: var(--w); color: #151515; }
 .btn { display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; font-size: 16px; font-weight: 500; width: 100%; }
 .btn.sec2 { background: var(--s06); color: var(--t80); }
 
