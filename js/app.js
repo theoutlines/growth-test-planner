@@ -290,11 +290,11 @@ function ideaCard(p) {
 }
 function controls() {
   const onb = S.area === 'onboarding';
-  const dec = decideOptions(S.area).map((v) => [v, { money: 'Money / view', paid: 'Paid', trials: 'Trial starts' }[v]]);
+  const dec = decideOptions(S.area).map((v) => [v, { money: 'Money', paid: 'Paid', trials: 'Trials' }[v]]);
   // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
-  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster. Trial starts answer fastest but don’t show who pays.'}</span>
-  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}
+  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trials answer in weeks. Paid answers what you care about, after the trial.' : 'Money per view for prices, plans or trial. Paid answers faster for copy and layout. Trials answer fastest but don’t show who pays.'}</span>
+  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
   ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
     : railSlider('Paywall views a week', 'views') + (S.decide === 'trials' ? railSlider('Views that start a trial', 'trialView') : railSlider('Views that end in payment', 'conv'))}
   ${onb ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : ''}
@@ -405,7 +405,7 @@ const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="no
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
   const p = planOf(S);
-  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money / view', paid: 'Paid', trials: 'Trial starts' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>` : '';
+  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money', paid: 'Paid', trials: 'Trials' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}</div>` : '';
   const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
