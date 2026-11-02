@@ -84,7 +84,7 @@ const I = {
   money: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path fill-rule="evenodd" d="M1 5h20v12H1zM11 7.5l3.5 3.5-3.5 3.5-3.5-3.5z" fill="#FFFFFF"/></svg>',
   flag: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 1h3v20H3zM6 2h13l-4 5 4 5H6z" fill="#FFFFFF"/></svg>',
 };
-const ACC = '#FF6B3D';
+const ACC = '#FF4C00';
 const G = {
   onboarding: `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="10" y="10" width="13" height="4" fill="#FFF"/><rect x="25.5" y="10" width="13" height="4" fill="#FFF"/><rect x="41" y="10" width="13" height="4" fill="#4A4A4A"/><rect x="10" y="21" width="36" height="7" fill="#FFF"/><rect x="10" y="35" width="44" height="12" fill="#4A4A4A"/><rect x="10" y="51" width="44" height="12" fill="${ACC}"/><rect x="10" y="67" width="44" height="12" fill="#4A4A4A"/></svg>`,
   paywall: `<svg width="64" height="88" viewBox="0 0 64 88" aria-hidden="true"><rect width="64" height="88" rx="10" fill="#2C2C2C"/><rect x="10" y="12" width="40" height="7" fill="#FFF"/><rect x="10" y="23" width="28" height="4" fill="#4A4A4A"/><rect x="10" y="36" width="21" height="28" fill="${ACC}"/><rect x="33" y="36" width="21" height="28" fill="#4A4A4A"/><rect x="14" y="42" width="10" height="4" fill="#FFF"/><rect x="37" y="42" width="10" height="4" fill="#7A7A7A"/><rect x="10" y="70" width="44" height="10" fill="#FFF"/></svg>`,
@@ -298,7 +298,7 @@ function ideaCard(p) {
   const catches = it.lost ? 'This lost in published tests. Don’t run it hoping for a win.' : S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
   const range = (it.about ? 'about ' : '') + (it.lo === it.hi ? `${sgn(it.lo)}%` : `${sgn(it.lo)}% to ${sgn(it.hi)}%`);
   const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}${S.area === 'onboarding' && (COUNT[it.id] || {})[k] === 0 ? ' in Adapty’s library' : ''}`).join(', ');
-  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:500;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
   <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>${!it.lost && it.same && S.goal !== 'notworse' && it.lo > 0 ? `<button class="btn sec2" data-plan-idea="${it.id}">Plan for this idea: catch +${it.lo}%</button>` : ''}`;
 }
 // Plans inside the form (owner, 2026-11-02): they shape the answer only when deciding on money, so they sit in the form then;
@@ -352,7 +352,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
     <div class="plrow"><label class="rr"><span>Price</span><div style="grid-template-columns:1fr"><label><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label></div></label>
     ${x.t === 'once' ? '' : pseg('Free trial', i, 'tr', [[0, 'None'], [3, '3'], [7, '7'], [14, '14+']])}</div>
     ${many ? railSlider('Buyers who pick it', 'sh' + i, true) : ''}</section>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:600">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
   ${S.plans.map(one).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}`;
 }
 function testScreen() {
@@ -520,7 +520,7 @@ function rangeBar(m, win, margin) {
   const x = (v) => Math.max(0, Math.min(100, (v - dmin0 + pad) / (dmax0 - dmin0 + 2 * pad) * 100));
   const cross = lo < 0 && hi > 0;
   const zero = margin == null ? `<span class="zero" style="left:${x(0)}%;top:${cross ? -2 : 2}px;height:${cross ? 6 : 26}px"></span>` : `<span class="lim" style="left:${x(margin)}%"></span>`;
-  const lbl = margin == null ? `<span style="left:${x(0)}%;transform:translateX(-50%)">no change</span>` : `<span style="left:${x(margin)}%;padding-left:6px;color:${ACC};font-weight:600">${sign(margin)} limit</span>`;
+  const lbl = margin == null ? `<span style="left:${x(0)}%;transform:translateX(-50%)">no change</span>` : `<span style="left:${x(margin)}%;padding-left:6px;color:${ACC};font-weight:500">${sign(margin)} limit</span>`;
   return `<div class="rb" role="img" aria-label="Likely change from ${sign(lo)} to ${sign(hi)}, best guess ${sign(m.lift)}"><div class="lbls">${lbl}</div><div class="bar"><span class="base"></span>${zero}<span class="range" style="left:${x(lo)}%;width:${x(hi) - x(lo)}%"><span>${sign(lo)}</span><span>${sign(hi)}</span></span></div></div>`;
 }
 function vsPlot(versions, lead, margin) {     // A/B/C: both versions on one scale, one "no change" (or limit) line through both rows
