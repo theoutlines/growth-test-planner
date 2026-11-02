@@ -545,7 +545,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 /* share of sales: one bar, a segment per plan, draggable dividers */
 .mix { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
 .mixlab { font-size: 14px; font-weight: 500; color: var(--t75); }
-.mixbar { position: relative; display: flex; height: 44px; border-radius: 10px; overflow: hidden; background: var(--s07); touch-action: none; }
+.mixbar { position: relative; display: flex; height: 32px; border-radius: 10px; overflow: hidden; background: var(--s07); touch-action: none; }
 .mseg { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 4px; overflow: hidden; white-space: nowrap; font-size: 14px; }
 .mseg:nth-child(4n+1) { background: rgba(255,255,255,.16); }
 .mseg:nth-child(4n+3) { background: rgba(255,255,255,.07); }
@@ -554,5 +554,6 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .mh { position: relative; flex: none; width: 3px; margin: 0 -1px; background: var(--w); border-radius: 2px; cursor: ew-resize; z-index: 1; height: 24px; align-self: center; }
 .mh::before { content: ''; position: absolute; inset: -12px -14px; }
 .mh:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
-.mixnames { display: flex; gap: 3px; font-size: 13px; color: var(--t60); margin-bottom: -2px; }
-.mixnames span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
+.mixnames { position: relative; height: 18px; font-size: 13px; color: var(--t60); margin-bottom: -2px; }
+.mixnames span { position: absolute; top: 0; white-space: nowrap; }
+.mixnames b { font-weight: 600; color: var(--w); font-variant-numeric: tabular-nums; }
