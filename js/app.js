@@ -613,9 +613,16 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-copytext],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-ltab],[data-copytext],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.copytext) return copy(el.dataset.copytext);
+  if (el.dataset.ltab) {             // landing tabs: switch the panel in place, no re-render
+    const g = el.dataset.ltabGroup, root = el.closest('section') || app;
+    root.querySelectorAll(`[data-ltab-group="${g}"]`).forEach((t) => t.setAttribute('aria-selected', String(t === el)));
+    root.querySelectorAll(`[data-lpanel-group="${g}"]`).forEach((p) => { p.hidden = p.dataset.lpanel !== el.dataset.ltab; });
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduced() ? 'auto' : 'smooth' });
+    return;
+  }
   if (el.dataset.go) {
     e.preventDefault();
     const [r, arg] = el.dataset.go.split(':');
