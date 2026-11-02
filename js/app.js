@@ -201,7 +201,7 @@ function planBlock(p) {
   const rows = [S.versions === 2 && S.split !== 50 ? ['People', `A ${k100(p.perVersion * p.split[0] * 2)} · B ${k100(p.perVersion * p.split[1] * 2)}`] : ['People per version', k100(p.perVersion) + unitP]];
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
-  const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change plans"><span>Plans</span><span>${S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')} ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
+  const prices = !p.onb ? `<button class="rowbtn" data-plans-go aria-label="Change plans"><span>Plans</span><span>${S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')} ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
@@ -288,6 +288,18 @@ function ideaCard(p) {
   return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
   <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>`;
 }
+// Plans inside the form (owner, 2026-11-02): they shape the answer only when deciding on money, so they sit in the form then;
+// otherwise one Free trial control does the job (it sets every plan's trial).
+function plansInline() {
+  const many = S.plans.length > 1, w = shares(S.plans);
+  const types = (x) => Object.entries(PLAN_TYPES).map(([k, v]) => `<option value="${k}"${x.t === k ? ' selected' : ''}>${v[0]}</option>`).join('') + (many ? '<option value="-">Remove</option>' : '');
+  const trials = (x) => [[0, 'None'], [3, '3d'], [7, '7d'], [14, '14d+']].map(([d, t]) => `<option value="${d}"${planTrial(x) === d ? ' selected' : ''}>${t}</option>`).join('');
+  const row = (x, i) => `<div class="pi-row"><div class="pi-f dd"><select data-plan-type="${i}" aria-label="Plan ${i + 1} type">${types(x)}</select>${I.chevD}</div>
+    <label class="pi-f"><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label>
+    ${x.t === 'once' ? '<span class="pi-f pi-na">—</span>' : `<div class="pi-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[x.t][1]} plan">${trials(x)}</select>${I.chevD}</div>`}
+    ${many ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Buyers who pick the ${PLAN_TYPES[x.t][1]} plan, percent"><span>%</span></label>` : '<span class="pi-f pi-na">100%</span>'}</div>`;
+  return `<div class="plans-inline" id="plans-inline"><span class="lab">Plans</span><div class="pi-head"><span>Plan</span><span>Price</span><span>Trial</span><span>Buyers</span></div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}</div>`;
+}
 function controls() {
   const onb = S.area === 'onboarding';
   const dec = decideOptions(S.area).map((v) => [v, { money: 'Money', paid: 'Paid', trials: 'Trials' }[v]]);
@@ -297,7 +309,7 @@ function controls() {
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
   ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
     : railSlider('Paywall views a week', 'views') + (S.decide === 'trials' ? railSlider('Views that start a trial', 'trialView') : railSlider('Views that end in payment', 'conv'))}
-  ${onb ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : ''}
+  ${onb || S.decide !== 'money' ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : plansInline()}
   ${railSlider('Traffic in test', 'traffic')}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${S.versions === 2 ? seg('Split A / B', 'split', [[50, '50/50'], [70, '70/30'], [80, '80/20'], [90, '90/10']]) : ''}</div>`;
@@ -656,7 +668,7 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
@@ -664,6 +676,11 @@ app.addEventListener('click', (e) => {
     if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('traffic'); }
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
+  }
+  if ('plansGo' in el.dataset) {
+    if (S.decide !== 'money') { S.decide = 'money'; save(); }
+    if (wide()) { render(); const t = document.getElementById('plans-inline'); if (t) { t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 900); } return; }
+    UI.overlay = 'edit'; render(); setTimeout(() => document.getElementById('plans-inline')?.scrollIntoView({ block: 'center' }), 60); return;
   }
   if (el.dataset.bydate) { const [w, t] = el.dataset.bydate.split('.').map(Number); S.weeks = w; S.traffic = t; syncTrack('traffic'); return planChanged(); }
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
@@ -701,7 +718,9 @@ app.addEventListener('input', (e) => {
   if ('target' in t.dataset) { const v = num(t.value); if (v != null && v > 0 && v <= 500) { S.target = v; save(); refreshMain(); } }
   if (t.dataset.planPrice) { const v = num(t.value); if (v != null && v > 0) { S.plans[+t.dataset.planPrice].p = v; save(); refreshMain(); } }
 });
-app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if (pt !== undefined) { const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; return planChanged(); } if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
+app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if (pt !== undefined) { if (e.target.value === '-') { S.plans.splice(+pt, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); } const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; return planChanged(); }
+  const ptr = e.target.dataset.planTrial; if (ptr !== undefined) { S.plans[+ptr].tr = Number(e.target.value); return planChanged(); }
+  const psh = e.target.dataset.planShare; if (psh !== undefined) { const v = num(e.target.value); if (v != null) { setShare(+psh, v); return planChanged(); } } if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
 app.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && UI.overlay) { closeThen(() => { UI.overlay = null; render(); }); return; }
   if (e.target.dataset.type && e.key === 'Enter') e.target.blur();
