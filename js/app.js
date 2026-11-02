@@ -122,7 +122,7 @@ const valOf = (k, pct) => SL[k].round(SL[k].linear ? SL[k].lo + (SL[k].hi - SL[k
 
 function bigValue(k) {
   const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length));
-  return `<div class="big"><label class="num"><span class="sr">Value</span><input data-type="${k}" inputmode="decimal" value="${txt}" style="font-size:${size}px;width:${Math.max(2, txt.length) * size * 0.56}px">${SL[k].unit ? `<span class="unit">${SL[k].unit}</span>` : ''}</label>
+  return `<div class="big"><label class="num"><span class="sr">Value</span><input data-type="${k}" inputmode="decimal" value="${txt}" style="font-size:${size}px;width:${Math.max(2, txt.length) + 0.1}ch">${SL[k].unit ? `<span class="unit">${SL[k].unit}</span>` : ''}</label>
   ${track(k)}${rangeNote(k)}</div>`;
 }
 // a typed rate above the slider's top is almost always a typo (2.75 → 32.75): say so, softly, next to the number
@@ -842,7 +842,7 @@ function syncTrack(k, except) {
     if (inp === except) return;                                  // never rewrite the field someone is typing in
     inp.value = txt;
     if ('small' in inp.dataset) inp.size = Math.max(2, txt.length);
-    else { const size = Math.min(80, Math.floor(600 / txt.length)); inp.style.fontSize = size + 'px'; inp.style.width = Math.max(2, txt.length) * size * 0.56 + 'px'; }
+    else { const size = Math.min(80, Math.floor(600 / txt.length)); inp.style.fontSize = size + 'px'; inp.style.width = (Math.max(2, txt.length) + 0.1) + 'ch';   /* ch = one tabular digit in this font, so the box never clips the last digit */ }
   });
 }
 function refreshMain() {           // update the answer without touching the control being used
