@@ -494,3 +494,5 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .bdfoot { margin: 0; font-size: 14px; line-height: 1.45; color: var(--t60); }
 .bdfoot b { color: var(--w); font-weight: 600; }
 .bdfoot ul { margin: 6px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+
+.plan .dates small.chk { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 400; letter-spacing: 0; color: var(--t60); }

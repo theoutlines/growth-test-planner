@@ -97,11 +97,13 @@ export function planOf(s) {
   const thr = mdeAt(weeks);
   const start = s.start && /^\d{4}-\d{2}-\d{2}$/.test(s.start) ? new Date(s.start + 'T00:00:00') : nextMonday(new Date());
   const decideDate = addDays(start, weeks * 7 + wait + watch);
+  // decided on trial starts: an early read; paid is checked once the last trials have billed
+  const trialLen = onb ? s.trial : longestTrial(s.plans), checkPaid = decide === 'trials' && trialLen > 0 ? addDays(start, weeks * 7 + trialLen) : null;
   // planning by date: the traffic share each length needs to catch `target`% (null when even 100% isn't enough)
   const base = onb ? s.users : s.views, sh = splitOf(s);
   const need = (tg, w, c = cv2, vers = s.versions) => K * c * vers * spread(s) / (base * w * (tg / 100) ** 2) * 100;
   const byDate = (tg) => [2, 4, 6, 8].map((w) => { const t = need(tg, w); return { weeks: w, traffic: t <= 100 ? Math.max(1, Math.ceil(t)) : null, best: Math.sqrt(K * cv2 * s.versions * spread(s) / (base * w)) * 100 }; });
-  return { onb, decide, metricName, unit, today, thr, options, weeks, notWorse, start, decideDate, collect: weeks * 7, wait, watch,
+  return { onb, decide, metricName, unit, today, thr, options, weeks, notWorse, start, decideDate, collect: weeks * 7, wait, watch, checkPaid,
            perVersion: perVersionWeek * weeks * spread(s), exposure, p, byDate, need, split: sh,
            seeB: s.traffic * (1 - sh[0]), base };
 }
@@ -151,6 +153,10 @@ function pairOf(s, plan, A, X, z, tag) {
   if (plan.decide === 'paid' && payA && payX && s.area === 'paywall') {      // money per view stays a guardrail
     const [g, , gHi] = relCI(mA, vA, A.people, mX, vX, X.people, z);
     out.checks.push({ label: `Money per view ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
+  }
+  if (plan.decide === 'trials' && payA && payX) {        // trial starts decide; paid, once in, must not go the other way
+    const [pl, , ph] = propRel(payA, A.people, payX, X.people, z);
+    out.checks.push({ label: `Paid ${sign(pl * 100)}${tag}`, ok: ph > 0, detail: `${(payA / A.people * 100).toFixed(2)}% → ${(payX / X.people * 100).toFixed(2)}%` });
   }
   if (A.refunds != null && X.refunds != null && payA && payX) {
     const zr = z2(A.refunds, payA, X.refunds, payX);
