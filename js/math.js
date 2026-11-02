@@ -40,7 +40,7 @@ export const DEFAULTS = {
   // paywall plans: type (week | month | year | once), price, share of buyers (weights, shown as %), free-trial days
   plans: [{ t: 'week', p: 6.99, s: 50, tr: 3 }, { t: 'year', p: 39.99, s: 50, tr: 3 }],
 };
-export const PLAN_TYPES = { week: ['Week', 'weekly', 'wk'], month: ['Month', 'monthly', 'mo'], year: ['Year', 'annual', 'yr'], once: ['One-time', 'one-time', 'once'] };
+export const PLAN_TYPES = { week: ['Week', 'weekly', 'wk'], month: ['Month', 'monthly', 'mo'], year: ['Year', 'annual', 'yr'], once: ['Lifetime', 'lifetime', 'lifetime'] };
 export const fresh = () => JSON.parse(JSON.stringify(DEFAULTS));   // DEFAULTS holds an array: never share it
 export const shares = (plans) => { const t = plans.reduce((a, x) => a + x.s, 0) || 1; return plans.map((x) => x.s / t); };
 export const planTrial = (x) => (x.t === 'once' ? 0 : x.tr);
@@ -76,7 +76,7 @@ export function planOf(s) {
       const w = shares(s.plans), mu = s.plans.reduce((a, x, i) => a + w[i] * x.p, 0);
       const v = s.plans.reduce((a, x, i) => a + w[i] * x.p ** 2, 0) - mu * mu;
       cv2 = (v / mu ** 2 + 1) / p - 1;
-      metricName = 'money per paywall view'; today = mu * p; unit = 'money';
+      metricName = 'revenue per paywall view'; today = mu * p; unit = 'money';
     } else { cv2 = (1 - p) / p; metricName = 'paid conversion'; today = p; unit = 'rate'; }
   } else {
     p = decide === 'trials' ? s.trialRate / 100 : s.paidRate / 100;
@@ -150,9 +150,9 @@ function pairOf(s, plan, A, X, z, tag) {
   else if (plan.decide === 'trials') [lift, lo, hi] = propRel(A.trials, A.people, X.trials, X.people, z);
   else [lift, lo, hi] = propRel(payA, A.people, payX, X.people, z);
   out.metric = { lift: lift * 100, lo: lo * 100, hi: hi * 100 };
-  if (plan.decide === 'paid' && payA && payX && s.area === 'paywall') {      // money per view stays a guardrail
+  if (plan.decide === 'paid' && payA && payX && s.area === 'paywall') {      // revenue per view stays a guardrail
     const [g, , gHi] = relCI(mA, vA, A.people, mX, vX, X.people, z);
-    out.checks.push({ label: `Money per view ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
+    out.checks.push({ label: `Revenue per view ${sign(g * 100)}${tag}`, ok: gHi > 0, detail: '' });
   }
   if (plan.decide === 'trials' && payA && payX) {        // trial starts decide; paid, once in, must not go the other way
     const [pl, , ph] = propRel(payA, A.people, payX, X.people, z);
