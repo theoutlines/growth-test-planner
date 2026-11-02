@@ -23,8 +23,9 @@ const plansIn = (str) => {
 const legacyPlans = (pw, pa, mix, tr) => [{ t: 'week', p: Number(pw) || 6.99, s: 100 - (Number(mix) || 50), tr: Number(tr) || 0 }, { t: 'year', p: Number(pa) || 39.99, s: Number(mix) || 50, tr: Number(tr) || 0 }];
 function toQuery(withRead) {
   const q = new URLSearchParams();
-  for (const [k, f] of Object.entries(KEYS)) if (S[f] !== DEFAULTS[f] || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
-  if (plansOut(S.plans) !== plansOut(DEFAULTS.plans)) q.set('pl', plansOut(S.plans));
+  const other = S.area === 'paywall' ? ['users', 'trialRate', 'paidRate', 'trial'] : ['views', 'conv', 'trialView'];   // keys of the other kind of test stay out
+  for (const [k, f] of Object.entries(KEYS)) if ((S[f] !== DEFAULTS[f] && !other.includes(f)) || k === 'a') q.set(k, S[f]);   // short links: defaults are left out
+  if (S.area === 'paywall' && plansOut(S.plans) !== plansOut(DEFAULTS.plans)) q.set('pl', plansOut(S.plans));
   if (withRead) {
     for (const v of LETTERS()) q.set('x' + v.toLowerCase(), [READ[v].people, READ[v].trials, READ[v].refunds, ...S.plans.map((_, i) => READ[v]['p' + i])].map((x) => x ?? '').join('.'));
     q.set('bl', READ.billed ? 1 : 0);
@@ -373,33 +374,35 @@ function testScreen() {
 
 // ------------------------------------------------------------------ share
 const LINK = (withRead) => `${location.origin}${location.pathname}#/${withRead ? 'verdict' : 'test'}?${toQuery(withRead)}`;
+// what B changes, in the team's words, as part of the sentence (owner, 2026-11-02: not a “B:” line stuck on top)
+const lcFirst = (t) => (t.length > 1 && t[1] === t[1].toUpperCase() && /[A-Z]/.test(t[1]) ? t : t[0].toLowerCase() + t.slice(1));
 function planTones(p) {
-  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall';
+  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall', b = S.what.trim();
   const vol = S.area === 'onboarding' ? `${n0(S.users)} new users a week` : `${n0(S.views)} people a week`;
   const link = LINK(false);
   if (S.goal === 'notworse') {
     return {
-      Short: `${cap(what)} test: ${day(p.start)} → ${day(p.decideDate)}.\nGoal: show B is no more than 5% worse on ${p.metricName}.\nNo early stop unless something breaks. ${link}`,
-      Friendly: `Hey team, here’s the plan for the ${what} test.\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. We only need to show B doesn’t hurt: no more than 5% worse on ${p.metricName}.\nThat takes ${p.weeks} weeks with our ${vol}. ${link}`,
-      Detailed: `${cap(what)} test plan\nStart ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. Goal: B no more than 5% worse on ${p.metricName}.\n${link}`,
+      Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${day(p.start)} → ${day(p.decideDate)}.\nGoal: show B is no more than 5% worse on ${p.metricName}.\nNo early stop unless something breaks. ${link}`,
+      Friendly: `Hey team, here’s the plan for the ${what} test.${b ? ` B tries ${lcFirst(b)}, A stays as it is.` : ''}\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. We only need to show B doesn’t hurt: no more than 5% worse on ${p.metricName}.\nThat takes ${p.weeks} weeks with our ${vol}. ${link}`,
+      Detailed: `${cap(what)} test plan\n${b ? `A: current ${what}. B: ${b}.\n` : ''}Start ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. Goal: B no more than 5% worse on ${p.metricName}.\n${link}`,
     };
   }
   return {
-    Short: `${cap(what)} test: ${day(p.start)} → ${day(p.decideDate)}.\nSees changes ≥ ${t1(p.thr)}% in ${p.metricName}. Copy tweaks won’t show.\nNo early stop unless something breaks. ${link}`,
-    Friendly: `Hey team, here’s the plan for the ${what} test.\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. That’s ${p.weeks} weeks of traffic${p.wait ? ' plus time for the last trials to bill and refunds to show' : ''}.\nWith our ${vol} it only sees changes of ${t1(p.thr)}% or more, so let’s test something bold, not a copy tweak.\nWe judge on ${p.metricName} and only stop early if something breaks. ${link}`,
-    Detailed: `${cap(what)} test plan\nStart ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. The test sees changes of ${t1(p.thr)}% or more in ${p.metricName}.\nStop early only for harm.\n${link}`,
+    Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${day(p.start)} → ${day(p.decideDate)}.\nSees changes ≥ ${t1(p.thr)}% in ${p.metricName}. Copy tweaks won’t show.\nNo early stop unless something breaks. ${link}`,
+    Friendly: `Hey team, here’s the plan for the ${what} test.${b ? ` B tries ${lcFirst(b)}, A stays as it is.` : ''}\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. That’s ${p.weeks} weeks of traffic${p.wait ? ' plus time for the last trials to bill and refunds to show' : ''}.\nWith our ${vol} it only sees changes of ${t1(p.thr)}% or more, so let’s test something bold, not a copy tweak.\nWe judge on ${p.metricName} and only stop early if something breaks. ${link}`,
+    Detailed: `${cap(what)} test plan\n${b ? `A: current ${what}. B: ${b}.\n` : ''}Start ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. The test sees changes of ${t1(p.thr)}% or more in ${p.metricName}.\nStop early only for harm.\n${link}`,
   };
 }
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 const more = (c) => `${Math.abs(Math.round(c * 100))}% ${c >= 0 ? 'more' : 'fewer'}`;
 function resultTones(p, v) {
-  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall', link = LINK(true);
+  const what = S.area === 'onboarding' ? 'onboarding' : 'paywall', link = LINK(true), b = S.what.trim();
   const checks = v.r.checks.map((c) => `${c.label.toLowerCase()}${c.ok ? '' : ' (failed)'}`).join(', ');
   const range = v.range ? ` (${v.range})` : '';
   return {
-    Short: `${cap(what)} test: ${v.title}${range}.\n${v.next}. ${link}`,
-    Friendly: `Hey team, the ${what} test is in: ${v.title}.\n${v.sub}\nChecks: ${checks}.\n${v.next}. ${link}`,
-    Detailed: `${cap(what)} test result\nDecided on ${p.metricName}, as planned. ${v.sub}${v.versions ? `\n${v.versions.map((x) => `${x.v} vs A: ${sign(x.metric.lift)} (${sign(x.metric.lo)} to ${sign(x.metric.hi)})`).join('; ')}.` : ''}\nChecks: ${checks}.${v.source ? `\nWhere it came from: ${v.source}` : ''}\nNext: ${v.next}. ${v.small}\n${link}`,
+    Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${v.title}${range}.\n${v.next}. ${link}`,
+    Friendly: `Hey team, the ${what} test is in.${b ? ` B tried ${lcFirst(b)}.` : ''} ${v.title}.\n${v.sub}\nChecks: ${checks}.\n${v.next}. ${link}`,
+    Detailed: `${cap(what)} test result\n${b ? `A: current ${what}. B: ${b}.\n` : ''}Decided on ${p.metricName}, as planned. ${v.sub}${v.versions ? `\n${v.versions.map((x) => `${x.v} vs A: ${sign(x.metric.lift)} (${sign(x.metric.lo)} to ${sign(x.metric.hi)})`).join('; ')}.` : ''}\nChecks: ${checks}.${v.source ? `\nWhere it came from: ${v.source}` : ''}\nNext: ${v.next}. ${v.small}\n${link}`,
   };
 }
 function shareBody(texts, title, sub) {
@@ -411,8 +414,7 @@ function shareBody(texts, title, sub) {
 function shareScreen(result) {
   const p = planOf(S);
   const v = result ? verdictOf(p) : null;
-  const texts0 = result ? resultTones(p, v) : planTones(p);
-  const texts = S.what ? Object.fromEntries(Object.entries(texts0).map(([k, t]) => [k, `B: ${S.what}\n${t}`])) : texts0;   // what was tested travels with the numbers
+  const texts = result ? resultTones(p, v) : planTones(p);   // what B changes is woven into each tone
   const title = result ? 'Send the result to your team' : 'Send it to your team';
   const sub = result ? 'Pick a tone, edit if you like. Numbers come from your result.' : 'Pick a tone, edit if you like. The link opens this exact test.';
   if (wide()) {
