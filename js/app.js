@@ -213,31 +213,25 @@ function suggestedTarget(p) {
   const lows = ideasFor(p).filter((r) => r.same && !r.lost && r.lo > 0).map((r) => r.lo).sort((a, b) => a - b);
   return lows.length ? Math.max(2, Math.round(lows[Math.floor((lows.length - 1) / 2)])) : 10;   // the middle low end of ideas measured on this metric
 }
-function dateBlock(p) {
+function dateBlock(p) {     // answers for the weeks picked above (one time choice on the page, owner 2026-11-02)
   if (p.notWorse) return '';
-  const tg = S.target > 0 ? S.target : suggestedTarget(p), rows = p.byDate(tg), fit = rows.filter((r) => r.traffic);
-  const when = (w) => day(addDays(p.start, w * 7 + p.wait + p.watch)).replace(/^\w+, /, '');
-  const row = (r) => {
-    const on = r.traffic && S.weeks === r.weeks && S.traffic === r.traffic;
-    const left = `<span><b>${r.weeks} wk</b><small>${when(r.weeks)}</small></span>`;
-    return r.traffic ? `<button class="bdrow" data-bydate="${r.weeks}.${r.traffic}" aria-pressed="${on}" aria-label="${r.weeks} weeks, ${r.traffic}% of traffic">${left}<span class="need"><b data-swap>${r.traffic}%</b>${I.chevS}</span></button>`
-      : `<div class="bdrow off">${left}<span class="need">100% catches ${t1(r.best)}%</span></div>`;
-  };
-  const sel = rows.find((r) => r.traffic && S.weeks === r.weeks && S.traffic === r.traffic) || rows.find((r) => r.traffic && S.weeks === r.weeks) || fit[0];
-  let foot = '';
-  if (sel) {
-    const pct = sel.traffic * (1 - p.split[0]);
-    foot = `<p class="bdfoot">${S.versions === 3 ? 'B and C get' : 'B gets'} ${t1(pct)}% of ${p.onb ? 'new users' : 'views'}, about ${k100(p.base * sel.weeks * pct / 100)}.</p>`;
+  const tg = S.target > 0 ? S.target : suggestedTarget(p), rows = p.byDate(tg), r = rows.find((x) => x.weeks === S.weeks) || rows[1];
+  const earliest = rows.find((x) => x.traffic);
+  let body;
+  if (r.traffic) {
+    const pct = r.traffic * (1 - p.split[0]), on = S.traffic === r.traffic;
+    body = `<div class="bdans"><b><span data-swap>${r.traffic}%</span> of traffic</b><span>for ${S.weeks} weeks. ${S.versions === 3 ? 'B and C get' : 'B gets'} ${t1(pct)}% of ${p.onb ? 'new users' : 'views'}, about ${k100(p.base * S.weeks * pct / 100)}.</span></div>
+    ${on ? '<span class="bdset done">Traffic set</span>' : `<button class="btn sec2 bdset" data-bydate="${S.weeks}.${r.traffic}">Set traffic to ${r.traffic}%</button>`}`;
   } else {
     const alt = [];
-    if (p.decide !== 'trials') { const f = planOf({ ...S, decide: 'trials' }).byDate(tg).find((r) => r.traffic); if (f) alt.push(`Decide on trial starts: ${f.traffic}% for ${f.weeks} weeks`); }
-    if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((r) => r.traffic); if (f) alt.push(`Drop C: ${f.traffic}% for ${f.weeks} weeks`); }
+    if (earliest) alt.push(`Run longer: ${earliest.weeks} weeks at ${earliest.traffic}% of traffic`);
+    if (p.decide !== 'trials') { const f = planOf({ ...S, decide: 'trials' }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Decide on trials: ${f.traffic}% for ${S.weeks} weeks`); }
+    if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Drop C: ${f.traffic}% for ${S.weeks} weeks`); }
     if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50');
-    alt.push(`Aim bigger: 8 weeks catch ${t1(rows[3].best)}%`);
-    foot = `<div class="bdfoot"><b>Out of reach at 100%. Try:</b><ul>${alt.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
+    if (alt.length === 0) alt.push('Aim for a bigger change, or test where more people pass');
+    body = `<div class="bdans"><b>Out of reach in ${S.weeks} weeks</b><span>Even 100% of traffic catches ${t1(r.best)}% and up. Try:</span></div><ul class="bdalt">${alt.map((x) => `<li>${x}</li>`).join('')}</ul>`;
   }
-  return `<section class="card bydate"><label class="tgt"><span>Change to catch (MDE)</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length)}ch" aria-label="Change to catch, percent">%</span></label>
-  <div class="bdrows"><div class="bdcols"><span>Decide</span><span>Traffic</span></div>${rows.map(row).join('')}</div>${foot}</section>`;
+  return `<section class="card bydate"><label class="tgt"><span>Change to catch (MDE)</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length)}ch" aria-label="Change to catch, percent">%</span></label>${body}</section>`;
 }
 // Ideas that fit this test: filtered by its plans and trial, ranked by the metric it decides on, six at most.
 function ideasFor(p) {
@@ -294,8 +288,8 @@ function ideaCard(p) {
 function plansInline() {
   const many = S.plans.length > 1, w = shares(S.plans), open = UI.plansOpen;
   const sum = S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ');
-  const head = `<span class="lab">Plans</span><button class="pi-acc" data-plans-toggle aria-expanded="${!!open}" aria-label="Plans: ${sum}"><span>${sum}</span>${open ? I.up.replace('width="22" height="22"', 'width="16" height="16"') : I.chevD}</button>`;   // a label over a field, like every other control
-  if (!open) return `<div class="plans-inline" id="plans-inline">${head}</div>`;
+  const head = `<button class="pi-acc" data-plans-toggle aria-expanded="${!!open}" aria-label="Plans: ${sum}"><span>${sum}</span>${open ? I.up.replace('width="22" height="22"', 'width="16" height="16"') : I.chevD}</button>`;   // a label over a field, like every other control
+  if (!open) return `<div class="plans-inline" id="plans-inline"><span class="lab">Plans</span><div class="pi-box">${head}</div></div>`;
   const types = (x) => Object.entries(PLAN_TYPES).map(([k, v]) => `<option value="${k}"${x.t === k ? ' selected' : ''}>${v[0]}</option>`).join('') + (many ? '<option value="-">Remove</option>' : '');
   const trials = (x) => [[0, 'None'], [3, '3d'], [7, '7d'], [14, '14d+']].map(([d, t]) => `<option value="${d}"${planTrial(x) === d ? ' selected' : ''}>${t}</option>`).join('');
   const mixCol = false;      // the share of sales sits under the rows as sliders: four columns don't fit 320
@@ -304,7 +298,7 @@ function plansInline() {
     ${x.t === 'once' ? '<span class="pi-f pi-na">—</span>' : `<div class="pi-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[x.t][1]} plan">${trials(x)}</select>${I.chevD}</div>`}
     ${mixCol ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Share of sales, ${PLAN_TYPES[x.t][1]} plan"><span>%</span></label>` : ''}</div>`;
   const mix = S.plans.length === 2 ? railSlider(`${PLAN_TYPES[S.plans[1].t][0]} share of sales`, 'sh1', true) : many ? S.plans.map((x, i) => railSlider(`${PLAN_TYPES[x.t][0]} share of sales`, 'sh' + i, true)).join('') : '';
-  return `<div class="plans-inline open" id="plans-inline">${head}<div class="pi-head${mixCol ? ' mix' : ''}"><span></span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${mix}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}</div>`;
+  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${mix}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}</div></div></div>`;
 }
 function controls() {
   const onb = S.area === 'onboarding';
@@ -335,7 +329,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${p.notWorse ? '' : sec('Need it by a date?')}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${p.notWorse ? '' : sec('Traffic you need')}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
