@@ -145,6 +145,7 @@ function trialText() {          // paywall: each plan has its own trial
 function summary(p) {
   const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, S.decide === 'paid' ? `${S.paidRate}% pay` : `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} views a week`, S.decide === 'trials' ? `${S.trialView}% start a trial` : `${S.conv}% pay`];
   bits.push(trialText());
+  bits.push(`decide on ${{ money: 'revenue', paid: 'conversion', trials: 'trials' }[S.decide] || S.decide}`);   // the plan card no longer says it
   if (S.traffic !== 100) bits.push(`${S.traffic}% of traffic`);
   if (S.versions === 2 && S.split !== 50) bits.push(`${S.split}/${100 - S.split} split`);
   if (S.versions === 3) bits.push('A/B/C');
@@ -199,9 +200,8 @@ function planBlock(p) {
   if (p.watch) legs.push([`${p.watch} days to watch refunds`, 'rgba(255,255,255,.28)']);
   const unitP = p.onb ? ' new users' : '';
   const rows = [S.versions === 2 && S.split !== 50 ? ['People', `A ${k100(p.perVersion * p.split[0] * 2)} · B ${k100(p.perVersion * p.split[1] * 2)}`] : ['People per version', k100(p.perVersion) + unitP]];
-  rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
+  // no “Judge by” or “Plans” rows: the headline names the metric and the form holds the plans (owner, 2026-11-02)
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'revenue per view, refunds')]);
-  if (!p.onb) rows.push(['Plans', S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')]);   // a summary; the plans are edited in the form
   const prices = '';
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
