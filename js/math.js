@@ -17,8 +17,8 @@ export function zInv(p) {
 }
 
 const POWER = 0.8, ALPHA = 0.05, WATCH_DAYS = 7, NOT_WORSE_MARGIN = 0.05;
-// Defaults come from RevenueCat SOSA 2026 medians: install→trial 5.8%, install→paid 2.0%. Paywall trial starts per view
-// default to the paywall's payments per view scaled by the same ratio (2.75% × 5.8 / 2.0 ≈ 8%); the user types their own.
+// Defaults: onboarding from RevenueCat SOSA 2026 medians (install→trial 5.8%, install→paid 2.0%); paywall from Adapty
+// State of Paywalls 2026, US median app (view→paid 2.75%, view→trial start 6.94% in apps with trials).
 
 export const DEFAULTS = {
   area: 'paywall',        // paywall | onboarding
@@ -27,7 +27,7 @@ export const DEFAULTS = {
   users: 20000,           // new users a week (onboarding)
   trialRate: 5.8,         // % of new users who start a trial
   paidRate: 2.0,          // % of new users who make a first payment (onboarding, decided on paid)
-  trialView: 8,           // % of paywall views that start a trial (paywall, decided on trial starts)
+  trialView: 6.94,        // % of paywall views that start a trial (paywall, decided on trial starts)
   split: 50,              // % of test traffic that stays on A (two versions): 50 | 70 | 80 | 90
   target: 0,              // smallest change worth catching, % (0 = suggested from the ideas)
   trial: 3,               // free trial days: 0 | 3 | 7 | 14

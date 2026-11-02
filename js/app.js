@@ -215,29 +215,28 @@ function suggestedTarget(p) {
 function dateBlock(p) {
   if (p.notWorse) return '';
   const tg = S.target > 0 ? S.target : suggestedTarget(p), rows = p.byDate(tg), fit = rows.filter((r) => r.traffic);
-  const when = (w) => day(addDays(p.start, w * 7 + p.wait + p.watch));
+  const when = (w) => day(addDays(p.start, w * 7 + p.wait + p.watch)).replace(/^\w+, /, '');
   const row = (r) => {
     const on = r.traffic && S.weeks === r.weeks && S.traffic === r.traffic;
-    return r.traffic ? `<button class="bdrow" data-bydate="${r.weeks}.${r.traffic}" aria-pressed="${on}"><span><b>${r.weeks} wk</b><small>decide ${when(r.weeks)}</small></span><span class="need"><b data-swap>${r.traffic}%</b><small>of traffic</small></span></button>`
-      : `<div class="bdrow off"><span><b>${r.weeks} wk</b><small>decide ${when(r.weeks)}</small></span><span class="need"><b>Not enough</b><small>100% catches ≥${t1(r.best)}%</small></span></div>`;
+    const left = `<span><b>${r.weeks} wk</b><small>${when(r.weeks)}</small></span>`;
+    return r.traffic ? `<button class="bdrow" data-bydate="${r.weeks}.${r.traffic}" aria-pressed="${on}" aria-label="${r.weeks} weeks, ${r.traffic}% of traffic">${left}<span class="need"><b data-swap>${r.traffic}%</b>${I.chevS}</span></button>`
+      : `<div class="bdrow off">${left}<span class="need">100% catches ${t1(r.best)}%</span></div>`;
   };
   const sel = rows.find((r) => r.traffic && S.weeks === r.weeks && S.traffic === r.traffic) || rows.find((r) => r.traffic && S.weeks === r.weeks) || fit[0];
   let foot = '';
   if (sel) {
-    const pct = sel.traffic * (1 - p.split[0]), who = p.onb ? 'new users' : 'paywall views';
-    foot = `<p class="bdfoot">At ${sel.traffic}% for ${sel.weeks} weeks, ${t1(pct)}% of ${who} see ${S.versions === 3 ? 'B or C' : 'B'}: about ${k100(p.base * sel.weeks * pct / 100)}${p.onb ? ' people' : ' views'}. The rest stay on today’s version.</p>`;
+    const pct = sel.traffic * (1 - p.split[0]);
+    foot = `<p class="bdfoot">${S.versions === 3 ? 'B and C get' : 'B gets'} ${t1(pct)}% of ${p.onb ? 'new users' : 'views'}, about ${k100(p.base * sel.weeks * pct / 100)}.</p>`;
   } else {
     const alt = [];
-    if (p.decide !== 'trials') { const q = planOf({ ...S, decide: 'trials' }), f = q.byDate(tg).find((r) => r.traffic); alt.push(f ? `Decide on trial starts: ${f.traffic}% of traffic for ${f.weeks} weeks.` : 'Decide on trial starts: still short, but closer.'); }
-    if (S.versions === 3) { const q = planOf({ ...S, versions: 2 }), f = q.byDate(tg).find((r) => r.traffic); alt.push(f ? `Test B alone, without C: ${f.traffic}% for ${f.weeks} weeks.` : 'Test B alone, without C: still short.'); }
-    if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50: an uneven split needs more people for the same answer.');
-    alt.push(`Aim for a bigger change: at 100% for 8 weeks the test catches ${t1(rows[3].best)}% and up.`);
-    alt.push(p.onb ? 'Test where more people pass: an earlier screen, or all platforms at once.' : 'Test where more people see it: the onboarding paywall usually gets the most views.');
-    foot = `<div class="bdfoot"><b>Not reachable by 8 weeks, even at 100%.</b><ul>${alt.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
+    if (p.decide !== 'trials') { const f = planOf({ ...S, decide: 'trials' }).byDate(tg).find((r) => r.traffic); if (f) alt.push(`Decide on trial starts: ${f.traffic}% for ${f.weeks} weeks`); }
+    if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((r) => r.traffic); if (f) alt.push(`Drop C: ${f.traffic}% for ${f.weeks} weeks`); }
+    if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50');
+    alt.push(`Aim bigger: 8 weeks catch ${t1(rows[3].best)}%`);
+    foot = `<div class="bdfoot"><b>Out of reach at 100%. Try:</b><ul>${alt.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
   }
-  return `<section class="card bydate"><label class="tgt"><span>Smallest change worth catching</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length) + 0.3}ch" aria-label="Smallest change worth catching, percent">%</span></label>
-  <span class="bdsub">${S.target > 0 ? '' : 'Suggested from the ideas below. '}Tap a row to set traffic and weeks.</span>
-  <div class="bdrows">${rows.map(row).join('')}</div>${foot}</section>`;
+  return `<section class="card bydate"><label class="tgt"><span>Change to catch</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length)}ch" aria-label="Change to catch, percent">%</span></label>
+  <div class="bdrows"><div class="bdcols"><span>Decide</span><span>Traffic</span></div>${rows.map(row).join('')}</div>${foot}</section>`;
 }
 // Ideas that fit this test: filtered by its plans and trial, ranked by the metric it decides on, six at most.
 function ideasFor(p) {
@@ -317,7 +316,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${p.notWorse ? '' : sec('Need it by a date?', 'How much traffic each length needs to catch the change you care about.')}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much', 'Lifts other apps saw in published tests.')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${p.notWorse ? '' : sec('Need it by a date?')}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
