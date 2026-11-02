@@ -160,9 +160,12 @@ export function readOf(s, r, plan) {
   const k = letters.length, n = letters.reduce((t, v) => t + r[v].people, 0), e = n / k;
   const chi = letters.reduce((t, v) => t + (r[v].people - e) ** 2 / e, 0);
   const pSrm = k === 2 ? erfc(Math.sqrt(chi / 2)) : Math.exp(-chi / 2);       // chi-square, 1 or 2 degrees of freedom
-  const srmOk = pSrm >= 0.001;
   const split = letters.map((v) => r[v].people / n * 100);
-  const out = { checks: [{ label: 'Fair split', ok: srmOk, detail: split.map((x) => x.toFixed(1)).join(' / ') }] };
+  // On big tests chi-square flags tiny gaps (49.9 / 50.1 on 1.6M people). A gap under 1% of a group's expected size can move the
+  // result by about that much at most, so it's a warning, not a broken test. A bigger gap with p < 0.001 still breaks it.
+  const drift = Math.max(...split.map((x) => Math.abs(x / (100 / k) - 1)));
+  const srmOff = pSrm < 0.001, srmOk = !srmOff || drift < 0.01;
+  const out = { checks: [{ label: srmOff && srmOk ? 'Split slightly off' : 'Fair split', ok: srmOk, warn: srmOff && srmOk, detail: split.map((x) => x.toFixed(1)).join(' / ') }] };
   const payments = plan.decide !== 'trials';
   if (payments) out.checks.push({ label: 'Trials billed', ok: r.billed, detail: r.billed ? 'Decision day passed' : 'Not yet' });
   const z = zInv(1 - ALPHA / (k - 1) / 2);
@@ -182,7 +185,7 @@ export function readOf(s, r, plan) {
   else if (payments && !r.billed) v = 'too_early';
   else v = lead.verdict;
   out.verdict = v;
-  out.split = { a: split[0], b: split[1], c: split[2], all: split };
+  out.split = { a: split[0], b: split[1], c: split[2], all: split, warn: srmOff && srmOk, drift };
   return out;
 }
 
