@@ -498,14 +498,15 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .plan .dates small.chk { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 400; letter-spacing: 0; color: var(--t60); }
 
 /* plans inside the form (Decide on: Money) */
-.plans-inline { display: flex; flex-direction: column; gap: 6px; border-radius: 12px; transition: background-color var(--duration-slow) var(--ease-in-out); }
+.plans-inline { display: flex; flex-direction: column; gap: 8px; border-radius: 12px; transition: background-color var(--duration-slow) var(--ease-in-out); }
 .plans-inline.flash { background: var(--s07); }
 .pi-acc { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; padding: 0 10px 0 12px; border-radius: 10px; background: var(--s05); color: var(--w); font-size: 16px; text-align: left; }
-.pi-acc > span:first-child { font-size: 14px; font-weight: 500; color: var(--t75); }
-.pi-acc > span:last-child { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.pi-acc > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.plans-inline .lab { font-size: 14px; font-weight: 500; color: var(--t75); }
 .pi-acc svg { opacity: .6; }
 .pi-acc:hover { background: var(--s10); }
-.plans-inline.open .pi-acc { margin-bottom: 4px; }
+.plans-inline.open .pi-acc { margin-bottom: 2px; }
+.plans-inline .pi-row + .pi-row { margin-top: -2px; }
 .plans-inline .rs { margin-top: 4px; }
 .pi-head, .pi-row { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,.9fr); gap: 6px; }
 .pi-head.mix, .pi-row.mix { grid-template-columns: minmax(0,1.25fr) minmax(0,1fr) minmax(0,.7fr) minmax(0,.85fr); }

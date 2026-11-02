@@ -294,7 +294,7 @@ function ideaCard(p) {
 function plansInline() {
   const many = S.plans.length > 1, w = shares(S.plans), open = UI.plansOpen;
   const sum = S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ');
-  const head = `<button class="pi-acc" data-plans-toggle aria-expanded="${!!open}"><span>Plans</span><span>${sum}${open ? I.up.replace('width="22" height="22"', 'width="16" height="16"') : I.chevD}</span></button>`;
+  const head = `<span class="lab">Plans</span><button class="pi-acc" data-plans-toggle aria-expanded="${!!open}" aria-label="Plans: ${sum}"><span>${sum}</span>${open ? I.up.replace('width="22" height="22"', 'width="16" height="16"') : I.chevD}</button>`;   // a label over a field, like every other control
   if (!open) return `<div class="plans-inline" id="plans-inline">${head}</div>`;
   const types = (x) => Object.entries(PLAN_TYPES).map(([k, v]) => `<option value="${k}"${x.t === k ? ' selected' : ''}>${v[0]}</option>`).join('') + (many ? '<option value="-">Remove</option>' : '');
   const trials = (x) => [[0, 'None'], [3, '3d'], [7, '7d'], [14, '14d+']].map(([d, t]) => `<option value="${d}"${planTrial(x) === d ? ' selected' : ''}>${t}</option>`).join('');
