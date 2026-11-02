@@ -474,11 +474,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 }
 .landing a { -webkit-tap-highlight-color: transparent; }
 .landing [data-lpanel][hidden] { display: none !important; }
-.landing .ltab[aria-selected="false"] { background: rgba(255,255,255,.06) !important; color: rgba(255,255,255,.75) !important; }
-.landing .ltab.lseg[aria-selected="false"] { background: transparent !important; }
-@media (hover: hover) { .landing .ltab[aria-selected="false"]:hover { background: rgba(255,255,255,.12) !important; color: #fff !important; } }
-.landing .ltab[aria-selected="true"] { background: #fff !important; color: #151515 !important; }
 .landing .ltab { transition: background-color var(--duration-quick, 150ms) ease-out, color var(--duration-quick, 150ms) ease-out; }
 .landing .ltab:focus { outline: none; }
-.landing .ltab:focus-visible { outline: 2px solid #FF6B3D !important; outline-offset: 2px; }
 .landing .lscroll::-webkit-scrollbar { display: none; }
