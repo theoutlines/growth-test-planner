@@ -56,6 +56,7 @@ export const CHIPS = {
   views: [[10000, '10k', 'small app'], [50000, '50k', 'mid'], [250000, '250k', 'large']],
   users: [[5000, '5k', 'small app'], [20000, '20k', 'mid'], [100000, '100k', 'large']],
   conv: [[2.75, '2.75%', 'US median'], [1.38, '1.38%', 'Europe median']],                 // Adapty, State of Paywalls 2026
+  trialView: [[6.94, '6.94%', 'US median'], [4.62, '4.62%', 'Europe median']],           // Adapty, State of Paywalls 2026, view → trial start
   trialRate: [[5.8, '5.8%', 'all apps'], [6.9, '6.9%', 'Health & Fitness'], [6.5, '6.5%', 'Education'], [5.2, '5.2%', 'Photo & Video']],   // RevenueCat SOSA 2026, install → trial
 };
 

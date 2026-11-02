@@ -471,3 +471,26 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .dock .btn { pointer-events: auto; gap: 8px; }
 .dock .btn svg { flex: none; }
 main.page.docked { padding-bottom: 104px; }   /* the last row and the footer stay above the pinned button */
+/* plan by date (owner, 2026-11-02): change to catch → traffic each length needs; one title, one label, one-line rows */
+.bydate { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+.bydate .tgt { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 16px; font-weight: 600; color: var(--w); }
+.bydate .tbox { display: inline-flex; align-items: center; height: 44px; padding: 0 12px; border-radius: 10px; background: var(--s05); font-size: 20px; font-weight: 600; color: var(--w); font-variant-numeric: tabular-nums; }
+.bydate .tbox input { padding: 0; background: none; border: 0; outline: 0; color: inherit; font: inherit; font-size: 20px; text-align: left; caret-color: var(--acc); }
+.bydate .tbox:focus-within, .bydate .tbox:hover { background: var(--s10); }
+.bdrows { display: flex; flex-direction: column; }
+.bdcols { display: flex; justify-content: space-between; padding: 0 12px 6px; font-size: 13px; color: var(--t50); }
+.bdcols span:last-child { padding-right: 22px; }
+.bdrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 44px; padding: 0 12px; border-radius: 10px; text-align: left; color: var(--w); font-size: 16px; transition: background-color var(--duration-fast) var(--ease-in-out), color var(--duration-fast) var(--ease-in-out); }
+.bdrow + .bdrow { box-shadow: 0 -1px 0 var(--s07); }
+.bdrow > span { display: flex; align-items: baseline; gap: 10px; }
+.bdrow b { font-weight: 600; }
+.bdrow small { font-size: 14px; color: var(--t50); }
+.bdrow .need { align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+button.bdrow:hover { background: var(--s07); box-shadow: none; }
+.bdrow[aria-pressed="true"] { background: var(--w); color: #151515; box-shadow: none; }
+.bdrow[aria-pressed="true"] + .bdrow { box-shadow: none; }
+.bdrow[aria-pressed="true"] small { color: rgba(21,21,21,.55); }
+.bdrow.off .need { color: var(--t50); font-size: 14px; padding-right: 22px; }
+.bdfoot { margin: 0; font-size: 14px; line-height: 1.45; color: var(--t60); }
+.bdfoot b { color: var(--w); font-weight: 600; }
+.bdfoot ul { margin: 6px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
