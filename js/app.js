@@ -418,6 +418,7 @@ function verdictOf(p) {
     else source = `Paid conversion ${sign(s.conv * 100)}, money per payer ${sign(s.perPayer * 100)}. They pulled in different directions; the net is their difference.`;
   }
   const note = r.verdict === 'broken' ? 'Fix this before you trust any number.' : r.checks.some((c) => !c.ok) ? 'Something went wrong. Fix it before you trust the result.'
+    : r.split.warn ? `Groups split ${r.split.all.map((x) => t1(x)).join(' / ')}. On a test this big that gap is visible but small: it can shift the result by less than 1%. Read on, but find what dropped people from one group.`
     : r.verdict === 'cant_tell' ? 'The test is sound. It just can’t see a change this small.' : 'The test can be trusted.';
   return { r, kind: r.verdict.startsWith('win') && r.verdict === 'win' ? 'win' : 'flat', title: V[0], sub: V[1], next: V[2], small: V[3], tag, source,
     showBar: !['broken', 'too_early'].includes(r.verdict), range: ['broken', 'too_early'].includes(r.verdict) ? '' : range, note,
@@ -448,7 +449,7 @@ function verdictScreen() {
   if (!v) return resultsScreen();
   const win = v.kind === 'win';
   const card = `<section class="verdict${win ? ' win' : ''}"><span class="tag">${v.tag}</span><span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
-  const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? '' : ' bad'}" title="${esc(c.detail)}">${c.ok ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
+  const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? (c.warn ? ' warn' : '') : ' bad'}" title="${esc(c.detail)}">${c.ok && !c.warn ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
   const vs = v.versions ? vsPlot(v.versions, v.r.lead, S.goal === 'notworse' ? -5 : null) : '';
   const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + (wide() ? '' : numbersRow());   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
