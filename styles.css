@@ -500,16 +500,24 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 /* plans inside the form (Decide on: Money) */
 .plans-inline { display: flex; flex-direction: column; gap: 6px; border-radius: 12px; transition: background-color var(--duration-slow) var(--ease-in-out); }
 .plans-inline.flash { background: var(--s07); }
-.plans-inline .lab { font-size: 14px; font-weight: 500; color: var(--t75); margin-bottom: 2px; }
-.pi-head, .pi-row { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1.2fr) minmax(0,.8fr) minmax(0,.8fr); gap: 6px; }
+.pi-acc { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; padding: 0 10px 0 12px; border-radius: 10px; background: var(--s05); color: var(--w); font-size: 16px; text-align: left; }
+.pi-acc > span:first-child { font-size: 14px; font-weight: 500; color: var(--t75); }
+.pi-acc > span:last-child { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.pi-acc svg { opacity: .6; }
+.pi-acc:hover { background: var(--s10); }
+.plans-inline.open .pi-acc { margin-bottom: 4px; }
+.plans-inline .rs { margin-top: 4px; }
+.pi-head, .pi-row { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,.9fr); gap: 6px; }
+.pi-head.mix, .pi-row.mix { grid-template-columns: minmax(0,1.25fr) minmax(0,1fr) minmax(0,.7fr) minmax(0,.85fr); }
+.pi-row.mix .pi-f select { padding-right: 18px; }
 .pi-head { font-size: 12px; color: var(--t45); padding: 0 2px; }
 .pi-f { position: relative; display: flex; align-items: center; height: 44px; box-sizing: border-box; border-radius: 10px; background: var(--s05); font-size: 16px; color: var(--w); min-width: 0; }
 .pi-f select { appearance: none; -webkit-appearance: none; width: 100%; height: 100%; padding: 0 20px 0 10px; background: none; border: 0; color: inherit; font: inherit; font-size: 16px; cursor: pointer; }
 .pi-f svg { position: absolute; right: 6px; pointer-events: none; opacity: .6; }
 .pi-f > span { padding-left: 9px; color: var(--t45); }
 .pi-f input { width: 100%; min-width: 0; padding: 0 10px 0 2px; background: none; border: 0; outline: 0; color: inherit; font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; }
-.pi-sh input { text-align: right; padding: 0 2px 0 10px; }
-.pi-sh > span { padding: 0 10px 0 0; }
+.pi-sh input { text-align: right; padding: 0 1px 0 6px; }
+.pi-sh > span { padding: 0 8px 0 0; }
 .pi-na { justify-content: flex-end; padding: 0 10px; color: var(--t45); background: none; box-shadow: inset 0 0 0 1px var(--s07); }
 .pi-f:hover, .pi-f:focus-within { background: var(--s10); }
 .pi-na:hover { background: none; }
