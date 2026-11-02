@@ -505,7 +505,6 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .plans-inline .lab { font-size: 14px; font-weight: 500; color: var(--t75); }
 .pi-acc svg { opacity: .6; }
 .pi-acc:hover { background: var(--s10); }
-.plans-inline.open .pi-acc { margin-bottom: 2px; }
 .plans-inline .pi-row + .pi-row { margin-top: -2px; }
 .plans-inline .rs { margin-top: 4px; }
 .pi-head, .pi-row { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,.9fr); gap: 6px; }
@@ -523,3 +522,22 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .pi-f:hover, .pi-f:focus-within { background: var(--s10); }
 .pi-na:hover { background: none; }
 .plans-inline .addplan { margin-top: 2px; }
+
+/* plans: one box, the accordion opens inside it */
+.pi-box { border-radius: 10px; background: var(--s05); }
+.pi-box .pi-acc { width: 100%; background: none; }
+.pi-box:not(.open) .pi-acc:hover { background: var(--s05); }
+.pi-body { display: flex; flex-direction: column; gap: 6px; padding: 2px 8px 10px; }
+.pi-box .pi-f { background: var(--s07); }
+.pi-box .pi-f:hover, .pi-box .pi-f:focus-within { background: var(--s14); }
+.pi-box .pi-na { background: none; }
+.pi-box .rs { margin-top: 6px; }
+.pi-box .rs .track { background: var(--s07); }
+.pi-box .addplan { margin-top: 4px; }
+/* traffic you need: one answer for the weeks picked above */
+.bdans { display: flex; flex-direction: column; gap: 4px; }
+.bdans b { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+.bdans > span { font-size: 15px; line-height: 1.45; color: var(--t60); }
+.bdset { height: 44px; font-size: 15px; }
+.bdset.done { display: flex; align-items: center; justify-content: center; border-radius: 12px; color: var(--t50); box-shadow: inset 0 0 0 1px var(--s08); }
+.bdalt { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.45; color: var(--t60); }
