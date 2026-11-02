@@ -293,7 +293,7 @@ function controls() {
   const dec = decideOptions(S.area).map((v) => [v, { money: 'Money', paid: 'Paid', trials: 'Trials' }[v]]);
   // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
-  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trials answer in weeks. Paid answers what you care about, after the trial.' : 'Money per view for prices, plans or trial. Paid answers faster for copy and layout. Trials answer fastest but don’t show who pays.'}</span>
+  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trials: share who start a trial, answers in weeks. Paid: share who pay, waits for the trial to end.' : 'Money: earnings per view, for changes to prices, plans or the trial offer. Paid: share who pay, faster for copy and layout. Trials: share who start a trial, fastest, but not money yet.'}</span>
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
   ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
     : railSlider('Paywall views a week', 'views') + (S.decide === 'trials' ? railSlider('Views that start a trial', 'trialView') : railSlider('Views that end in payment', 'conv'))}
