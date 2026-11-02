@@ -496,3 +496,64 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .bdfoot ul { margin: 6px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
 
 .plan .dates small.chk { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 400; letter-spacing: 0; color: var(--t60); }
+
+/* plans inside the form (Decide on: Money) */
+.plans-inline { display: flex; flex-direction: column; gap: 8px; border-radius: 12px; transition: background-color var(--duration-slow) var(--ease-in-out); }
+.plans-inline.flash { background: var(--s07); }
+.pi-acc { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; padding: 0 10px 0 12px; border-radius: 10px; background: var(--s05); color: var(--w); font-size: 16px; text-align: left; }
+.pi-acc > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.plans-inline .lab { font-size: 14px; font-weight: 500; color: var(--t75); }
+.pi-acc svg { opacity: .6; }
+.pi-acc:hover { background: var(--s10); }
+.plans-inline .pi-row + .pi-row { margin-top: -2px; }
+.plans-inline .rs { margin-top: 4px; }
+.pi-head, .pi-row { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,.9fr); gap: 6px; }
+.pi-head.mix, .pi-row.mix { grid-template-columns: minmax(0,1.25fr) minmax(0,1fr) minmax(0,.7fr) minmax(0,.85fr); }
+.pi-row.mix .pi-f select { padding-right: 18px; }
+.pi-head { font-size: 12px; color: var(--t45); padding: 0 2px; }
+.pi-f { position: relative; display: flex; align-items: center; height: 44px; box-sizing: border-box; border-radius: 10px; background: var(--s05); font-size: 16px; color: var(--w); min-width: 0; }
+.pi-f select { appearance: none; -webkit-appearance: none; width: 100%; height: 100%; padding: 0 20px 0 10px; background: none; border: 0; color: inherit; font: inherit; font-size: 16px; cursor: pointer; }
+.pi-f svg { position: absolute; right: 6px; pointer-events: none; opacity: .6; }
+.pi-f > span { padding-left: 9px; color: var(--t45); }
+.pi-f input { width: 100%; min-width: 0; padding: 0 10px 0 2px; background: none; border: 0; outline: 0; color: inherit; font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; }
+.pi-sh input { text-align: right; padding: 0 1px 0 6px; }
+.pi-sh > span { padding: 0 8px 0 0; }
+.pi-na { justify-content: flex-end; padding: 0 10px; color: var(--t45); background: none; box-shadow: inset 0 0 0 1px var(--s07); }
+.pi-f:hover, .pi-f:focus-within { background: var(--s10); }
+.pi-na:hover { background: none; }
+.plans-inline .addplan { margin-top: 2px; }
+
+/* plans: one box, the accordion opens inside it */
+.pi-box { border-radius: 10px; background: var(--s05); }
+.pi-box .pi-acc { width: 100%; background: none; }
+.pi-box:not(.open) .pi-acc:hover { background: var(--s05); }
+.pi-body { display: flex; flex-direction: column; gap: 6px; padding: 2px 8px 10px; }
+.pi-box .pi-f { background: var(--s07); }
+.pi-box .pi-f:hover, .pi-box .pi-f:focus-within { background: var(--s14); }
+.pi-box .pi-na { background: none; }
+.pi-box .rs { margin-top: 6px; }
+.pi-box .rs .track { background: var(--s07); }
+.pi-box .addplan { margin-top: 4px; }
+/* traffic you need: one answer for the weeks picked above */
+.bdans { display: flex; flex-direction: column; gap: 4px; }
+.bdans b { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+.bdans > span { font-size: 15px; line-height: 1.45; color: var(--t60); }
+.bdset { height: 44px; font-size: 15px; }
+.bdset.done { display: flex; align-items: center; justify-content: center; border-radius: 12px; color: var(--t50); box-shadow: inset 0 0 0 1px var(--s08); }
+.bdalt { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.45; color: var(--t60); }
+
+/* share of sales: one bar, a segment per plan, draggable dividers */
+.mix { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.mixlab { font-size: 14px; font-weight: 500; color: var(--t75); }
+.mixbar { position: relative; display: flex; height: 32px; border-radius: 10px; overflow: hidden; background: var(--s07); touch-action: none; }
+.mseg { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 4px; overflow: hidden; white-space: nowrap; font-size: 14px; }
+.mseg:nth-child(4n+1) { background: rgba(255,255,255,.16); }
+.mseg:nth-child(4n+3) { background: rgba(255,255,255,.07); }
+.mseg b { font-weight: 500; color: var(--t75); overflow: hidden; text-overflow: ellipsis; }
+.mseg i { font-style: normal; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mh { position: relative; flex: none; width: 3px; margin: 0 -1px; background: var(--w); border-radius: 2px; cursor: ew-resize; z-index: 1; height: 24px; align-self: center; }
+.mh::before { content: ''; position: absolute; inset: -12px -14px; }
+.mh:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.mixnames { position: relative; height: 18px; font-size: 13px; color: var(--t60); margin-bottom: -2px; }
+.mixnames span { position: absolute; top: 0; white-space: nowrap; }
+.mixnames b { font-weight: 600; color: var(--w); font-variant-numeric: tabular-nums; }
