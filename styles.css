@@ -72,7 +72,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 .pick > span:nth-child(2) { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .pick b { font-size: 20px; font-weight: 600; letter-spacing: -.02em; }
 .pick em { font-style: normal; font-size: 14px; line-height: 1.4; color: var(--t60); }
-.pick svg.chev { flex: none; opacity: .45; }
+.pick svg.chev { flex: none; }
 .stack { display: flex; flex-direction: column; gap: 10px; }
 
 /* ---------- big value + slider */
@@ -363,7 +363,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 /* start date: reads like the other controls, opens the native picker */
 .plan .startbtn { position: relative; display: inline-flex; align-items: center; gap: 6px; margin: -2px -8px; padding: 2px 8px; border-radius: 10px; cursor: pointer; transition: background-color var(--duration-quick) var(--ease-smooth-out); }
 .plan .startbtn:hover, .plan .startbtn:focus-within { background: rgba(255,255,255,.05); }
-.plan .startbtn svg { width: 18px; height: 18px; }
+.plan .startbtn svg { width: 14px; height: 14px; }
 .plan .startbtn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .plan .startbtn input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
