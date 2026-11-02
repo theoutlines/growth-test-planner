@@ -1,4 +1,4 @@
-import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, shares, planTrial } from './math.js';
+import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, shares, planTrial, addDays } from './math.js';
 import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL, METRIC, DECIDE_METRIC, TESTS, COUNT } from './data.js';
 
 // ------------------------------------------------------------------ state
@@ -11,7 +11,7 @@ let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError
 const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-const KEYS = { a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', t: 'trial', s: 'traffic', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start' };
+const KEYS = { a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', pr: 'paidRate', tv: 'trialView', t: 'trial', s: 'traffic', sp: 'split', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', tg: 'target' };
 // plans in a link: w6.99-50-3_y39.99-50-3 (type letter, price, share, trial days)
 const TL = { week: 'w', month: 'm', year: 'y', once: 'o' }, LT = { w: 'week', m: 'month', y: 'year', o: 'once' };
 const plansOut = (pl) => pl.map((x) => `${TL[x.t]}${x.p}-${Math.round(x.s)}-${x.tr}`).join('_');
@@ -38,6 +38,8 @@ function fromQuery(qs) {
   if (!['paywall', 'onboarding'].includes(S.area)) S.area = 'paywall';
   if (!['win', 'notworse'].includes(S.goal)) S.goal = 'win';
   if (![2, 3].includes(S.versions)) S.versions = 2;
+  if (![50, 70, 80, 90].includes(S.split)) S.split = 50;
+  S.traffic = Math.max(1, Math.min(100, Math.round(S.traffic) || 100));
   if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0];   // a link with only a=onboarding still has a choice picked
   if (q.has('pl')) S.plans = plansIn(q.get('pl')) || fresh().plans;
   else if (q.has('pw') || q.has('pa') || q.has('m')) S.plans = legacyPlans(q.get('pw'), q.get('pa'), q.get('m'), S.trial);
@@ -93,6 +95,9 @@ const SL = {
   users: { lo: 1000, hi: 500000, l: '1k', h: '500k', fmt: n0, round: (v) => v < 10000 ? Math.round(v / 100) * 100 : Math.round(v / 1000) * 1000 },
   conv: { lo: 0.5, hi: 10, l: '0.5', h: '10', fmt: (v) => String(+v.toFixed(2)), round: (v) => Math.round(v * 20) / 20, unit: '%' },
   trialRate: { lo: 0.5, hi: 25, l: '0.5', h: '25', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
+  paidRate: { lo: 0.2, hi: 15, l: '0.2', h: '15', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
+  trialView: { lo: 0.5, hi: 40, l: '0.5', h: '40', fmt: (v) => String(+v.toFixed(1)), round: (v) => Math.round(v * 10) / 10, unit: '%' },
+  traffic: { lo: 1, hi: 100, l: '1', h: '100', fmt: (v) => String(Math.round(v)), round: (v) => Math.max(1, Math.round(v)), unit: '%', linear: true },
 };
 // each plan's share of buyers slides 0–100 and the other plans make room, so the shares always add up to 100
 for (let i = 0; i < 4; i++) {
@@ -141,6 +146,7 @@ function summary(p) {
   const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} views a week`, `${S.conv}% pay`];
   bits.push(trialText());
   if (S.traffic !== 100) bits.push(`${S.traffic}% of traffic`);
+  if (S.versions === 2 && S.split !== 50) bits.push(`${S.split}/${100 - S.split} split`);
   if (S.versions === 3) bits.push('A/B/C');
   if (S.goal === 'notworse') bits.push('prove not worse');
   return bits.join(' · ');
@@ -192,7 +198,7 @@ function planBlock(p) {
   if (p.wait) legs.push([`${p.wait} days for the last trials`, ACC]);
   if (p.watch) legs.push([`${p.watch} days to watch refunds`, 'rgba(255,255,255,.28)']);
   const unitP = p.onb ? ' new users' : '';
-  const rows = [['People per version', k100(p.perVersion) + unitP]];
+  const rows = [S.versions === 2 && S.split !== 50 ? ['People', `A ${k100(p.perVersion * p.split[0] * 2)} · B ${k100(p.perVersion * p.split[1] * 2)}`] : ['People per version', k100(p.perVersion) + unitP]];
   rows.push(S.goal === 'notworse' ? ['Goal', 'not worse than A by 5%'] : ['Judge by', p.metricName]);
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'money per view, refunds')]);
   const prices = !p.onb ? `<button class="rowbtn" data-overlay="prices" aria-label="Change plans"><span>Plans</span><span>${S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ')} ${I.chevS}</span></button>` : '';   // the whole row opens the editor, like the idea rows
@@ -200,6 +206,38 @@ function planBlock(p) {
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
   <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
+}
+// Plan by date (owner, 2026-11-02): the change worth catching → how much traffic each length needs, and who sees B.
+function suggestedTarget(p) {
+  const lows = ideasFor(p).filter((r) => r.same && !r.lost && r.lo > 0).map((r) => r.lo).sort((a, b) => a - b);
+  return lows.length ? Math.max(2, Math.round(lows[Math.floor((lows.length - 1) / 2)])) : 10;   // the middle low end of ideas measured on this metric
+}
+function dateBlock(p) {
+  if (p.notWorse) return '';
+  const tg = S.target > 0 ? S.target : suggestedTarget(p), rows = p.byDate(tg), fit = rows.filter((r) => r.traffic);
+  const when = (w) => day(addDays(p.start, w * 7 + p.wait + p.watch));
+  const row = (r) => {
+    const on = r.traffic && S.weeks === r.weeks && S.traffic === r.traffic;
+    return r.traffic ? `<button class="bdrow" data-bydate="${r.weeks}.${r.traffic}" aria-pressed="${on}"><span><b>${r.weeks} wk</b><small>decide ${when(r.weeks)}</small></span><span class="need"><b data-swap>${r.traffic}%</b><small>of traffic</small></span></button>`
+      : `<div class="bdrow off"><span><b>${r.weeks} wk</b><small>decide ${when(r.weeks)}</small></span><span class="need"><b>Not enough</b><small>100% catches ≥${t1(r.best)}%</small></span></div>`;
+  };
+  const sel = rows.find((r) => r.traffic && S.weeks === r.weeks && S.traffic === r.traffic) || rows.find((r) => r.traffic && S.weeks === r.weeks) || fit[0];
+  let foot = '';
+  if (sel) {
+    const pct = sel.traffic * (1 - p.split[0]), who = p.onb ? 'new users' : 'paywall views';
+    foot = `<p class="bdfoot">At ${sel.traffic}% for ${sel.weeks} weeks, ${t1(pct)}% of ${who} see ${S.versions === 3 ? 'B or C' : 'B'}: about ${k100(p.base * sel.weeks * pct / 100)}${p.onb ? ' people' : ' views'}. The rest stay on today’s version.</p>`;
+  } else {
+    const alt = [];
+    if (p.decide !== 'trials') { const q = planOf({ ...S, decide: 'trials' }), f = q.byDate(tg).find((r) => r.traffic); alt.push(f ? `Decide on trial starts: ${f.traffic}% of traffic for ${f.weeks} weeks.` : 'Decide on trial starts: still short, but closer.'); }
+    if (S.versions === 3) { const q = planOf({ ...S, versions: 2 }), f = q.byDate(tg).find((r) => r.traffic); alt.push(f ? `Test B alone, without C: ${f.traffic}% for ${f.weeks} weeks.` : 'Test B alone, without C: still short.'); }
+    if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50: an uneven split needs more people for the same answer.');
+    alt.push(`Aim for a bigger change: at 100% for 8 weeks the test catches ${t1(rows[3].best)}% and up.`);
+    alt.push(p.onb ? 'Test where more people pass: an earlier screen, or all platforms at once.' : 'Test where more people see it: the onboarding paywall usually gets the most views.');
+    foot = `<div class="bdfoot"><b>Not reachable by 8 weeks, even at 100%.</b><ul>${alt.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
+  }
+  return `<section class="card bydate"><label class="tgt"><span>Smallest change worth catching</span><span class="tbox">+<input data-target inputmode="decimal" value="${tg}" style="width:${Math.max(1, String(tg).length) + 0.3}ch" aria-label="Smallest change worth catching, percent">%</span></label>
+  <span class="bdsub">${S.target > 0 ? '' : 'Suggested from the ideas below. '}Tap a row to set traffic and weeks.</span>
+  <div class="bdrows">${rows.map(row).join('')}</div>${foot}</section>`;
 }
 // Ideas that fit this test: filtered by its plans and trial, ranked by the metric it decides on, six at most.
 function ideasFor(p) {
@@ -253,13 +291,15 @@ function ideaCard(p) {
 }
 function controls() {
   const onb = S.area === 'onboarding';
-  const dec = decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]);
+  const dec = decideOptions(S.area).map((v) => [v, { money: 'Money / view', paid: 'Paid', trials: 'Trial starts' }[v]]);
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
-  ${onb ? railSlider('New users a week', 'users') + railSlider('New users who start a trial', 'trialRate') : railSlider('Paywall views a week', 'views') + railSlider('Views that end in payment', 'conv')}
+  ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
+    : railSlider('Paywall views a week', 'views') + (S.decide === 'trials' ? railSlider('Views that start a trial', 'trialView') : railSlider('Views that end in payment', 'conv'))}
   ${onb ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : ''}
-  ${seg('Traffic in test', 'traffic', [[100, '100%'], [50, '50%'], [20, '20%']])}
+  ${railSlider('Traffic in test', 'traffic')}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
-  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster.'}</span>
+  ${S.versions === 2 ? seg('Split A / B', 'split', [[50, '50/50'], [70, '70/30'], [80, '80/20'], [90, '90/10']]) : ''}
+  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster. Trial starts answer fastest but don’t show who pays.'}</span>
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>`;
 }
 // Start date: edited in the plan, where it's read (defaults to next Monday: whole weeks, a few days to set up)
@@ -277,7 +317,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much', 'Lifts other apps saw in published tests.')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${p.notWorse ? '' : sec('Need it by a date?', 'How much traffic each length needs to catch the change you care about.')}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much', 'Lifts other apps saw in published tests.')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -365,7 +405,7 @@ const SKILL = `<a class="card skill" href="${SKILL_URL}" target="_blank" rel="no
 const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">Nothing you type leaves this page. We don’t store it or send it anywhere.</p>`;
 function resultsScreen() {
   const p = planOf(S);
-  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money per view', paid: 'Paid', trials: 'Trial starts' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>` : '';
+  const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Money / view', paid: 'Paid', trials: 'Trial starts' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>` : '';
   const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
@@ -407,7 +447,7 @@ function verdictOf(p) {
     not_worse: both('not_worse') ? ['Both safe to ship', `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, both inside your −5% limit.`, 'Ship the one you prefer', 'You only had to show they don’t hurt, and they don’t. Don’t present either as a win: the test wasn’t sized to find one.']
       : [three ? `${L} is safe to ship` : 'Safe to ship', `At worst ${L} is ${sign(m.lo)}, inside your −5% limit. Most likely ${sign(m.lift)}.${three ? ` ${other.v} can’t rule out harm (at worst ${sign(other.metric.lo)}).` : ''}`, `Ship ${L}`, 'You only had to show it doesn’t hurt, and it doesn’t. Don’t present it as a win: the test wasn’t sized to find one.'],
     maybe_worse: ['Can’t rule out harm', three ? `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, past your −5% limit.` : `At worst B is ${sign(m.lo)}, past your −5% limit. Most likely ${sign(m.lift)}.`, 'Keep A, or run it longer', `More people would narrow the range. Until then, ${three ? 'either' : 'B'} might cost more than 5%.`],
-    broken: ['Test broken', `The groups split ${r.split.all.map((x) => t1(x)).join(' / ')} instead of ${three ? 'even thirds' : '50 / 50'}. Something sent different people to each version.`, 'Fix the split, then rerun', 'Common causes: one version loads slower, or is shown only on some devices or app versions.'],
+    broken: ['Test broken', `The groups split ${r.split.all.map((x) => t1(x)).join(' / ')} instead of ${three ? 'even thirds' : r.split.want.map((x) => Math.round(x)).join(' / ')}. Something sent different people to each version.`, 'Fix the split, then rerun', 'Common causes: one version loads slower, or is shown only on some devices or app versions.'],
     too_early: ['Too early', `The last free trials haven’t billed, so paid numbers will still grow in ${three ? 'every version' : 'both versions'}.`, `Come back on ${day(p.decideDate)}`, 'Reading now anchors on a number that will change.'],
   }[r.verdict];
   let source = '';
@@ -610,7 +650,7 @@ function set(key, raw) {
 
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
@@ -619,6 +659,7 @@ app.addEventListener('click', (e) => {
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
+  if (el.dataset.bydate) { const [w, t] = el.dataset.bydate.split('.').map(Number); S.weeks = w; S.traffic = t; syncTrack('traffic'); return planChanged(); }
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
@@ -651,6 +692,7 @@ app.addEventListener('input', (e) => {
   UI.instant = true; setTimeout(() => { UI.instant = false; });
   if (t.dataset.type) { const k = t.dataset.type, v = num(t.value); if (v != null && (v > 0 || SL[k].linear)) { S[k] = SL[k].linear ? Math.min(100, v) : Math.min(SL[k].hi * 10, v); save(); syncTrack(k, t); refreshMain(); } }
   if ('date' in t.dataset) { if (/^\d{4}-\d{2}-\d{2}$/.test(t.value)) { S.start = t.value; save(); history.replaceState(null, '', '#/' + route().r + '?' + toQuery(route().r === 'verdict')); render(); } }
+  if ('target' in t.dataset) { const v = num(t.value); if (v != null && v > 0 && v <= 500) { S.target = v; save(); refreshMain(); } }
   if (t.dataset.planPrice) { const v = num(t.value); if (v != null && v > 0) { S.plans[+t.dataset.planPrice].p = v; save(); refreshMain(); } }
 });
 app.addEventListener('change', (e) => { const pt = e.target.dataset.planType; if (pt !== undefined) { const x = S.plans[+pt]; x.t = e.target.value; if (x.t === 'once') x.tr = 0; return planChanged(); } if (e.target.dataset.type) { syncTrack(e.target.dataset.type); if (route().r !== 'test') render(); } });
