@@ -462,3 +462,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-
 
 /* plain-text description for readers without JavaScript and for agents; never flashes before the app */
 #about { display: none; }
+
+/* ---------- mobile verdict: Share result pinned to the bottom of the screen, over a fade (owner, 2026-11-02) */
+.dock { position: fixed; z-index: 15; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: 440px; box-sizing: border-box; padding: 28px 16px calc(16px + env(safe-area-inset-bottom)); pointer-events: none;
+  background: linear-gradient(rgba(21,21,21,0) 0%, rgba(21,21,21,.85) 38%, var(--bg) 60%); }
+.dock .btn { pointer-events: auto; gap: 8px; }
+.dock .btn svg { flex: none; }
+main.page.docked { padding-bottom: 104px; }   /* the last row and the footer stay above the pinned button */
