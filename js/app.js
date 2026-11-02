@@ -291,15 +291,16 @@ function ideaCard(p) {
 function controls() {
   const onb = S.area === 'onboarding';
   const dec = decideOptions(S.area).map((v) => [v, { money: 'Money / view', paid: 'Paid', trials: 'Trial starts' }[v]]);
+  // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
+  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster. Trial starts answer fastest but don’t show who pays.'}</span>
+  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}
   ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
     : railSlider('Paywall views a week', 'views') + (S.decide === 'trials' ? railSlider('Views that start a trial', 'trialView') : railSlider('Views that end in payment', 'conv'))}
   ${onb ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : ''}
   ${railSlider('Traffic in test', 'traffic')}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
-  ${S.versions === 2 ? seg('Split A / B', 'split', [[50, '50/50'], [70, '70/30'], [80, '80/20'], [90, '90/10']]) : ''}
-  ${seg('Decide on', 'decide', dec)}<span class="hint">${onb ? 'Trial starts answer in weeks. Paid answers what you care about, after the trial.' : 'Prices, plans or trial: money per view. Copy and layout: paid answers faster. Trial starts answer fastest but don’t show who pays.'}</span>
-  ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Prove it’s not worse']])}</div>`;
+  ${S.versions === 2 ? seg('Split A / B', 'split', [[50, '50/50'], [70, '70/30'], [80, '80/20'], [90, '90/10']]) : ''}</div>`;
 }
 // Start date: edited in the plan, where it's read (defaults to next Monday: whole weeks, a few days to set up)
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
