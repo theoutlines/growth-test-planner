@@ -1,7 +1,8 @@
-// Anonymous counter (owner, 2026-11-02): which idea people pick in “What changes in B”.
+// Anonymous counter (owner, 2026-11-02): which choices people make in the planner (fixed lists only).
 // Stores only a daily count per (area, event, value). No IP, no cookie, no user id, never free text.
 // Needs a D1 database bound to this Pages project as DB (Cloudflare → Pages → growth-test-planner → Settings → Bindings).
-const EVENTS = { what: /^[A-Za-z]{2,24}$/ };      // values come from fixed lists in js/data.js; anything else is dropped
+const V = /^[A-Za-z0-9]{1,24}$/;                 // values come from fixed lists in the app (idea ids, option keys); anything else is dropped
+const EVENTS = Object.fromEntries(['what', 'page', 'area', 'decide', 'goal', 'weeks', 'versions', 'split', 'trial', 'idea', 'ideaplan', 'bydate', 'share', 'verdict', 'promo'].map((e) => [e, V]));
 const AREAS = new Set(['paywall', 'onboarding']);
 const done = () => new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
 export async function onRequestPost({ request, env }) {
