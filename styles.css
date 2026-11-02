@@ -561,8 +561,8 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .big .rng { text-align: center; }
 
 /* plan card: what changes in B (travels into share text and the verdict) */
-.plan .what { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--s08); }
-.plan .what > span { font-size: 14px; font-weight: 500; color: var(--t75); }
+.plan .what { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
+.plan .what > span { font-size: 14px; color: var(--t60); }   /* same as the rows above */
 .plan .what input { height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 0; outline: 0; background: var(--s05); color: var(--w); font: inherit; font-size: 16px; }
 .plan .what input::placeholder { color: var(--t45); }
 .plan .what input:focus { background: var(--s10); }
