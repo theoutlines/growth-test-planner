@@ -924,10 +924,10 @@ function syncTrack(k, except) {
   document.querySelectorAll(`[data-rng-of="${k}"]`).forEach((el) => { el.textContent = rangeText(k); });
   const txt = SL[k].fmt(S[k]);
   document.querySelectorAll(`[data-type="${k}"]`).forEach((inp) => {
-    if (inp === except) return;                                  // never rewrite the field someone is typing in
-    inp.value = txt;
-    if ('small' in inp.dataset) inp.size = Math.max(2, txt.length);
-    else { const size = Math.min(80, Math.floor(600 / txt.length / 4) * 4); inp.style.fontSize = size + 'px'; inp.style.width = (Math.max(2, txt.length) + 0.1) + 'ch';   /* ch = one tabular digit in this font, so the box never clips the last digit */ }
+    const own = inp === except, t = own ? inp.value : txt;      // never rewrite the field someone is typing in, but let it grow with what they type
+    if (!own) inp.value = txt;
+    if ('small' in inp.dataset) inp.size = Math.max(2, t.length);
+    else { const size = Math.min(80, Math.floor(600 / Math.max(1, t.length) / 4) * 4); inp.style.fontSize = size + 'px'; inp.style.width = (Math.max(2, t.length) + 0.1) + 'ch';   /* ch = one tabular digit in this font, so the box never clips the last digit */ }
   });
 }
 function refreshMain() {           // update the answer without touching the control being used
