@@ -53,6 +53,8 @@ export const IDEAS_SRC = {
 };
 
 export const CHIPS = {
+  views30: [[40000, '40k', 'small app'], [200000, '200k', 'mid'], [1000000, '1M', 'large']],
+  users30: [[20000, '20k', 'small app'], [90000, '90k', 'mid'], [400000, '400k', 'large']],
   views: [[10000, '10k', 'small app'], [50000, '50k', 'mid'], [250000, '250k', 'large']],
   users: [[5000, '5k', 'small app'], [20000, '20k', 'mid'], [100000, '100k', 'large']],
   conv: [[2.75, '2.75%', 'US median, per view'], [1.38, '1.38%', 'Europe median, per view']],                 // Adapty, State of Paywalls 2026
