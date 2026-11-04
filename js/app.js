@@ -142,7 +142,7 @@ const pctOf = (k, v) => SL[k].linear ? Math.max(0, Math.min(100, (v - SL[k].lo) 
 const valOf = (k, pct) => SL[k].round(SL[k].linear ? SL[k].lo + (SL[k].hi - SL[k].lo) * pct / 100 : SL[k].lo * Math.pow(SL[k].hi / SL[k].lo, pct / 100));
 
 function bigValue(k) {
-  const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length));
+  const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length / 4) * 4);
   return `<div class="big"><label class="num"><span class="sr">Value</span><input data-type="${k}" inputmode="decimal" value="${txt}" style="font-size:${size}px;width:${Math.max(2, txt.length) + 0.1}ch">${SL[k].unit ? `<span class="unit">${SL[k].unit}</span>` : ''}</label>
   ${track(k)}${rangeNote(k)}</div>`;
 }
@@ -603,7 +603,7 @@ function verdictScreen() {
   const from = ['win', 'win_with_cost', 'not_worse'].includes(v.r.verdict) && v.r.verdict !== 'win_with_cost' ? v.r.lead : 'A';
   const next = v.r.verdict === 'broken' || v.r.verdict === 'too_early' ? '' : `<button class="btn sec2 nexttest" data-next-from="${from}">Plan the next test from ${from}’s numbers</button>`;
   const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + next + (wide() ? '' : numbersRow());   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
-  const rail = `<aside class="rail"><section class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
+  const rail = `<aside class="rail"><section class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px"><small style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
   const share = wide() ? `<button class="share-float" data-go="share-result">${I.share}<span>Share result</span></button>`
     : `<div class="dock"><button class="btn sec2" data-go="share-result">${I.share}<span>Share result</span></button></div>`;   // mobile: pinned to the bottom of the screen (owner, 2026-11-02)
   return top() + `<main class="page${wide() ? '' : ' docked'}" id="main">${body}</main>` + share + rail;
@@ -910,7 +910,7 @@ function syncTrack(k, except) {
     if (inp === except) return;                                  // never rewrite the field someone is typing in
     inp.value = txt;
     if ('small' in inp.dataset) inp.size = Math.max(2, txt.length);
-    else { const size = Math.min(80, Math.floor(600 / txt.length)); inp.style.fontSize = size + 'px'; inp.style.width = (Math.max(2, txt.length) + 0.1) + 'ch';   /* ch = one tabular digit in this font, so the box never clips the last digit */ }
+    else { const size = Math.min(80, Math.floor(600 / txt.length / 4) * 4); inp.style.fontSize = size + 'px'; inp.style.width = (Math.max(2, txt.length) + 0.1) + 'ch';   /* ch = one tabular digit in this font, so the box never clips the last digit */ }
   });
 }
 function refreshMain() {           // update the answer without touching the control being used
