@@ -378,8 +378,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .vs > small { font-size: 12px; font-weight: 500; color: var(--t50); line-height: 16px; }
 .vs > p { margin: 0; font-size: 12px; line-height: 16px; color: var(--t50); }
 .vsplot { position: relative; display: flex; flex-direction: column; gap: 16px; padding-top: 24px; }
-.vsref { position: absolute; top: 20px; bottom: 0; width: 2px; margin-left: -1px; background: rgba(255,255,255,.9); }
-.vsref.lim { background: none; border-left: 2px dashed var(--acc); }
+.vsref { position: absolute; top: 20px; height: 0; width: 2px; margin-left: -1px; }   /* only the label; the mark is drawn in each bar so it never crosses the text */
+.vsref.lim { background: none; }
+.vszero { position: absolute; top: -4px; height: 24px; width: 2px; margin-left: -1px; background: rgba(255,255,255,.9); z-index: 1; }
+.vszero.lim { background: none; border-left: 2px dashed var(--acc); }
+.numedit { flex: none; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--t60); }
 .vsref i { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 12px; white-space: nowrap; color: var(--t75); line-height: 16px; }
 .vsref.lim i { left: 8px; transform: none; color: var(--acc); font-weight: 500; }
 .vshead { position: relative; z-index: 1; display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
