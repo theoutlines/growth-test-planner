@@ -595,3 +595,20 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .controls .what { display: flex; flex-direction: column; gap: 8px; }
 .controls .what > span { font-size: 12px; font-weight: 500; color: var(--t75); line-height: 16px; }
 .controls .what input { height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 12px; border: 0; outline: 0; background: var(--s05); color: var(--w); font: inherit; font-size: 16px; line-height: 24px; }
+
+/* plans question (owner, 2026-11-04): tick a plan, its price and trial open under it */
+.pp { display: flex; flex-direction: column; gap: 8px; }
+.pp-row { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 16px; background: var(--card); }
+.pp-row.on { background: rgba(255,255,255,.12); }
+.pp-tog { display: flex; align-items: center; gap: 12px; height: 28px; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--t60); text-align: left; }
+.pp-row.on .pp-tog { color: var(--w); }
+.pp-box { flex: none; width: 24px; height: 24px; border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; }
+.pp-row.on .pp-box { background: var(--w); box-shadow: none; }
+.pp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pp-f { height: 52px; border-radius: 12px; background: rgba(255,255,255,.08); }
+.pp-price input { font-size: 24px; line-height: 28px; font-weight: 500; letter-spacing: -.02em; }
+.pp-price > span { padding-left: 16px; font-size: 24px; line-height: 28px; }
+.pp-f select { padding-left: 16px; }
+.pp-f.pi-na { justify-content: flex-start; padding: 0 16px; }
+.hintgroup { display: flex; flex-direction: column; gap: 8px; margin-top: -8px; }
+.nextq { margin-top: 16px; }
