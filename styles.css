@@ -590,5 +590,8 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .bydate .bdans b { color: var(--w); font-weight: 500; }
 
 /* What changes in B: a pick from the chart's ideas (owner, 2026-11-02) */
-.plan .what .dd select { font-weight: 400; }
-.plan .what .dd.empty select { color: var(--t45); }
+.plan .what .dd select, .controls .what .dd select { font-weight: 400; }
+.plan .what .dd.empty select, .controls .what .dd.empty select { color: var(--t45); }
+.controls .what { display: flex; flex-direction: column; gap: 8px; }
+.controls .what > span { font-size: 14px; font-weight: 500; color: var(--t75); }
+.controls .what input { height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 0; outline: 0; background: var(--s05); color: var(--w); font: inherit; font-size: 16px; }

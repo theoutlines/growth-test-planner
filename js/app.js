@@ -8,7 +8,7 @@ const S = fresh();
 let READ = { A: {}, B: {}, C: {}, billed: true };
 const LETTERS = () => (S.versions === 3 ? ['A', 'B', 'C'] : ['A', 'B']);
 let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError: '' };
-const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
+const ROUTES = ['', 'area', 'traffic', 'starts', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
 const KEYS = { hi: 'whatId', h: 'what', a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', pr: 'paidRate', tv: 'trialView', t: 'trial', s: 'traffic', sp: 'split', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', tg: 'target' };
@@ -113,7 +113,7 @@ for (let i = 0; i < 4; i++) {
 }
 // 30-day counts (draft, facts30): people type counts from one report; inside, weekly people and rates stay as before.
 // Moving the people count keeps the typed counts of payers and trial starts (facts are facts); the rates follow.
-const D30 = 30 / 7, kfmt = (x) => (x >= 1e6 ? +(x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? +(x / 1e3).toFixed(x < 1e4 ? 1 : 0) + 'k' : String(Math.round(x)));
+const D30 = 30 / 7, kfmt = (x) => (x >= 1e6 ? +(x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? +(x / 1e3).toFixed(x < 1e5 ? 1 : 0) + 'k' : String(Math.round(x)));
 const roundCount = (v) => (v < 1000 ? Math.round(v) : v < 10000 ? Math.round(v / 10) * 10 : Math.round(v / 100) * 100);
 const COUNTS = {   // count key: [people key (weekly), rate key, slider range as % of people]
   paid30: ['views', 'conv', 0.5, 10], trial30: ['views', 'trialView', 0.5, 40],
@@ -154,8 +154,8 @@ function track(k, sm) {
   const p = pctOf(k, S[k]);
   return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="fill" style="width:${p}%"></div><div class="handle" style="left:${p}%"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
 }
-const TYPICAL = { paid30: 'conv', trial30: 'trialView', otrial30: 'trialRate' };
-const chipList = (k) => (TYPICAL[k] ? CHIPS[TYPICAL[k]].map(([r, , b]) => { const v = Math.round(S[COUNTS[k][0]] * D30 * r / 100); return [v, n0(v), b.replace('US median, per view', 'typical US app').replace('Europe median, per view', 'typical Europe app')]; }) : CHIPS[k]);
+const TYPICAL = { paid30: 'conv', trial30: 'trialView', otrial30: 'trialRate', opaid30: 'paidRate' };
+const chipList = (k) => (TYPICAL[k] ? CHIPS[TYPICAL[k]].map(([r, a, b]) => [Math.round(S[COUNTS[k][0]] * D30 * r / 100), a, b]) : CHIPS[k]);
 const chips = (k, label) => (label ? `<span class="chips-label">${label}</span>` : '') + `<div class="chips">${chipList(k).map(([v, a, b]) => `<button class="chip" data-set="${k}" data-val="${v}">${a} <span>${b}</span></button>`).join('')}</div>`;
 const seg = (label, key, opts) => `<div class="seg"><span>${label}</span><div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))"><span class="pill" data-js-style aria-hidden="true"></span>${opts.map(([v, t]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(S[key]) === String(v)}">${t}</button>`).join('')}</div></div>`;
 const railSlider = (label, k, small) => `<div class="rs${small ? ' small' : ''}"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}${rangeNote(k)}</div>`;   // drag the track or type the number
@@ -165,7 +165,10 @@ const top = (action) => `<header class="top"><a class="brand" href="#/" aria-lab
 const shareBtn = `<button class="icon-btn" data-go="share" aria-label="Share">${I.share}</button>`;
 const heading = (h, sub) => `<div class="heading"><h1>${h}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
 const sec = (t, sub) => `<div class="sec"><b>${t}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
-const nav = (label, step, next, back) => `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= 4 ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of 4 answered)">${step < 4 ? `<i style="width:${step * 25}%;--fill-from:${Math.max(0, (UI.lastStep ?? step - 1)) * 25}%"></i>` : ''}<span>${label}</span></button></div>`;
+// questions follow the funnel (draft facts30): what you test → what it sells → people → trial starts (only with a trial) → paid
+const hasTrial = () => (S.area === 'onboarding' ? S.trial > 0 : S.plans.some((x) => planTrial(x) > 0));
+const STEPS = () => ['area', 'trial', 'traffic', ...(hasTrial() ? ['starts'] : []), 'conv'];
+const nav = (label, step, next, back) => { const of = STEPS().length, u = 100 / of; return `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= of ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of ${of} answered)">${step < of ? `<i style="width:${step * u}%;--fill-from:${Math.max(0, (UI.lastStep ?? step - 1)) * u}%"></i>` : ''}<span>${label}</span></button></div>`; };
 const pick = (glyph, t, sub, goTo) => `<button class="pick" data-go="${goTo}"><span>${glyph}</span><span><b>${t}</b><em>${sub}</em></span>${I.chev}</button>`;
 
 function trialText() {          // paywall: each plan has its own trial
@@ -193,34 +196,39 @@ function startScreen() {
   <p class="fine" style="text-align:center;margin:0">Free. What you type stays on this page.</p></main>`;
 }
 function areaScreen() {
-  return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. Three more questions follow.')}
+  return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. A few questions follow.')}
   <div class="stack">${pick(G.onboarding, 'Onboarding', 'Questions, personalisation, the first screens. We’ll count new users.', 'area:onboarding')}
   ${pick(G.paywall, 'Paywall', 'Plans, trial, layout, copy. We’ll count people who see it.', 'area:paywall')}</div></main>`;
 }
 function trafficScreen() {
-  const onb = S.area === 'onboarding';
+  const onb = S.area === 'onboarding', t = hasTrial();
   return top() + `<main class="page q">${onb ? heading('How many new users started onboarding in the last 30 days?', 'Count people, not screens.') : heading('How many people saw this paywall in the last 30 days?', 'Count people, not views: the test splits people.')}
-  ${bigValue(onb ? 'users30' : 'views30')}${chips(onb ? 'users30' : 'views30')}<div class="grow"></div>${nav(onb ? 'Next: how many start a trial' : 'Next: how many pay', 2, 'conv', 'area')}</main>`;
+  ${bigValue(onb ? 'users30' : 'views30')}${chips(onb ? 'users30' : 'views30')}<div class="grow"></div>${nav(t ? 'Next: how many start a trial' : 'Next: how many pay', 3, t ? 'starts' : 'conv', 'trial')}</main>`;
+}
+function startsScreen() {
+  const onb = S.area === 'onboarding';
+  return top() + `<main class="page q">${heading('How many of them started a free trial?', 'The same 30 days.')}
+  ${bigValue(onb ? 'otrial30' : 'trial30')}<div style="display:flex;flex-direction:column;gap:8px">${chips(onb ? 'otrial30' : 'trial30', 'No numbers yet? Start from a typical app')}</div>
+  <div class="grow"></div>${nav('Next: how many pay', 4, 'conv', 'traffic')}</main>`;
 }
 function convScreen() {
-  const onb = S.area === 'onboarding';
-  return top() + `<main class="page q">${onb ? heading('How many of them started a trial?', 'The same 30 days.') : heading('How many of them paid?', 'The same 30 days. Count payments after a free trial too.')}
-  ${bigValue(onb ? 'otrial30' : 'paid30')}<div style="display:flex;flex-direction:column;gap:8px">${chips(onb ? 'otrial30' : 'paid30', 'No numbers yet? A typical app this size')}</div>
-  <div class="grow"></div>${nav(onb ? 'Next: free trial' : 'Next: your plans', 3, 'trial', 'traffic')}</main>`;
+  const onb = S.area === 'onboarding', t = hasTrial();
+  return top() + `<main class="page q">${heading('How many of them paid?', t ? 'The same 30 days, payments after the free trial included.' : 'The same 30 days.')}
+  ${bigValue(onb ? 'opaid30' : 'paid30')}<div style="display:flex;flex-direction:column;gap:8px">${chips(onb ? 'opaid30' : 'paid30', 'No numbers yet? Start from a typical app')}</div>
+  <div class="grow"></div>${nav('Show my test', STEPS().length, 'test', t ? 'starts' : 'traffic')}</main>`;
 }
 function trialScreen() {
   const onb = S.area === 'onboarding';
-  if (!onb) {        // paywall: the last question is its plans (price, trial and share of sales each), owner 2026-11-02
+  if (!onb) {        // paywall: what it sells comes before the counts, so we know whether to ask about trials
     const lt = longestTrial(S.plans);
     return top() + `<main class="page q">${heading('What does this paywall sell?', 'Each plan’s price, free trial and share of sales. They set how long the test waits and how noisy revenue is.')}
   ${plansInline(true)}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill` : 'No trial: no extra wait'}</span>
-  <div class="grow"></div>${nav('Show my test', 4, 'test', 'conv')}</main>`;
+  <div class="grow"></div>${nav('Next: people who see it', 2, 'traffic', 'area')}</main>`;
   }
   const tiles = TRIALS.map(([d, sub]) => `<button class="tile" data-set="trial" data-val="${d}" aria-pressed="${S.trial === d}"><span class="n"><b>${d === 0 ? 'None' : d >= 14 ? '14+' : d}</b>${d ? '<span>days</span>' : ''}</span><span class="days" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i${i < d ? ' class="on"' : ''}></i>`).join('')}</span><em>${sub}</em></button>`).join('');
-  const wait = onb ? '' : `<span class="wait">${S.trial ? `You decide ${S.trial >= 14 ? '14+' : S.trial} days after the test stops` : 'No extra wait'}</span>`;
   return top() + `<main class="page q">${heading('How long is the free trial?', 'People who start a trial pay only when it ends, so the test waits for them.')}
-  <div class="tiles">${tiles}</div>${wait}<p class="note">${onb ? 'Judged on trial starts, the test doesn’t wait for the trial. Judged on paid, it waits for the longest one.' : 'Different trials on different plans? Pick the longest here, then set each plan in Plans on the next screen.'}</p>
-  <div class="grow"></div>${nav('Show my test', 4, 'test', 'conv')}</main>`;
+  <div class="tiles">${tiles}</div><p class="note">Judged on trial starts, the test doesn’t wait for the trial. Judged on paid, it waits for it.</p>
+  <div class="grow"></div>${nav('Next: new users', 2, 'traffic', 'area')}</main>`;
 }
 
 function thresholdBlock(p) {
@@ -244,7 +252,7 @@ function planBlock(p) {
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevDS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
-  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div>${whatField(p)}</section>`;
+  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
 }
 // What changes in B (owner, 2026-11-02): pick from the chart's ideas, or Something else with your own words.
 // Only the pick is counted (anonymous, per day); the words never leave the page.
@@ -370,22 +378,23 @@ const DECIDE_HINT = {
   onboarding: { trials: 'Trial start rate. Answers in weeks.', paid: 'Share of new users who pay. Waits for the trial to end.' },
 };
 function facts30() {
-  const onb = S.area === 'onboarding', pk = onb ? 'users30' : 'views30', ck = onb ? (S.decide === 'paid' ? 'opaid30' : 'otrial30') : (S.decide === 'trials' ? 'trial30' : 'paid30');
-  const cl = { paid30: 'paid', trial30: 'started a trial', otrial30: 'started a trial', opaid30: 'paid' }[ck];
-  const sum = `${n0(S[pk])} ${onb ? 'new users' : 'saw it'} · ${n0(S[ck])} ${cl}`, open = UI.factsOpen;
+  const onb = S.area === 'onboarding', ks = onb ? ['users30', 'otrial30', 'opaid30'] : ['views30', 'trial30', 'paid30'], t = hasTrial();
+  const lab = [onb ? 'New users' : 'Saw the paywall', 'Started a trial', 'Paid'], short = [onb ? 'new users' : 'saw', 'trial', 'paid'];
+  const idx = t ? [0, 1, 2] : [0, 2], sum = idx.map((i) => `${kfmt(S[ks[i]])} ${short[i]}`).join(' · '), open = UI.factsOpen;
   const head = `<button class="pi-acc" data-facts-toggle aria-expanded="${!!open}" aria-label="Last 30 days: ${sum}"><span>${sum}</span>${open ? I.chevU : I.chevD}</button>`;
   if (!open) return `<div class="plans-inline"><span class="lab">Last 30 days</span><div class="pi-box">${head}</div></div>`;
-  return `<div class="plans-inline open"><span class="lab">Last 30 days</span><div class="pi-box open">${head}<div class="pi-body facts">${railSlider(onb ? 'New users' : 'Saw the paywall', pk)}${railSlider(cl[0].toUpperCase() + cl.slice(1), ck)}</div></div></div>`;
+  return `<div class="plans-inline open"><span class="lab">Last 30 days</span><div class="pi-box open">${head}<div class="pi-body facts">${idx.map((i) => railSlider(lab[i], ks[i])).join('')}</div></div></div>`;
 }
 function controls() {
   const onb = S.area === 'onboarding';
   const dec = decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]);
   // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
+  ${whatField(planOf(S))}
+  ${onb || S.decide !== 'money' ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : plansInline()}
+  ${facts30()}
   ${seg('Decide on', 'decide', dec)}<span class="hint">${DECIDE_HINT[S.area][S.decide] || ''}</span>
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
-  ${facts30()}
-  ${onb || S.decide !== 'money' ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : plansInline()}
   ${railSlider('Traffic in test', 'traffic')}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${S.versions === 2 ? seg('Split A / B', 'split', [[50, '50/50'], [70, '70/30'], [80, '80/20'], [90, '90/10']]) : ''}</div>`;
@@ -741,7 +750,7 @@ document.getElementById('about')?.remove();   // the plain-text description is f
 function render() {
   const { r } = route();
   const sheet = document.getElementById('sheet'), st = sheet ? sheet.scrollTop : 0;
-  const html = { '': startScreen, area: areaScreen, traffic: trafficScreen, conv: convScreen, trial: trialScreen, test: testScreen, share: () => shareScreen(false),
+  const html = { '': startScreen, area: areaScreen, traffic: trafficScreen, starts: startsScreen, conv: convScreen, trial: trialScreen, test: testScreen, share: () => shareScreen(false),
     results: resultsScreen, verdict: verdictScreen, 'share-result': () => shareScreen(true) }[r]();
   const page = PAGE(r);
   const tmp = document.createElement('div'); tmp.innerHTML = html;
@@ -768,7 +777,7 @@ function render() {
     if (page === 'test') { countOnce('decide', S.decide); countOnce('goal', S.goal); }
   }
   lastPage = page; UI.areaSwap = false;
-  if (/^(area|traffic|conv|trial)$/.test(r)) UI.lastStep = { area: 1, traffic: 2, conv: 3, trial: 4 }[r];
+  if (/^(area|traffic|starts|conv|trial)$/.test(r)) UI.lastStep = STEPS().indexOf(r) + 1;
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
   document.documentElement.style.overflow = document.querySelector('.scrim') ? 'hidden' : '';   // a modal or sheet holds the page still
   document.title = 'Growth Test Planner';
@@ -797,7 +806,7 @@ app.addEventListener('click', (e) => {
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
     if (arg === 'read') return go(r, true);                 // back to the numbers, with them in the link
-    if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('traffic'); }
+    if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('trial'); }
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
