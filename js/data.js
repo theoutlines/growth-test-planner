@@ -48,8 +48,8 @@ export const IDEAS = {
 // the metric each decision reads, so ideas measured on it rank first
 export const DECIDE_METRIC = { money: 'arpu', paid: 'conv', trials: 'trials' };
 export const IDEAS_SRC = {
-  paywall: 'Each range is a band from Adapty’s A/B library, many tests. Tap an idea for the single published tests and their links. Not a forecast for yours.',
-  onboarding: 'Each number is what other apps saw in published tests, on the metric its row shows. Where a test split by market, the chart uses the lower figure. A single test’s own uncertainty is rarely published: a dot is one result, not a precise effect. Results with no control group sit below the rest. Tap an idea for the published tests and their links. Not a forecast for yours.',
+  paywall: 'Ranges from Adapty’s A/B library. Not a forecast for your test.',
+  onboarding: 'From other apps’ published tests, the lower figure where a test split by market. Results with no control group sit lower. Not a forecast for your test.',
 };
 
 export const CHIPS = {

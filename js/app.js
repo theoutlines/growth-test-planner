@@ -282,7 +282,7 @@ function dateBlock(p) {     // optional (owner, 2026-11-02: “feels optional, M
   const sum = r.traffic ? `+${tg}% needs ${r.traffic}% of traffic` : `+${tg}% is out of reach`;
   const head = `<button class="bd-acc" data-bd-toggle aria-expanded="${!!UI.bdOpen}"><span><b>Plan for a specific change</b><small>${UI.bdOpen ? 'Pick the change, see the traffic it needs' : sum}</small></span>${UI.bdOpen ? I.chevU : I.chevD}</button>`;
   if (!UI.bdOpen) return `<section class="card bydate">${head}</section>`;
-  const src = !(S.target > 0) || UI.targetFrom === '~' ? 'Suggested from the ideas below' : UI.targetFrom ? `Low end of “${esc(UI.targetFrom)}”` : '';
+  const src = UI.targetFrom && UI.targetFrom !== '~' ? `Low end of “${esc(UI.targetFrom)}”` : '';   // only when an idea set it: it names the idea; the default needs no caption (owner, 2026-11-04)
   let body;
   if (r.traffic) {
     const pct = r.traffic * (1 - p.split[0]), on = S.traffic === r.traffic;
@@ -339,7 +339,7 @@ function ideasBlock(p) {
   <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v ? `+${v}%` : '0'}</span>`).join('')}</span></div>
   ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr, sp = (r.split || {})[r.m], src = sp ? sp.note : srcLine(r), one = r.lo === r.hi;
     return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${src || !r.same ? `<small>${[src, r.same ? '' : `on ${METRIC[r.m]}`].filter(Boolean).join(' · ')}</small>` : ''}</span><span class="bar"><i class="${one ? 'dot' : ''}" style="left:${one ? `calc(${x(r.lo)}% - 7px)` : `${x(r.lo)}%`};width:${one ? '14px' : `${Math.max(3, x(r.hi) - x(r.lo))}%`};background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i>${sp && sp.to ? `<b class="ext" style="left:${x(r.hi)}%;width:${x(sp.to) - x(r.hi)}%"></b><b class="ring" style="left:calc(${x(sp.to)}% - 6px)"></b>` : ''}</span></button>`; }).join('')}
-  </div><span class="legend"><span><i class="lb"></i>Lowest to highest result</span><span><i class="ld"></i>One number (one test, or a band given as one figure)</span>${rows.some((r) => ((r.split || {})[r.m] || {}).to) ? '<span><i class="le"></i><i class="lr"></i>Same test, another market</span>' : ''}</span>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
+  </div><span class="legend"><span><i class="lb"></i>Lowest to highest result</span><span><i class="ld"></i>One number (one test, or a band given as one figure)</span>${rows.some((r) => ((r.split || {})[r.m] || {}).to) ? '<span><i class="le"></i><i class="lr"></i>Same test, another market</span>' : ''}</span>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}</span></section>`;
 }
 function ideaCard(p) {
   const it = ideasFor(p).find((x) => x.id === UI.idea) || IDEAS[S.area].map((x) => ({ ...x, m: Object.keys(x.r)[0], lo: Object.values(x.r)[0][0], hi: Object.values(x.r)[0][1], same: false })).find((x) => x.id === UI.idea);
@@ -738,11 +738,12 @@ const pillRO = 'ResizeObserver' in window ? new ResizeObserver((es) => {
   });
   placePills();
 }) : null;
-function layoutMix() {        // every plan name stays visible: centred over its segment, pushed apart when segments are narrow
+function layoutMix() {        // every plan name stays visible: ends pinned to the bar's edges, middle names centred, pushed apart when segments are narrow
   document.querySelectorAll('[data-mixbar]').forEach((bar) => {
     const names = [...(bar.previousElementSibling?.children || [])], segs = [...bar.querySelectorAll('.mseg')], W = bar.clientWidth; if (!names.length || !W) return;
     const bl = bar.getBoundingClientRect().left, wd = names.map((n) => n.offsetWidth), gap = 8;
-    const left = segs.map((sg, i) => { const r = sg.getBoundingClientRect(); return r.left - bl + r.width / 2 - wd[i] / 2; });
+    const last = segs.length - 1;   // the first name sits on the bar's left edge, the last on its right edge, the ones between centred over their segment (owner, 2026-11-04)
+    const left = segs.map((sg, i) => { const r = sg.getBoundingClientRect(); return i === 0 ? 0 : i === last ? W - wd[i] : r.left - bl + r.width / 2 - wd[i] / 2; });
     for (let i = 0; i < left.length; i++) left[i] = Math.max(i ? left[i - 1] + wd[i - 1] + gap : 0, left[i]);
     for (let i = left.length - 1; i >= 0; i--) left[i] = Math.min(i < left.length - 1 ? left[i + 1] - wd[i] - gap : W - wd[i], left[i]);
     names.forEach((n, i) => { n.style.left = Math.max(0, left[i]) + 'px'; });
