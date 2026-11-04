@@ -276,7 +276,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .err { color: var(--acc); font-size: 12px; line-height: 16px; }
 
 /* ---------- floating details card (desktop): bottom-left corner, stays put while the page scrolls */
-.float { position: fixed; z-index: 16; left: 40px; bottom: 80px; width: 360px; max-height: calc(var(--vh, 100vh) - 176px); overflow-y: auto; padding: 16px; border-radius: 20px; background: #2A2A2A; box-shadow: 0 24px 60px rgba(0,0,0,.55); display: flex; flex-direction: column; gap: 12px; }
+.float { position: fixed; z-index: 16; left: 40px; bottom: 80px; width: 360px; max-height: calc(var(--vh, 100vh) - 176px); overflow-y: auto; padding: 16px; border-radius: 20px; background: #2A2A2A; box-shadow: 0 24px 60px rgba(0,0,0,.55); display: flex; flex-direction: column; gap: 16px; }
 .share-float { position: fixed; z-index: 16; left: 40px; bottom: 24px; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 12px; border-radius: 16px; background: #2A2A2A; font-size: 16px; font-weight: 500; box-shadow: 0 12px 30px rgba(0,0,0,.4); line-height: 24px; }
 .foot { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding: 32px 0 8px; font-size: 12px; color: var(--t45); line-height: 16px; }
 .foot a { color: var(--t60); }
@@ -546,7 +546,9 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 /* traffic you need: one answer for the weeks picked above */
 .bdset { height: 44px; font-size: 16px; line-height: 24px; }
 .bdset.done { display: flex; align-items: center; justify-content: center; border-radius: 12px; color: var(--t50); box-shadow: inset 0 0 0 1px var(--s08); }
-.bdalt { margin: -8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 16px; line-height: 24px; color: var(--t60); list-style: disc; }
+.bdalt { display: flex; flex-direction: column; gap: 4px; }
+.bdalt > span { font-size: 12px; line-height: 16px; color: var(--t50); }
+.bdalt p { margin: 0; font-size: 16px; line-height: 24px; color: var(--t75); }
 
 /* share of sales: one bar, a segment per plan, draggable dividers */
 .mix { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
@@ -567,7 +569,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 
 .rng { font-size: 12px; line-height: 16px; color: var(--acc); }
 .rng:empty { display: none; }
-.big .rng { text-align: center; }
+.big .rng { text-align: left; margin-top: -8px; }   /* left like every hint, close to its slider */
 
 /* plan card: what changes in B (travels into share text and the verdict) */
 .plan .what { display: flex; flex-direction: column; gap: 8px; margin-top: -8px; }   /* sits at the same rhythm as the rows above */
@@ -623,3 +625,9 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .pi-body .pp-price input, .pi-body .pp-price > span { font-size: 20px; line-height: 24px; }
 .pi-body .pp-f { height: 44px; }
 .whatnote { margin: 0; font-size: 12px; font-weight: 400; line-height: 16px; color: var(--t50); }   /* same as every hint under a control */
+/* idea card: title centred on the close button; what + range read as one group; tests and the warning sit apart (owner, 2026-11-04) */
+.ihead { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.ihead b { font-size: 20px; font-weight: 500; letter-spacing: -.02em; line-height: 24px; }
+.igrp { display: flex; flex-direction: column; gap: 8px; }
+.igrp + .tests, .tests + .icare { margin-top: 8px; }
+.tests .test:last-child { padding-bottom: 0; }
