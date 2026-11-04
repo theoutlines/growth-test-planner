@@ -152,7 +152,7 @@ const rangeText = (k) => (COUNTS[k] ? (S[k] > S[COUNTS[k][0]] * D30 ? `More than
 const rangeNote = (k) => (RATE[k] ? `<span class="rng" data-rng-of="${k}">${rangeText(k)}</span>` : '');
 function track(k, sm) {
   const p = pctOf(k, S[k]);
-  return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="fill" style="width:${p}%"></div><div class="handle" style="left:${p}%"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
+  return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" style="--p:${p}" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="fill"></div><div class="handle"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
 }
 const TYPICAL = { paid30: 'conv', trial30: 'trialView', otrial30: 'trialRate', opaid30: 'paidRate' };
 const chipList = (k) => (TYPICAL[k] ? CHIPS[TYPICAL[k]].map(([r, a, b]) => [Math.round(S[COUNTS[k][0]] * D30 * r / 100), a, b]) : CHIPS[k]);
@@ -264,7 +264,7 @@ function whatField(p) {
   const id = S.whatId === 'other' || IDEAS[S.area].some((x) => x.id === S.whatId) ? S.whatId : (S.what ? 'other' : '');
   const opts = whatOptions(p).map((x) => `<option value="${x.id}"${id === x.id ? ' selected' : ''}>${esc(x.t)}</option>`).join('');
   return `<div class="what"><span>What changes in B</span><div class="dd${id ? '' : ' empty'}"><select data-what-pick aria-label="What changes in B"><option value=""${id ? '' : ' selected'} disabled>Pick what B changes</option>${opts}<option value="other"${id === 'other' ? ' selected' : ''}>Something else</option></select>${I.chevD}</div>
-  ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}</div>`;
+  ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}<span class="whatnote">We count which idea is picked, with no names or cookies. What you type stays on this page.</span></div>`;
 }
 const counted = new Set();
 const countOnce = (e, v) => { const k = e + ':' + v + ':' + S.area; if (counted.has(k)) return; counted.add(k); count(e, v); };   // once per page load
@@ -383,7 +383,7 @@ function plansInline(step) {
   const mix = many ? mixBlock('Share of sales') : '';
   const body = `<div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}`;
   if (step) return `<div class="plans-inline plans-step" id="plans-inline">${body}</div>`;   // the wizard's plans question: the same editor, always open
-  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}</div></div></div>`;
+  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body">${plansPick()}${mix}</div></div></div>`;   // one way to enter plans everywhere (owner, 2026-11-04): the same rows as the plans question
 }
 // the hint speaks only about the metric picked (owner, 2026-11-02)
 const DECIDE_HINT = {
@@ -427,7 +427,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}<p class="note">We count which idea people pick, with no names or cookies. What you type stays on this page.</p>${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -917,9 +917,9 @@ app.addEventListener('keydown', (e) => {
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
 });
 function syncTrack(k, except) {
-  if (PEOPLE[k]) PEOPLE[k][1].forEach((d) => document.querySelectorAll(`[data-slide="${d}"]`).forEach((tr) => { tr.querySelector('.end.l').textContent = SL[d].l; tr.querySelector('.end.r').textContent = SL[d].h; const p = pctOf(d, S[d]); tr.querySelector('.fill').style.width = p + '%'; tr.querySelector('.handle').style.left = p + '%'; }));
+  if (PEOPLE[k]) PEOPLE[k][1].forEach((d) => document.querySelectorAll(`[data-slide="${d}"]`).forEach((tr) => { tr.querySelector('.end.l').textContent = SL[d].l; tr.querySelector('.end.r').textContent = SL[d].h; tr.style.setProperty('--p', pctOf(d, S[d])); }));
   if (/^sh\d$/.test(k) && !syncTrack.busy) { syncTrack.busy = true; S.plans.forEach((_, i) => { if ('sh' + i !== k) syncTrack('sh' + i); }); syncTrack.busy = false; }
-  document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { const p = pctOf(k, S[k]); tr.querySelector('.fill').style.width = p + '%'; tr.querySelector('.handle').style.left = p + '%'; tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
+  document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { tr.style.setProperty('--p', pctOf(k, S[k])); tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
   document.querySelectorAll(`[data-val-of="${k}"]`).forEach((el) => { el.textContent = SL[k].fmt(S[k]) + (SL[k].unit || ''); });
   document.querySelectorAll(`[data-rng-of="${k}"]`).forEach((el) => { el.textContent = rangeText(k); });
   const txt = SL[k].fmt(S[k]);
