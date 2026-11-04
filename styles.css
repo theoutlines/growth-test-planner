@@ -80,10 +80,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .big .num { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
 .big input { width: 100%; text-align: center; background: none; border: none; outline: none; font-weight: 500; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; padding: 0; caret-color: var(--acc); }
 .big .unit { font-size: 24px; font-weight: 500; color: var(--t50); line-height: 28px; }
-.track { position: relative; height: 44px; border-radius: 12px; background: var(--s05); overflow: hidden; touch-action: none; cursor: ew-resize; user-select: none; }
+.track { position: relative; height: 44px; border-radius: 12px; background: var(--s05); overflow: visible; touch-action: none; cursor: ew-resize; user-select: none; }
 .track.sm { height: 44px; }   /* rail and sheet sliders match the fields and segmented controls (44) */
-.track .fill { position: absolute; inset: 0 auto 0 0; width: calc(8px + (100% - 16px) * var(--p, 0) / 100); background: rgba(255,255,255,.15); }   /* the handle stays 8px inside the rounded ends */
-.track .handle { position: absolute; top: 50%; left: calc(8px + (100% - 16px) * var(--p, 0) / 100); width: 4px; height: 24px; margin-left: -2px; border-radius: 2px; background: var(--w); transform: translateY(-50%); }
+.track .clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }   /* the fill is clipped to the rounded track; the handle is not */
+.track .fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--p, 0) * 1%); background: rgba(255,255,255,.15); }
+.track .handle { position: absolute; top: 50%; left: calc(var(--p, 0) * 1%); width: 4px; height: 24px; margin-left: -2px; border-radius: 2px; background: var(--w); transform: translateY(-50%); }
 .track.sm .handle { height: 24px; }
 .track .end { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 12px; color: var(--t45); pointer-events: none; line-height: 16px; }
 .track .end.l { left: 12px; } .track .end.r { right: 12px; }
@@ -119,7 +120,9 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 /* ---------- threshold */
 .thr h1 { font-size: 32px; letter-spacing: -.035em; line-height: 36px; }
 .thr h1 span, .acc { color: var(--acc); }
-.thr { display: flex; flex-direction: column; gap: 16px; }
+.thr { display: flex; flex-direction: column; gap: 8px; }
+.thr .weeks { margin-top: 16px; }   /* headline and its line read as one block, the weeks sit apart */
+.thr + .bydate { margin-top: -4px; }   /* the weeks and the by-date card belong together */
 .weeks { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
 .weeks button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 56px; border-radius: 12px; background: var(--s07); }
 .weeks button b { font-size: 16px; font-weight: 500; line-height: 24px; }
@@ -177,7 +180,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .rs .val { width: auto; border: none; outline: none; background: none; padding: 0; text-align: right; font-size: 20px; font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums; caret-color: var(--acc); line-height: 24px; }
 .rs .u { font-size: 16px; font-weight: 500; line-height: 24px; }
 .controls { display: flex; flex-direction: column; gap: 16px; }
-.hint { font-size: 12px; line-height: 16px; color: var(--t60); margin-top: -8px; }
+.hint { font-size: 12px; line-height: 16px; color: var(--t50); margin-top: -8px; }
 
 /* ---------- sheet (mobile) */
 .peek { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; }
@@ -443,7 +446,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .tests .test { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; color: inherit; text-decoration: none; border-radius: 12px; }
 .tests .test > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .tests .test b { font-size: 16px; font-weight: 500; color: var(--w); line-height: 24px; }
-.tests .test small { font-size: 16px; line-height: 24px; color: var(--t60); }
+.tests .test small { font-size: 12px; line-height: 16px; color: var(--t50); }
 @media (hover: hover) { .tests .test:hover b { text-decoration: underline; text-underline-offset: 4px; } }
 .para.muted { color: var(--t50); }
 
@@ -466,7 +469,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .dd select:hover { background: var(--s08); }
 .dd select:focus-visible { outline: 2px solid rgba(255,255,255,.5); outline-offset: 2px; }
 .dd select option { background: #2A2A2A; color: #fff; }
-.dd svg { position: absolute; right: 16px; top: 16px; pointer-events: none; opacity: .6; }
+.dd svg { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .6; }
 
 /* plain-text description for readers without JavaScript and for agents; never flashes before the app */
 #about { display: none; }
@@ -543,7 +546,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 /* traffic you need: one answer for the weeks picked above */
 .bdset { height: 44px; font-size: 16px; line-height: 24px; }
 .bdset.done { display: flex; align-items: center; justify-content: center; border-radius: 12px; color: var(--t50); box-shadow: inset 0 0 0 1px var(--s08); }
-.bdalt { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 4px; font-size: 16px; line-height: 24px; color: var(--t60); }
+.bdalt { margin: -8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 16px; line-height: 24px; color: var(--t60); list-style: disc; }
 
 /* share of sales: one bar, a segment per plan, draggable dividers */
 .mix { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
@@ -586,8 +589,8 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .bd-acc b { font-size: 16px; font-weight: 500; line-height: 24px; }
 .bd-acc small { font-size: 16px; color: var(--t60); line-height: 24px; }
 .bd-acc svg { flex: none; opacity: .6; }
-.bd-acc:hover { background: var(--s05); }
-.bdbody { display: flex; flex-direction: column; gap: 12px; padding: 4px 16px 16px; }
+@media (hover: hover) { .bd-acc:hover { background: var(--s05); } }
+.bdbody { display: flex; flex-direction: column; gap: 16px; padding: 0 16px 16px; }
 .bdbody .bdsrc { margin-top: -8px; }
 .bydate .bdans { margin: 0; font-size: 16px; line-height: 24px; color: var(--t75); }
 .bydate .bdans b { color: var(--w); font-weight: 500; }
@@ -619,4 +622,4 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .pi-body .pp-row { padding: 12px; }
 .pi-body .pp-price input, .pi-body .pp-price > span { font-size: 20px; line-height: 24px; }
 .pi-body .pp-f { height: 44px; }
-.whatnote { font-size: 12px; line-height: 16px; color: var(--t50); }
+.whatnote { margin: 0; font-size: 12px; font-weight: 400; line-height: 16px; color: var(--t50); }   /* same as every hint under a control */
