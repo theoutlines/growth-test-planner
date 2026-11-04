@@ -56,7 +56,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .sec { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; }
 .sec b { font-size: 20px; font-weight: 500; letter-spacing: -.02em; line-height: 24px; }
 .sec span { font-size: 16px; line-height: 24px; color: var(--t60); }
-.note { font-size: 12px; line-height: 16px; color: var(--t45); padding: 0 4px; }
+.tiles + .tilehint { margin-top: -16px; }   /* a hint sits 8 px under its control, like every hint */
 .fine { font-size: 12px; line-height: 16px; color: var(--t45); }
 .card { background: var(--card); border-radius: 20px; }
 
@@ -246,7 +246,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 
 /* ---------- read inputs */
 .rr { display: flex; flex-direction: column; gap: 8px; }
-.rr > span { display: flex; justify-content: space-between; font-size: 16px; font-weight: 500; color: var(--t85); line-height: 24px; }
+.rr > span { display: flex; justify-content: space-between; align-items: baseline; font-size: 16px; font-weight: 500; color: var(--t85); line-height: 24px; }
 .rr > span small { font-size: 12px; font-weight: 400; color: var(--t45); line-height: 16px; }
 .rr > div { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
 .rr > div.three { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
@@ -381,7 +381,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .vs > small { font-size: 12px; font-weight: 500; color: var(--t50); line-height: 16px; }
 .vs > p { margin: 0; font-size: 12px; line-height: 16px; color: var(--t50); }
 .vsplot { position: relative; display: flex; flex-direction: column; gap: 16px; padding-top: 24px; }
-.vsref { position: absolute; top: 20px; height: 0; width: 2px; margin-left: -1px; }   /* only the label; the mark is drawn in each bar so it never crosses the text */
+.vsref { position: absolute; top: 20px; height: 0; width: 2px; margin-left: -1px; }   /* only the label; the mark is drawn in each bar so it never crosses the text; over an interval it stands above it, as on the verdict bar */
 .vsref.lim { background: none; }
 .vszero { position: absolute; top: -4px; height: 24px; width: 2px; margin-left: -1px; background: rgba(255,255,255,.9); z-index: 1; }
 .vszero.lim { background: none; border-left: 2px dashed var(--acc); }
