@@ -62,7 +62,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 
 /* ---------- hero */
 .hero { position: relative; height: 300px; border-radius: 24px; overflow: hidden; background: var(--orange); }
-.hero img { position: absolute; right: 8px; bottom: -12px; width: 228px;   /* placed by the owner on the canvas (VHero) */ filter: drop-shadow(0 24px 30px rgba(60,0,0,.35)); }
+.hero-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }   /* mosaic from the owner's SVG (canvas K1Hero5), pinned to the bottom-right at any card width; the grain is an SVG noise filter, no image */
 .hero div { position: absolute; left: 20px; top: 24px; right: 20px; display: flex; flex-direction: column; gap: 12px; }
 .hero small { font-size: 12px; font-weight: 500; color: var(--t85); line-height: 16px; }
 .hero strong { font-size: 32px; font-weight: 500; letter-spacing: -.035em; line-height: 36px; max-width: 260px; }
