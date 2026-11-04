@@ -258,10 +258,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .rr p { margin: 0; font-size: 12px; line-height: 16px; color: var(--t50); }
 .skill { display: flex; gap: 16px; align-items: flex-start; padding: 16px; }
 .skill svg { flex: none; }
-.skill .sk { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.skill .sk { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
 .skill b { font-size: 16px; font-weight: 500; line-height: 24px; }
-.skill .sk > span:not(.skbtn) { font-size: 16px; line-height: 24px; color: var(--t60); }
-.skill .skbtn { width: auto; height: 40px; padding: 0 16px; margin-top: 8px; border-radius: 12px; font-size: 16px; white-space: nowrap; line-height: 24px; }
+.skill .sk > span:not(.skbtn) { font-size: 12px; line-height: 16px; color: var(--t60); }   /* title and line read as one block (owner, 2026-11-04) */
+.skill .skbtn { width: auto; height: 40px; padding: 0 16px; margin-top: 12px; border-radius: 12px; font-size: 16px; white-space: nowrap; line-height: 24px; }
 .skill:hover .skbtn { background: var(--s14); }
 .planacc { overflow: hidden; }
 .acc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 16px 16px; text-align: left; transition: background-color var(--duration-quick) var(--ease-smooth-out); }
@@ -465,11 +465,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 
 /* plan type: four options read better as a dropdown than a squeezed segmented control (owner, 2026-10-31); same 44 px control */
 .dd { position: relative; flex: 1; min-width: 0; display: block; }
-.dd select { appearance: none; -webkit-appearance: none; width: 100%; height: 44px; padding: 0 40px 0 16px; border: 0; border-radius: 12px; background: var(--s05); color: var(--w); font: inherit; font-size: 16px; font-weight: 500; cursor: pointer; line-height: 24px; }
+.dd select { appearance: none; -webkit-appearance: none; width: 100%; height: 44px; padding: 0 40px 0 12px; border: 0; border-radius: 12px; background: var(--s05); color: var(--w); font: inherit; font-size: 16px; font-weight: 500; cursor: pointer; line-height: 24px; }
 .dd select:hover { background: var(--s08); }
 .dd select:focus-visible { outline: 2px solid rgba(255,255,255,.5); outline-offset: 2px; }
 .dd select option { background: #2A2A2A; color: #fff; }
-.dd svg { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .6; }
+.dd svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .6; }
 
 /* plain-text description for readers without JavaScript and for agents; never flashes before the app */
 #about { display: none; }
@@ -513,7 +513,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .pi-acc > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .plans-inline .lab { font-size: 12px; font-weight: 500; color: var(--t75); line-height: 16px; }
 .pi-acc svg { opacity: .6; }
-.pi-acc:hover { background: var(--s10); }
+@media (hover: hover) { .pi-acc:hover { background: var(--s10); } }
 .plans-inline .pi-row + .pi-row { margin-top: -2px; }
 .plans-inline .rs { margin-top: 4px; }
 .pi-head, .pi-row { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,.9fr); gap: 8px; }
@@ -553,6 +553,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 /* share of sales: one bar, a segment per plan, draggable dividers */
 .mix { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .mixlab { font-size: 12px; font-weight: 500; color: var(--t75); line-height: 16px; }
+.q .mixlab { font-size: 16px; color: var(--w); line-height: 24px; }   /* on a step it is a question of its own, not a field label (owner, 2026-11-04) */
 .mixbar { position: relative; display: flex; height: 44px; border-radius: 12px; overflow: hidden; background: var(--s05); touch-action: none; }
 .mseg { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 4px; overflow: hidden; white-space: nowrap; font-size: 12px; line-height: 16px; }
 .mseg:nth-child(4n+1) { background: rgba(255,255,255,.15); }
@@ -631,3 +632,4 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .igrp { display: flex; flex-direction: column; gap: 8px; }
 .igrp + .tests, .tests + .icare { margin-top: 8px; }
 .tests .test:last-child { padding-bottom: 0; }
+.bydate .rs .lab { font-size: 16px; color: var(--t85); line-height: 24px; }   /* a card in the main column: its field label matches the other labels there, a step above the hint */
