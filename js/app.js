@@ -522,7 +522,7 @@ const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">What you type st
 function resultsScreen() {
   const p = planOf(S);
   const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}</div>` : '';
-  const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
+  const body = `${heading('What did each version get?', 'Totals for the whole test, per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${readRows(p).map(readRow).join('')}
