@@ -22,7 +22,10 @@ ONB_TR = {'5,000': '22.6 / 16.0 / 13.0 / 11.3', '10,000': '16.0 / 11.3 / 9.2 / 8
 ONB_PAID = {'5,000': '39.2 / 27.7 / 22.6 / 19.6', '10,000': '27.7 / 19.6 / 16.0 / 13.9', '20,000': '19.6 / 13.9 / 11.3 / 9.8', '50,000': '12.4 / 8.8 / 7.2 / 6.2', '100,000': '8.8 / 6.2 / 5.1 / 4.4'}
 WK = ['2 wk', '4 wk', '6 wk', '8 wk']
 
-def t(label, d): return table([label] + WK, [[k] + pct(v) for k, v in d.items()])
+def k30(k):   # the planner asks for the last 30 days; the tables keep weekly rows and show the 30-day count next to them
+    n = round(int(k.replace(',', '')) * 30 / 7, -3)
+    return f'{k} <small>({n / 1e6:.2f}M in 30 days)</small>'.replace('.00M', 'M') if n >= 1e6 else f'{k} <small>({int(n):,} in 30 days)</small>'
+def t(label, d): return table([label] + WK, [[k30(k)] + pct(v) for k, v in d.items()])
 
 PLAN_PW = '/#/test?a=paywall'
 PLAN_ONB = '/#/test?a=onboarding'

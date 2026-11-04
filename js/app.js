@@ -8,7 +8,7 @@ const S = fresh();
 let READ = { A: {}, B: {}, C: {}, billed: true };
 const LETTERS = () => (S.versions === 3 ? ['A', 'B', 'C'] : ['A', 'B']);
 let UI = { overlay: null, idea: -1, tone: 'Friendly', readPlan: false, readError: '' };
-const ROUTES = ['', 'area', 'traffic', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
+const ROUTES = ['', 'area', 'traffic', 'starts', 'conv', 'trial', 'test', 'share', 'results', 'verdict', 'share-result'];
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
 const KEYS = { hi: 'whatId', h: 'what', a: 'area', v: 'views', c: 'conv', u: 'users', r: 'trialRate', pr: 'paidRate', tv: 'trialView', t: 'trial', s: 'traffic', sp: 'split', k: 'versions', d: 'decide', g: 'goal', w: 'weeks', st: 'start', tg: 'target' };
@@ -71,21 +71,21 @@ const t1 = (x) => x.toFixed(1);
 
 // ------------------------------------------------------------------ icons (filled where they are pictures)
 const I = {
-  back: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  back: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chev: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" class="chev" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',   // chevrons (owner, 2026-11-02): one shape, stroke 2, 60% white; 16 trailing a row, 14 inline after text
-  ext: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M8 4h8v8M16 4 7 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  chevS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  up: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 12.5l6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  down: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7.5l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ext: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M8 4h8v8M16 4 7 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevS: '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  up: '<svg width="24" height="24" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 12.5l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  down: '<svg width="24" height="24" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7.5l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   minus: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   chevD: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevU: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 12 10 7.5 14.5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  chevDS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevDS: '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   x: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-  share: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3.5M6.5 7l3.5-3.5L13.5 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10.5v4.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
-  copy: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M13 4.5v-.5A1.5 1.5 0 0 0 11.5 2.5h-7A1.5 1.5 0 0 0 3 4v7a1.5 1.5 0 0 0 1.5 1.5H5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
-  money: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path fill-rule="evenodd" d="M1 5h20v12H1zM11 7.5l3.5 3.5-3.5 3.5-3.5-3.5z" fill="#FFFFFF"/></svg>',
-  flag: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 1h3v20H3zM6 2h13l-4 5 4 5H6z" fill="#FFFFFF"/></svg>',
+  share: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3.5M6.5 7l3.5-3.5L13.5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10.5v4.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  copy: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M13 4.5v-.5A1.5 1.5 0 0 0 11.5 2.5h-7A1.5 1.5 0 0 0 3 4v7a1.5 1.5 0 0 0 1.5 1.5H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  money: '<svg width="24" height="24" viewBox="0 0 22 22" aria-hidden="true"><path fill-rule="evenodd" d="M1 5h20v12H1zM11 7.5l3.5 3.5-3.5 3.5-3.5-3.5z" fill="#FFFFFF"/></svg>',
+  flag: '<svg width="24" height="24" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 1h3v20H3zM6 2h13l-4 5 4 5H6z" fill="#FFFFFF"/></svg>',
 };
 const ACC = '#FF4C00';
 const G = {
@@ -111,6 +111,24 @@ for (let i = 0; i < 4; i++) {
   SL['sh' + i] = { lo: 0, hi: 100, l: '0', h: '100', fmt: (v) => String(Math.round(v)), round: (v) => Math.round(v), unit: '%', linear: true };
   Object.defineProperty(S, 'sh' + i, { enumerable: false, get: () => (S.plans[i] ? Math.round(shares(S.plans)[i] * 100) : 0), set: (v) => setShare(i, v) });
 }
+// 30-day counts (draft, facts30): people type counts from one report; inside, weekly people and rates stay as before.
+// Moving the people count keeps the typed counts of payers and trial starts (facts are facts); the rates follow.
+const D30 = 30 / 7, kfmt = (x) => (x >= 1e6 ? +(x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? +(x / 1e3).toFixed(x < 1e5 ? 1 : 0) + 'k' : String(Math.round(x)));
+const roundCount = (v) => (v < 1000 ? Math.round(v) : v < 10000 ? Math.round(v / 10) * 10 : Math.round(v / 100) * 100);
+const COUNTS = {   // count key: [people key (weekly), rate key, slider range as % of people]
+  paid30: ['views', 'conv', 0.5, 10], trial30: ['views', 'trialView', 0.5, 40],
+  otrial30: ['users', 'trialRate', 0.5, 25], opaid30: ['users', 'paidRate', 0.2, 15],
+};
+const PEOPLE = { views30: ['views', ['paid30', 'trial30']], users30: ['users', ['otrial30', 'opaid30']] };
+Object.entries(PEOPLE).forEach(([k, [base, deps]]) => {
+  Object.defineProperty(S, k, { enumerable: false, configurable: true, get: () => Math.round(S[base] * D30), set: (v) => { v = Number(v); if (!(v > 0)) return; const keep = deps.map((d) => S[d]); S[base] = v / D30; deps.forEach((d, i) => { S[COUNTS[d][1]] = keep[i] / v * 100; }); } });
+  SL[k] = { lo: 4000, hi: base === 'views' ? 4000000 : 2000000, l: '4k', h: base === 'views' ? '4M' : '2M', fmt: n0, round: roundCount };
+});
+Object.entries(COUNTS).forEach(([k, [base, rate, lo, hi]]) => {
+  const people = () => S[base] * D30;
+  Object.defineProperty(S, k, { enumerable: false, configurable: true, get: () => Math.round(people() * S[rate] / 100), set: (v) => { v = Number(v); if (v >= 0) S[rate] = v / people() * 100; } });
+  SL[k] = { get lo() { return Math.max(1, people() * lo / 100); }, get hi() { return people() * hi / 100; }, get l() { return kfmt(this.lo); }, get h() { return kfmt(this.hi); }, fmt: n0, round: roundCount };
+});
 function setShare(i, v) {
   const pl = S.plans; if (!pl[i]) return;
   v = Math.max(0, Math.min(100, Math.round(v)));
@@ -124,19 +142,21 @@ const pctOf = (k, v) => SL[k].linear ? Math.max(0, Math.min(100, (v - SL[k].lo) 
 const valOf = (k, pct) => SL[k].round(SL[k].linear ? SL[k].lo + (SL[k].hi - SL[k].lo) * pct / 100 : SL[k].lo * Math.pow(SL[k].hi / SL[k].lo, pct / 100));
 
 function bigValue(k) {
-  const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length));
+  const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length / 4) * 4);
   return `<div class="big"><label class="num"><span class="sr">Value</span><input data-type="${k}" inputmode="decimal" value="${txt}" style="font-size:${size}px;width:${Math.max(2, txt.length) + 0.1}ch">${SL[k].unit ? `<span class="unit">${SL[k].unit}</span>` : ''}</label>
   ${track(k)}${rangeNote(k)}</div>`;
 }
 // a typed rate above the slider's top is almost always a typo (2.75 → 32.75): say so, softly, next to the number
-const RATE = { conv: 1, trialRate: 1, paidRate: 1, trialView: 1 };
-const rangeText = (k) => (RATE[k] && S[k] > SL[k].hi ? `${SL[k].fmt(S[k])}% is unusually high, most apps are under ${SL[k].h}%. Typo?` : '');
+const RATE = { conv: 1, trialRate: 1, paidRate: 1, trialView: 1, paid30: 1, trial30: 1, otrial30: 1, opaid30: 1 };
+const rangeText = (k) => (COUNTS[k] ? (S[k] > S[COUNTS[k][0]] * D30 ? `More than the ${n0(S[COUNTS[k][0]] * D30)} people above. Typo?` : S[k] > SL[k].hi ? `Unusually high for ${n0(S[COUNTS[k][0]] * D30)} people. Typo?` : '') : RATE[k] && S[k] > SL[k].hi ? `${SL[k].fmt(S[k])}% is unusually high, most apps are under ${SL[k].h}%. Typo?` : '');
 const rangeNote = (k) => (RATE[k] ? `<span class="rng" data-rng-of="${k}">${rangeText(k)}</span>` : '');
 function track(k, sm) {
   const p = pctOf(k, S[k]);
-  return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="fill" style="width:${p}%"></div><div class="handle" style="left:${p}%"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
+  return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" style="--p:${p}" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="clip"><div class="fill"></div></div><div class="handle"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
 }
-const chips = (k, label) => (label ? `<span class="chips-label">${label}</span>` : '') + `<div class="chips">${CHIPS[k].map(([v, a, b]) => `<button class="chip" data-set="${k}" data-val="${v}">${a} <span>${b}</span></button>`).join('')}</div>`;
+const TYPICAL = { paid30: 'conv', trial30: 'trialView', otrial30: 'trialRate', opaid30: 'paidRate' };
+const chipList = (k) => (TYPICAL[k] ? CHIPS[TYPICAL[k]].map(([r, a, b]) => [Math.round(S[COUNTS[k][0]] * D30 * r / 100), a, b]) : CHIPS[k]);
+const chips = (k, label) => (label ? `<span class="chips-label">${label}</span>` : '') + `<div class="chips">${chipList(k).map(([v, a, b]) => `<button class="chip" data-set="${k}" data-val="${v}">${a} <span>${b}</span></button>`).join('')}</div>`;
 const seg = (label, key, opts) => `<div class="seg"><span>${label}</span><div class="opts" style="grid-template-columns:repeat(${opts.length},minmax(0,1fr))"><span class="pill" data-js-style aria-hidden="true"></span>${opts.map(([v, t]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(S[key]) === String(v)}">${t}</button>`).join('')}</div></div>`;
 const railSlider = (label, k, small) => `<div class="rs${small ? ' small' : ''}"><div class="top2"><span class="lab">${label}</span><label class="valbox"><span class="sr">${label}</span><input class="val" data-type="${k}" data-small inputmode="decimal" value="${SL[k].fmt(S[k])}" size="${Math.max(2, SL[k].fmt(S[k]).length)}">${SL[k].unit ? `<span class="u">${SL[k].unit}</span>` : ''}</label></div>${track(k, true)}${rangeNote(k)}</div>`;   // drag the track or type the number
 
@@ -145,7 +165,10 @@ const top = (action) => `<header class="top"><a class="brand" href="#/" aria-lab
 const shareBtn = `<button class="icon-btn" data-go="share" aria-label="Share">${I.share}</button>`;
 const heading = (h, sub) => `<div class="heading"><h1>${h}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
 const sec = (t, sub) => `<div class="sec"><b>${t}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
-const nav = (label, step, next, back) => `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= 4 ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of 4 answered)">${step < 4 ? `<i style="width:${step * 25}%;--fill-from:${Math.max(0, (UI.lastStep ?? step - 1)) * 25}%"></i>` : ''}<span>${label}</span></button></div>`;
+// questions follow the funnel (draft facts30): what you test → what it sells → people → trial starts (only with a trial) → paid
+const hasTrial = () => (S.area === 'onboarding' ? S.trial > 0 : S.plans.some((x) => planTrial(x) > 0));
+const STEPS = () => ['area', 'traffic', 'trial', ...(hasTrial() ? ['starts'] : []), 'conv'];
+const nav = (label, step, next, back) => { const of = STEPS().length, u = 100 / of; return `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= of ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of ${of} answered)">${step < of ? `<i style="width:${step * u}%;--fill-from:${Math.max(0, (UI.lastStep ?? step - 1)) * u}%"></i>` : ''}<span>${label}</span></button></div>`; };
 const pick = (glyph, t, sub, goTo) => `<button class="pick" data-go="${goTo}"><span>${glyph}</span><span><b>${t}</b><em>${sub}</em></span>${I.chev}</button>`;
 
 function trialText() {          // paywall: each plan has its own trial
@@ -154,7 +177,7 @@ function trialText() {          // paywall: each plan has its own trial
   return t.length > 1 ? 'trials vary by plan' : t[0] ? `${t[0]}-day trial` : 'no trial';
 }
 function summary(p) {
-  const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users)} new users a week`, S.decide === 'paid' ? `${S.paidRate}% pay` : `${S.trialRate}% start a trial`] : ['Paywall', `${n0(S.views)} people a week`, S.decide === 'trials' ? `${S.trialView}% start a trial` : `${S.conv}% pay`];
+  const bits = S.area === 'onboarding' ? ['Onboarding', `${n0(S.users30)} new users in 30 days`, S.decide === 'paid' ? `${n0(S.opaid30)} paid` : `${n0(S.otrial30)} started a trial`] : ['Paywall', `${n0(S.views30)} saw it in 30 days`, S.decide === 'trials' ? `${n0(S.trial30)} started a trial` : `${n0(S.paid30)} paid`];
   bits.push(trialText());
   bits.push(`decide on ${{ money: 'revenue', paid: 'conversion', trials: 'trials' }[S.decide] || S.decide}`);   // the plan card no longer says it
   if (S.traffic !== 100) bits.push(`${S.traffic}% of traffic`);
@@ -173,41 +196,47 @@ function startScreen() {
   <p class="fine" style="text-align:center;margin:0">Free. What you type stays on this page.</p></main>`;
 }
 function areaScreen() {
-  return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. Three more questions follow.')}
+  return top() + `<main class="page q">${heading('What are you testing?', 'Tap one. A few questions follow.')}
   <div class="stack">${pick(G.onboarding, 'Onboarding', 'Questions, personalisation, the first screens. We’ll count new users.', 'area:onboarding')}
   ${pick(G.paywall, 'Paywall', 'Plans, trial, layout, copy. We’ll count people who see it.', 'area:paywall')}</div></main>`;
 }
 function trafficScreen() {
+  const onb = S.area === 'onboarding', t = hasTrial();
+  return top() + `<main class="page q">${onb ? heading('How many new users started onboarding in the last 30 days?', 'Count people, not screens.') : heading('How many people saw this paywall in the last 30 days?', 'Count people, not views: the test splits people.')}
+  ${bigValue(onb ? 'users30' : 'views30')}${chips(onb ? 'users30' : 'views30')}<div class="grow"></div>${nav(onb ? 'Next: free trial' : 'Next: what it sells', 2, 'trial', 'area')}</main>`;
+}
+function startsScreen() {
   const onb = S.area === 'onboarding';
-  return top() + `<main class="page q">${onb ? heading('How many new users start onboarding a week?', 'Count people, not screens. The test splits them as they arrive.') : heading('How many people see this paywall a week?', 'Count people, not views: the test splits people, and repeat views add no one new.')}
-  ${bigValue(onb ? 'users' : 'views')}${chips(onb ? 'users' : 'views')}<div class="grow"></div>${nav(onb ? 'Next: how many start a trial' : 'Next: how many pay', 2, 'conv', 'area')}</main>`;
+  return top() + `<main class="page q">${heading('How many of them started a free trial?', 'The same 30 days.')}
+  ${bigValue(onb ? 'otrial30' : 'trial30')}<div class="hintgroup">${chips(onb ? 'otrial30' : 'trial30', 'No numbers yet? Start from a typical app')}</div>
+  <div class="grow"></div>${nav('Next: how many pay', 4, 'conv', 'trial')}</main>`;
 }
 function convScreen() {
-  const onb = S.area === 'onboarding';
-  return top() + `<main class="page q">${onb ? heading('Out of 100 new users, how many start a trial?', 'Your current onboarding, last 30 days.') : heading('Out of 100 people who see it, how many pay?', 'Your current paywall, last 30 days.')}
-  ${bigValue(onb ? 'trialRate' : 'conv')}<div style="display:flex;flex-direction:column;gap:8px">${chips(onb ? 'trialRate' : 'conv', 'Not sure? Start from a typical app')}</div>
-  <div class="grow"></div>${nav(onb ? 'Next: free trial' : 'Next: your plans', 3, 'trial', 'traffic')}</main>`;
+  const onb = S.area === 'onboarding', t = hasTrial();
+  return top() + `<main class="page q">${heading('How many of them paid?', t ? 'The same 30 days, payments after the free trial included.' : 'The same 30 days.')}
+  ${bigValue(onb ? 'opaid30' : 'paid30')}<div class="hintgroup">${chips(onb ? 'opaid30' : 'paid30', 'No numbers yet? Start from a typical app')}</div>${!onb && S.plans.length > 1 ? `<div class="nextq">${mixBlock('Which plans they bought')}</div>` : ''}
+  <div class="grow"></div>${nav('Show my test', STEPS().length, 'test', t ? 'starts' : 'trial')}</main>`;
 }
 function trialScreen() {
   const onb = S.area === 'onboarding';
-  if (!onb) {        // paywall: the last question is its plans (price, trial and share of sales each), owner 2026-11-02
+  if (!onb) {        // paywall: what it sells comes before the counts, so we know whether to ask about trials
     const lt = longestTrial(S.plans);
-    return top() + `<main class="page q">${heading('What does this paywall sell?', 'Each plan’s price, free trial and share of sales. They set how long the test waits and how noisy revenue is.')}
-  ${plansInline(true)}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill` : 'No trial: no extra wait'}</span>
-  <div class="grow"></div>${nav('Show my test', 4, 'test', 'conv')}</main>`;
+    return top() + `<main class="page q">${heading('What does this paywall sell?', 'Tick the plans it shows, then each one’s price and free trial.')}
+  ${plansPick()}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill.` : 'No trial, so no extra wait.'}</span>
+  <div class="grow"></div>${nav(hasTrial() ? 'Next: how many start a trial' : 'Next: how many pay', 3, hasTrial() ? 'starts' : 'conv', 'traffic')}</main>`;
   }
   const tiles = TRIALS.map(([d, sub]) => `<button class="tile" data-set="trial" data-val="${d}" aria-pressed="${S.trial === d}"><span class="n"><b>${d === 0 ? 'None' : d >= 14 ? '14+' : d}</b>${d ? '<span>days</span>' : ''}</span><span class="days" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i${i < d ? ' class="on"' : ''}></i>`).join('')}</span><em>${sub}</em></button>`).join('');
-  const wait = onb ? '' : `<span class="wait">${S.trial ? `You decide ${S.trial >= 14 ? '14+' : S.trial} days after the test stops` : 'No extra wait'}</span>`;
   return top() + `<main class="page q">${heading('How long is the free trial?', 'People who start a trial pay only when it ends, so the test waits for them.')}
-  <div class="tiles">${tiles}</div>${wait}<p class="note">${onb ? 'Judged on trial starts, the test doesn’t wait for the trial. Judged on paid, it waits for the longest one.' : 'Different trials on different plans? Pick the longest here, then set each plan in Plans on the next screen.'}</p>
-  <div class="grow"></div>${nav('Show my test', 4, 'test', 'conv')}</main>`;
+  <div class="tiles">${tiles}</div><p class="hint tilehint">Judged on trial starts, the test doesn’t wait for the trial. Judged on paid, it waits for it.</p>
+  <div class="grow"></div>${nav(hasTrial() ? 'Next: how many start a trial' : 'Next: how many pay', 3, hasTrial() ? 'starts' : 'conv', 'traffic')}</main>`;
 }
 
 function thresholdBlock(p) {
   if (p.notWorse) return `<section class="thr"><h1>To show B is no more than <span>5% worse</span>, run ${p.notWorse.weeks} weeks</h1><p class="sub">Proving “not worse” takes ${t1(p.notWorse.times)}× the people of catching a 10% win. Use it when the change has to ship anyway and you only need to know it doesn’t hurt.</p></section>`;
   const abs = p.unit === 'money'
     ? `Revenue per paywall viewer: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
-    : `${p.metricName[0].toUpperCase() + p.metricName.slice(1)}: ${(p.today * 100).toFixed(2)}% today, ${(p.today * 100 * (1 + p.thr / 100)).toFixed(2)}% or more to show up. Smaller changes look like noise.`;
+    : (() => { const onb = S.area === 'onboarding', ppl = onb ? S.users30 : S.views30, ck = onb ? (S.decide === 'paid' ? 'opaid30' : 'otrial30') : (S.decide === 'trials' ? 'trial30' : 'paid30'), verb = /trial/.test(ck) ? 'start a trial' : 'pay';
+      return `Today ${n0(S[ck])} of ${n0(ppl)} ${onb ? 'new users' : 'viewers'} ${verb} in 30 days. B needs about ${n0(Math.round(S[ck] * (1 + p.thr / 100)))} from as many people to show up. Smaller changes look like noise.`; })();
   return `<section class="thr"><h1>Your test catches changes of <span data-swap>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
   <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
 }
@@ -223,7 +252,7 @@ function planBlock(p) {
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevDS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
   <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
-  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div>${whatField(p)}</section>`;
+  <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
 }
 // What changes in B (owner, 2026-11-02): pick from the chart's ideas, or Something else with your own words.
 // Only the pick is counted (anonymous, per day); the words never leave the page.
@@ -235,7 +264,7 @@ function whatField(p) {
   const id = S.whatId === 'other' || IDEAS[S.area].some((x) => x.id === S.whatId) ? S.whatId : (S.what ? 'other' : '');
   const opts = whatOptions(p).map((x) => `<option value="${x.id}"${id === x.id ? ' selected' : ''}>${esc(x.t)}</option>`).join('');
   return `<div class="what"><span>What changes in B</span><div class="dd${id ? '' : ' empty'}"><select data-what-pick aria-label="What changes in B"><option value=""${id ? '' : ' selected'} disabled>Pick what B changes</option>${opts}<option value="other"${id === 'other' ? ' selected' : ''}>Something else</option></select>${I.chevD}</div>
-  ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}</div>`;
+  ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}<p class="whatnote">Only the pick is counted, anonymously.</p></div>`;
 }
 const counted = new Set();
 const countOnce = (e, v) => { const k = e + ':' + v + ':' + S.area; if (counted.has(k)) return; counted.add(k); count(e, v); };   // once per page load
@@ -253,7 +282,7 @@ function dateBlock(p) {     // optional (owner, 2026-11-02: “feels optional, M
   const sum = r.traffic ? `+${tg}% needs ${r.traffic}% of traffic` : `+${tg}% is out of reach`;
   const head = `<button class="bd-acc" data-bd-toggle aria-expanded="${!!UI.bdOpen}"><span><b>Plan for a specific change</b><small>${UI.bdOpen ? 'Pick the change, see the traffic it needs' : sum}</small></span>${UI.bdOpen ? I.chevU : I.chevD}</button>`;
   if (!UI.bdOpen) return `<section class="card bydate">${head}</section>`;
-  const src = !(S.target > 0) || UI.targetFrom === '~' ? 'Suggested from the ideas below' : UI.targetFrom ? `Low end of “${esc(UI.targetFrom)}”` : '';
+  const src = UI.targetFrom && UI.targetFrom !== '~' ? `Low end of “${esc(UI.targetFrom)}”` : '';   // only when an idea set it: it names the idea; the default needs no caption (owner, 2026-11-04)
   let body;
   if (r.traffic) {
     const pct = r.traffic * (1 - p.split[0]), on = S.traffic === r.traffic;
@@ -266,7 +295,7 @@ function dateBlock(p) {     // optional (owner, 2026-11-02: “feels optional, M
     if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Drop C: ${f.traffic}% for ${S.weeks} weeks`); }
     if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50');
     if (!alt.length) alt.push('Aim for a bigger change, or test where more people pass');
-    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches ${t1(r.best)}% and up. Try:</p><ul class="bdalt">${alt.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches ${t1(r.best)}% and up.</p><div class="bdalt"><span>Try</span>${alt.map((x) => `<p>${x}</p>`).join('')}</div>`;
   }
   if (!(S.target > 0)) { S.target = tg; UI.targetFrom = '~'; }   // the slider shows a real value; '~' = still the suggestion
   return `<section class="card bydate open">${head}<div class="bdbody">${railSlider('Smallest change to catch', 'target')}${src ? `<span class="bdsrc">${src}</span>` : ''}${body}</div></section>`;
@@ -310,7 +339,7 @@ function ideasBlock(p) {
   <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v ? `+${v}%` : '0'}</span>`).join('')}</span></div>
   ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr, sp = (r.split || {})[r.m], src = sp ? sp.note : srcLine(r), one = r.lo === r.hi;
     return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${src || !r.same ? `<small>${[src, r.same ? '' : `on ${METRIC[r.m]}`].filter(Boolean).join(' · ')}</small>` : ''}</span><span class="bar"><i class="${one ? 'dot' : ''}" style="left:${one ? `calc(${x(r.lo)}% - 7px)` : `${x(r.lo)}%`};width:${one ? '14px' : `${Math.max(3, x(r.hi) - x(r.lo))}%`};background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i>${sp && sp.to ? `<b class="ext" style="left:${x(r.hi)}%;width:${x(sp.to) - x(r.hi)}%"></b><b class="ring" style="left:calc(${x(sp.to)}% - 6px)"></b>` : ''}</span></button>`; }).join('')}
-  </div><span class="legend"><span><i class="lb"></i>Lowest to highest result</span><span><i class="ld"></i>One number (one test, or a band given as one figure)</span>${rows.some((r) => ((r.split || {})[r.m] || {}).to) ? '<span><i class="le"></i><i class="lr"></i>Same test, another market</span>' : ''}</span>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}${rows.some((r) => !r.same) ? ` Rows marked “on …” were measured on another metric than yours.` : ''}</span></section>`;
+  </div><span class="legend"><span><i class="lb"></i>Lowest to highest result</span><span><i class="ld"></i>One number (one test, or a band given as one figure)</span>${rows.some((r) => ((r.split || {})[r.m] || {}).to) ? '<span><i class="le"></i><i class="lr"></i>Same test, another market</span>' : ''}</span>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}</span></section>`;
 }
 function ideaCard(p) {
   const it = ideasFor(p).find((x) => x.id === UI.idea) || IDEAS[S.area].map((x) => ({ ...x, m: Object.keys(x.r)[0], lo: Object.values(x.r)[0][0], hi: Object.values(x.r)[0][1], same: false })).find((x) => x.id === UI.idea);
@@ -318,13 +347,26 @@ function ideaCard(p) {
   const catches = it.lost ? 'This lost in published tests. Don’t run it hoping for a win.' : S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
   const range = (it.about ? 'about ' : '') + (it.lo === it.hi ? `${sgn(it.lo)}%` : `${sgn(it.lo)}% to ${sgn(it.hi)}%`);
   const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}${S.area === 'onboarding' && (COUNT[it.id] || {})[k] === 0 ? ' in Adapty’s library' : ''}`).join(', ');
-  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:500;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>${!it.lost && it.same && S.goal !== 'notworse' && it.lo > 0 ? `<button class="btn sec2" data-plan-idea="${it.id}">Plan for this idea: catch +${it.lo}%</button>` : ''}`;
+  return `<div class="ihead"><b>${it.t}</b><button class="icon-btn" data-close aria-label="Close">${I.x}</button></div>
+  <div class="igrp"><p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p></div>${testsList(it.id)}<p class="para icare">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>${!it.lost && it.same && S.goal !== 'notworse' && it.lo > 0 ? `<button class="btn sec2" data-plan-idea="${it.id}">Plan for this idea: catch +${it.lo}%</button>` : ''}`;
 }
 // Plans inside the form (owner, 2026-11-02): they shape the answer only when deciding on money, so they sit in the form then;
 // otherwise one Free trial control does the job (it sets every plan's trial).
 const PLAN_ORDER = { week: 0, month: 1, year: 2, once: 3 };
 const sortPlans = () => S.plans.sort((a, b) => PLAN_ORDER[a.t] - PLAN_ORDER[b.t]);   // rows and the share bar read short to long (owner, 2026-11-02)
+function mixBlock(label) {     // one bar for all plans, a segment per plan, drag a divider (owner, 2026-11-02)
+  const w = shares(S.plans);
+  return `<div class="mix"><span class="mixlab">${label}</span><div class="mixnames" aria-hidden="true">${S.plans.map((x, i) => `<span>${PLAN_TYPES[x.t][0]} <b>${Math.round(w[i] * 100)}%</b></span>`).join('')}</div><div class="mixbar" data-mixbar>${S.plans.map((x, i) => `<span class="mseg" style="flex:${Math.max(0.001, w[i])} 0 0"></span>${i < S.plans.length - 1 ? `<span class="mh" data-mix-handle="${i}" role="slider" tabindex="0" aria-label="Between ${PLAN_TYPES[x.t][0]} and ${PLAN_TYPES[S.plans[i + 1].t][0]}" aria-valuetext="${PLAN_TYPES[x.t][0]} ${Math.round(w[i] * 100)}%, ${PLAN_TYPES[S.plans[i + 1].t][0]} ${Math.round(w[i + 1] * 100)}%"></span>` : ''}`).join('')}</div></div>`;
+}
+// the plans question (owner, 2026-11-04, variant B3): tick the plans it shows; each ticked plan gets its own price and trial
+const PLAN_DEF = { week: 6.99, month: 14.99, year: 39.99, once: 29.99 };
+function plansPick() {
+  return `<div class="pp">${['week', 'month', 'year', 'once'].map((t) => { const i = S.plans.findIndex((x) => x.t === t), on = i >= 0, x = S.plans[i];
+    const box = `<button class="pp-tog" data-plan-toggle="${t}" aria-pressed="${on}"><span class="pp-box" aria-hidden="true">${on ? '<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10.5l3.2 3L15 6.5" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span>${PLAN_TYPES[t][0]}</button>`;
+    if (!on) return `<div class="pp-row">${box}</div>`;
+    const tr = t === 'once' ? '<span class="pi-f pp-f pi-na">No trial</span>' : `<div class="pi-f pp-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[t][1]} plan">${[[0, 'No trial'], [3, '3-day trial'], [7, '7-day trial'], [14, '14-day trial']].map(([d, l]) => `<option value="${d}"${planTrial(x) === d ? ' selected' : ''}>${l}</option>`).join('')}</select>${I.chevD}</div>`;
+    return `<div class="pp-row on">${box}<div class="pp-fields"><label class="pi-f pp-f pp-price"><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[t][1]} plan"></label>${tr}</div></div>`; }).join('')}</div>`;
+}
 function plansInline(step) {
   const many = S.plans.length > 1, w = shares(S.plans), open = step || UI.plansOpen;
   const sum = S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ');
@@ -338,26 +380,34 @@ function plansInline(step) {
     ${x.t === 'once' ? '<span class="pi-f pi-na">—</span>' : `<div class="pi-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[x.t][1]} plan">${trials(x)}</select>${I.chevD}</div>`}
     ${mixCol ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Share of sales, ${PLAN_TYPES[x.t][1]} plan"><span>%</span></label>` : ''}</div>`;
   // share of sales: one bar for all plans, a segment per plan in the same order as the rows; drag a divider (owner, 2026-11-02: a lone slider read as “50% of what?”)
-  const mix = many ? `<div class="mix"><span class="mixlab">Share of sales</span><div class="mixnames" aria-hidden="true">${S.plans.map((x, i) => `<span>${PLAN_TYPES[x.t][0]} <b>${Math.round(w[i] * 100)}%</b></span>`).join('')}</div><div class="mixbar" data-mixbar>${S.plans.map((x, i) => `<span class="mseg" style="flex:${Math.max(0.001, w[i])} 0 0"></span>${i < S.plans.length - 1 ? `<span class="mh" data-mix-handle="${i}" role="slider" tabindex="0" aria-label="Between ${PLAN_TYPES[x.t][0]} and ${PLAN_TYPES[S.plans[i + 1].t][0]}" aria-valuetext="${PLAN_TYPES[x.t][0]} ${Math.round(w[i] * 100)}%, ${PLAN_TYPES[S.plans[i + 1].t][0]} ${Math.round(w[i + 1] * 100)}%"></span>` : ''}`).join('')}</div></div>` : '';
+  const mix = many ? mixBlock('Share of sales') : '';
   const body = `<div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}`;
   if (step) return `<div class="plans-inline plans-step" id="plans-inline">${body}</div>`;   // the wizard's plans question: the same editor, always open
-  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}</div></div></div>`;
+  return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body">${plansPick()}${mix}</div></div></div>`;   // one way to enter plans everywhere (owner, 2026-11-04): the same rows as the plans question
 }
 // the hint speaks only about the metric picked (owner, 2026-11-02)
 const DECIDE_HINT = {
   paywall: { money: 'Revenue per paywall viewer. Use it for changes to prices, plans or the trial offer.', paid: 'Share of viewers who pay. Answers faster for copy and layout changes.', trials: 'Trial start rate. Answers fastest, but a trial isn’t revenue yet.' },
   onboarding: { trials: 'Trial start rate. Answers in weeks.', paid: 'Share of new users who pay. Waits for the trial to end.' },
 };
+function facts30() {
+  const onb = S.area === 'onboarding', ks = onb ? ['users30', 'otrial30', 'opaid30'] : ['views30', 'trial30', 'paid30'], t = hasTrial();
+  const lab = [onb ? 'New users' : 'Saw the paywall', 'Started a trial', 'Paid'], short = [onb ? 'new users' : 'saw', 'trial', 'paid'];
+  const idx = t ? [0, 1, 2] : [0, 2], sum = idx.map((i) => `${kfmt(S[ks[i]])} ${short[i]}`).join(' · '), open = UI.factsOpen;
+  const head = `<button class="pi-acc" data-facts-toggle aria-expanded="${!!open}" aria-label="Last 30 days: ${sum}"><span>${sum}</span>${open ? I.chevU : I.chevD}</button>`;
+  if (!open) return `<div class="plans-inline"><span class="lab">Last 30 days</span><div class="pi-box">${head}</div></div>`;
+  return `<div class="plans-inline open"><span class="lab">Last 30 days</span><div class="pi-box open">${head}<div class="pi-body facts">${idx.map((i) => railSlider(lab[i], ks[i])).join('')}</div></div></div>`;
+}
 function controls() {
   const onb = S.area === 'onboarding';
   const dec = decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]);
   // order (owner, 2026-11-02): what you test → what decides it → the goal → your numbers for that metric → how traffic is split
   return `<div class="controls">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}
+  ${whatField(planOf(S))}
+  ${onb || S.decide !== 'money' ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : plansInline()}
+  ${facts30()}
   ${seg('Decide on', 'decide', dec)}<span class="hint">${DECIDE_HINT[S.area][S.decide] || ''}</span>
   ${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}
-  ${onb ? railSlider('New users a week', 'users') + (S.decide === 'paid' ? railSlider('New users who pay', 'paidRate') : railSlider('New users who start a trial', 'trialRate'))
-    : railSlider('People who see it a week', 'views') + (S.decide === 'trials' ? railSlider('Viewers who start a trial', 'trialView') : railSlider('Viewers who pay', 'conv'))}
-  ${onb || S.decide !== 'money' ? seg('Free trial', 'trial', [[0, 'None'], [3, '3 days'], [7, '7 days'], [14, '14+']]) : plansInline()}
   ${railSlider('Traffic in test', 'traffic')}
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${S.versions === 2 ? seg('Split A / B', 'split', [[50, '50/50'], [70, '70/30'], [80, '80/20'], [90, '90/10']]) : ''}</div>`;
@@ -372,25 +422,25 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
     <div class="plrow"><label class="rr"><span>Price</span><div style="grid-template-columns:1fr"><label><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label></div></label>
     ${x.t === 'once' ? '' : pseg('Free trial', i, 'tr', [[0, 'None'], [3, '3'], [7, '7'], [14, '14+']])}</div>
     ${many ? railSlider('Buyers who pick it', 'sh' + i, true) : ''}</section>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${I.x}</button></div>
   ${S.plans.map(one).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}`;
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}<p class="note">We count which idea people pick, with no names or cookies. What you type stays on this page.</p>${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}${variantCard()}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
     const extra = UI.overlay === 'idea' ? `<section class="float" role="dialog" aria-label="Idea details">${ideaCard(p)}</section>` : '';
     const plans = UI.overlay === 'prices' ? `<div class="half plans"><section class="card plans-panel" role="dialog" aria-label="Plans">${pricesCard()}</section></div>` : '';
     const share = `<button class="share-float" data-go="share">${I.share}<span>Share plan</span></button>`;   // bottom-left: frees the top for the rail and the content
-    const settings = `<section class="card" style="padding:18px;display:flex;flex-direction:column;gap:16px">${controls()}</section>`;
+    const settings = `<section class="card" style="padding:16px;display:flex;flex-direction:column;gap:16px">${controls()}</section>`;
     return top() + main + share + `<aside class="rail${plans ? ' split' : ''}" id="rail">${plans ? `<div class="half">${settings}</div>${plans}` : settings}</aside>` + extra;
   }
   if (UI.overlay === 'edit') overlay = `<div class="scrim" data-close></div><div class="sheet" id="sheet"><div class="sheet-in"><span class="grab"></span><button class="sumrow" data-close aria-label="Close"><span><small>Your test</small><em>${summary(p)}</em></span><span class="icon-btn">${I.down}</span></button>${controls()}</div></div>`;
   else if (UI.overlay === 'idea') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in text"><span class="grab"></span>${ideaCard(p)}</div></div>`;
   else if (UI.overlay === 'prices') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in"><span class="grab"></span>${pricesCard()}</div></div>`;
-  const peek = `<div class="peek"><div><span class="grab"></span><button class="sumrow" data-overlay="edit" aria-label="Change your test"><span><small>Your test</small><em>${summary(p)}</em></span><span class="icon-btn">${I.up}</span></button></div></div>`;
+  const peek = `<div class="peek"><div><span class="grab"></span><button class="sumrow" data-overlay="edit" aria-label="Change your test"><span><small>Your test</small><em>${summary(p)}</em></span></button></div></div>`;   // no arrow: the grabber and the whole row say it opens, like iOS mini-players (owner, 2026-11-04)
   return top(shareBtn) + main + peek + overlay;
 }
 
@@ -400,7 +450,7 @@ const LINK = (withRead) => `${location.origin}${location.pathname}#/${withRead ?
 const lcFirst = (t) => (t.length > 1 && t[1] === t[1].toUpperCase() && /[A-Z]/.test(t[1]) ? t : t[0].toLowerCase() + t.slice(1));
 function planTones(p) {
   const what = S.area === 'onboarding' ? 'onboarding' : 'paywall', b = S.what.trim();
-  const vol = S.area === 'onboarding' ? `${n0(S.users)} new users a week` : `${n0(S.views)} people a week`;
+  const vol = S.area === 'onboarding' ? `${n0(S.users30)} new users a month` : `${n0(S.views30)} paywall viewers a month`;
   const link = LINK(false);
   if (S.goal === 'notworse') {
     return {
@@ -472,7 +522,7 @@ const PRIVACY = `<p class="fine" style="margin:0;padding:0 4px">What you type st
 function resultsScreen() {
   const p = planOf(S);
   const plan = UI.readPlan ? `<div class="acc-body">${seg('Testing', 'area', [['onboarding', 'Onboarding'], ['paywall', 'Paywall']])}${seg('Decide on', 'decide', decideOptions(S.area).map((v) => [v, { money: 'Revenue', paid: 'Conversion', trials: 'Trials' }[v]]))}${seg('Goal', 'goal', [['win', 'Find a win'], ['notworse', 'Not worse']])}</div>` : '';
-  const body = `${heading('What did each version get?', 'Three numbers per version. We check whether the test can be trusted, then read it.')}
+  const body = `${heading('What did each version get?', 'Totals for the whole test, per version. We check whether the test can be trusted, then read it.')}
   <div class="mobile-only">${SKILL}</div>
   ${seg('Versions', 'versions', [[2, 'A/B'], [3, 'A/B/C']])}
   ${readRows(p).map(readRow).join('')}
@@ -540,19 +590,19 @@ function rangeBar(m, win, margin) {
   const x = (v) => Math.max(0, Math.min(100, (v - dmin0 + pad) / (dmax0 - dmin0 + 2 * pad) * 100));
   const cross = lo < 0 && hi > 0;
   const zero = margin == null ? `<span class="zero" style="left:${x(0)}%;top:${cross ? -2 : 2}px;height:${cross ? 6 : 26}px"></span>` : `<span class="lim" style="left:${x(margin)}%"></span>`;
-  const lbl = margin == null ? `<span style="left:${x(0)}%;transform:translateX(-50%)">no change</span>` : `<span style="left:${x(margin)}%;padding-left:6px;color:${ACC};font-weight:500">${sign(margin)} limit</span>`;
+  const lbl = margin == null ? `<span style="left:${x(0)}%;transform:translateX(-50%)">no change</span>` : `<span style="left:${x(margin)}%;padding-left:8px;color:${ACC};font-weight:500">${sign(margin)} limit</span>`;
   return `<div class="rb" role="img" aria-label="Likely change from ${sign(lo)} to ${sign(hi)}, best guess ${sign(m.lift)}"><div class="lbls">${lbl}</div><div class="bar"><span class="base"></span>${zero}<span class="range" style="left:${x(lo)}%;width:${x(hi) - x(lo)}%"><span>${sign(lo)}</span><span>${sign(hi)}</span></span></div></div>`;
 }
 function vsPlot(versions, lead, margin) {     // A/B/C: both versions on one scale, one "no change" (or limit) line through both rows
   const ms = versions.map((x) => x.metric), lo0 = Math.min(0, margin ?? 0, ...ms.map((m) => m.lo)), hi0 = Math.max(0, ...ms.map((m) => m.hi)), pad = Math.max(2, (hi0 - lo0) * 0.1);
   const x = (val) => ((val - lo0 + pad) / (hi0 - lo0 + 2 * pad) * 100).toFixed(2);
   const ref = margin ?? 0;
-  const rows = versions.map((v) => `<div class="vsrow${v.v === lead ? ' lead' : ''}"><div class="vshead"><b>${v.v}</b><span>${sign(v.metric.lift)}</span><em>${sign(v.metric.lo)} to ${sign(v.metric.hi)}</em></div><div class="vsbar"><span class="base"></span><span class="range" style="left:${x(v.metric.lo)}%;width:${x(v.metric.hi) - x(v.metric.lo)}%"></span></div></div>`).join('');
+  const rows = versions.map((v) => `<div class="vsrow${v.v === lead ? ' lead' : ''}"><div class="vshead"><b>${v.v}</b><span>${sign(v.metric.lift)}</span><em>${sign(v.metric.lo)} to ${sign(v.metric.hi)}</em></div><div class="vsbar"><span class="base"></span><span class="vszero${margin == null ? '' : ' lim'}" style="left:${x(ref)}%${v.metric.lo < ref && v.metric.hi > ref ? ';top:-8px;height:8px' : ''}"></span><span class="range" style="left:${x(v.metric.lo)}%;width:${x(v.metric.hi) - x(v.metric.lo)}%"></span></div></div>`).join('');
   return `<section class="card vs"><small>Each version against A</small><div class="vsplot" role="img" aria-label="${versions.map((v) => `${v.v}: ${sign(v.metric.lo)} to ${sign(v.metric.hi)}`).join(', ')}"><span class="vsref${margin == null ? '' : ' lim'}" style="left:${x(ref)}%"><i>${margin == null ? 'no change' : sign(margin) + ' limit'}</i></span>${rows}</div><p>Wider than an A/B range: two comparisons share one 5% error budget.</p></section>`;
 }
 function numbersRow() {
   const pe = LETTERS().map((v) => `${v} ${n0(num(READ[v].people) ?? 0)}`).join(' · ');
-  return `<button class="card numrow" data-go="results:read"><span><small>Your numbers</small><b>${pe} people</b></span>${I.chevS}</button>`;
+  return `<button class="card numrow" data-go="results:read"><span><small>Your numbers</small><b>${pe} people</b></span><span class="numedit">Edit</span></button>`;   // edits the numbers in place (owner, 2026-11-04: a chevron read as “goes somewhere”)
 }
 function verdictScreen() {
   const p = planOf(S), v = verdictOf(p);
@@ -564,9 +614,9 @@ function verdictScreen() {
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
   const vs = v.versions ? vsPlot(v.versions, v.r.lead, S.goal === 'notworse' ? -5 : null) : '';
   const from = ['win', 'win_with_cost', 'not_worse'].includes(v.r.verdict) && v.r.verdict !== 'win_with_cost' ? v.r.lead : 'A';
-  const next = v.r.verdict === 'broken' || v.r.verdict === 'too_early' ? '' : `<button class="btn sec2 nexttest" data-next-from="${from}">Plan the next test from ${from}’s numbers</button>`;
-  const body = card + vs + checks + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + next + (wide() ? '' : numbersRow());   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
-  const rail = `<aside class="rail"><section class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px"><small style="font-size:13px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
+  const next = v.r.verdict === 'broken' || v.r.verdict === 'too_early' ? '' : `<button class="card numrow nextrow" data-next-from="${from}"><span><small>Next test</small><b>Plan it from ${from}’s numbers</b></span>${I.chev}</button>`;
+  const body = card + vs + checks + (wide() ? '' : numbersRow()) + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + next;   // mobile: the numbers sit right under the answer they produce (owner, 2026-11-04)   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
+  const rail = `<aside class="rail"><section class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px"><small style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
   const share = wide() ? `<button class="share-float" data-go="share-result">${I.share}<span>Share result</span></button>`
     : `<div class="dock"><button class="btn sec2" data-go="share-result">${I.share}<span>Share result</span></button></div>`;   // mobile: pinned to the bottom of the screen (owner, 2026-11-02)
   return top() + `<main class="page${wide() ? '' : ' docked'}" id="main">${body}</main>` + share + rail;
@@ -688,11 +738,12 @@ const pillRO = 'ResizeObserver' in window ? new ResizeObserver((es) => {
   });
   placePills();
 }) : null;
-function layoutMix() {        // every plan name stays visible: centred over its segment, pushed apart when segments are narrow
+function layoutMix() {        // every plan name stays visible: ends pinned to the bar's edges, middle names centred, pushed apart when segments are narrow
   document.querySelectorAll('[data-mixbar]').forEach((bar) => {
     const names = [...(bar.previousElementSibling?.children || [])], segs = [...bar.querySelectorAll('.mseg')], W = bar.clientWidth; if (!names.length || !W) return;
     const bl = bar.getBoundingClientRect().left, wd = names.map((n) => n.offsetWidth), gap = 8;
-    const left = segs.map((sg, i) => { const r = sg.getBoundingClientRect(); return r.left - bl + r.width / 2 - wd[i] / 2; });
+    const last = segs.length - 1;   // the first name sits on the bar's left edge, the last on its right edge, the ones between centred over their segment (owner, 2026-11-04)
+    const left = segs.map((sg, i) => { const r = sg.getBoundingClientRect(); return i === 0 ? 0 : i === last ? W - wd[i] : r.left - bl + r.width / 2 - wd[i] / 2; });
     for (let i = 0; i < left.length; i++) left[i] = Math.max(i ? left[i - 1] + wd[i - 1] + gap : 0, left[i]);
     for (let i = left.length - 1; i >= 0; i--) left[i] = Math.min(i < left.length - 1 ? left[i + 1] - wd[i] - gap : W - wd[i], left[i]);
     names.forEach((n, i) => { n.style.left = Math.max(0, left[i]) + 'px'; });
@@ -713,7 +764,7 @@ document.getElementById('about')?.remove();   // the plain-text description is f
 function render() {
   const { r } = route();
   const sheet = document.getElementById('sheet'), st = sheet ? sheet.scrollTop : 0;
-  const html = { '': startScreen, area: areaScreen, traffic: trafficScreen, conv: convScreen, trial: trialScreen, test: testScreen, share: () => shareScreen(false),
+  const html = { '': startScreen, area: areaScreen, traffic: trafficScreen, starts: startsScreen, conv: convScreen, trial: trialScreen, test: testScreen, share: () => shareScreen(false),
     results: resultsScreen, verdict: verdictScreen, 'share-result': () => shareScreen(true) }[r]();
   const page = PAGE(r);
   const tmp = document.createElement('div'); tmp.innerHTML = html;
@@ -740,7 +791,7 @@ function render() {
     if (page === 'test') { countOnce('decide', S.decide); countOnce('goal', S.goal); }
   }
   lastPage = page; UI.areaSwap = false;
-  if (/^(area|traffic|conv|trial)$/.test(r)) UI.lastStep = { area: 1, traffic: 2, conv: 3, trial: 4 }[r];
+  if (/^(area|traffic|starts|conv|trial)$/.test(r)) UI.lastStep = STEPS().indexOf(r) + 1;
   const s2 = document.getElementById('sheet'); if (s2) s2.scrollTop = st;
   document.documentElement.style.overflow = document.querySelector('.scrim') ? 'hidden' : '';   // a modal or sheet holds the page still
   document.title = 'Growth Test Planner';
@@ -764,7 +815,7 @@ function set(key, raw) {
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => { const pr = e.target.closest('[data-promo]'); if (pr) count('promo', pr.dataset.promo); });
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-bd-toggle],[data-plan-idea],[data-next-from],[data-plans-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-bd-toggle],[data-plan-idea],[data-next-from],[data-plans-toggle],[data-facts-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-plan-toggle],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
@@ -793,6 +844,7 @@ app.addEventListener('click', (e) => {
     READ = { A: {}, B: {}, C: {}, billed: true }; S.what = ''; S.target = 0; S.start = ''; UI.targetFrom = ''; save();
     return go('test');
   }
+  if ('factsToggle' in el.dataset) return accToggle(el, '.pi-body', () => { UI.factsOpen = !UI.factsOpen; });
   if ('plansToggle' in el.dataset) return accToggle(el, '.pi-body', () => { UI.plansOpen = !UI.plansOpen; });
   if ('plansGo' in el.dataset) {
     if (S.decide !== 'money') { S.decide = 'money'; save(); }
@@ -803,6 +855,10 @@ app.addEventListener('click', (e) => {
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
+  if (el.dataset.planToggle) { const t = el.dataset.planToggle, i = S.plans.findIndex((x) => x.t === t);
+    if (i >= 0) { if (S.plans.length === 1) return; S.plans.splice(i, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); }
+    else { S.plans.push({ t, p: PLAN_DEF[t], s: 0, tr: 0 }); setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); sortPlans(); }
+    return planChanged(); }
   if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: 0 }); /* a new plan starts without a trial */ setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); sortPlans(); return planChanged(); }
   if ('moreIdeas' in el.dataset) { UI.allIdeas = !UI.allIdeas; return render(); }
   if (el.dataset.idea) { count('idea', el.dataset.idea); UI.overlay = 'idea'; UI.idea = el.dataset.idea; return render(); }
@@ -862,16 +918,17 @@ app.addEventListener('keydown', (e) => {
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
 });
 function syncTrack(k, except) {
+  if (PEOPLE[k]) PEOPLE[k][1].forEach((d) => document.querySelectorAll(`[data-slide="${d}"]`).forEach((tr) => { tr.querySelector('.end.l').textContent = SL[d].l; tr.querySelector('.end.r').textContent = SL[d].h; tr.style.setProperty('--p', pctOf(d, S[d])); }));
   if (/^sh\d$/.test(k) && !syncTrack.busy) { syncTrack.busy = true; S.plans.forEach((_, i) => { if ('sh' + i !== k) syncTrack('sh' + i); }); syncTrack.busy = false; }
-  document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { const p = pctOf(k, S[k]); tr.querySelector('.fill').style.width = p + '%'; tr.querySelector('.handle').style.left = p + '%'; tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
+  document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { tr.style.setProperty('--p', pctOf(k, S[k])); tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
   document.querySelectorAll(`[data-val-of="${k}"]`).forEach((el) => { el.textContent = SL[k].fmt(S[k]) + (SL[k].unit || ''); });
   document.querySelectorAll(`[data-rng-of="${k}"]`).forEach((el) => { el.textContent = rangeText(k); });
   const txt = SL[k].fmt(S[k]);
   document.querySelectorAll(`[data-type="${k}"]`).forEach((inp) => {
-    if (inp === except) return;                                  // never rewrite the field someone is typing in
-    inp.value = txt;
-    if ('small' in inp.dataset) inp.size = Math.max(2, txt.length);
-    else { const size = Math.min(80, Math.floor(600 / txt.length)); inp.style.fontSize = size + 'px'; inp.style.width = (Math.max(2, txt.length) + 0.1) + 'ch';   /* ch = one tabular digit in this font, so the box never clips the last digit */ }
+    const own = inp === except, t = own ? inp.value : txt;      // never rewrite the field someone is typing in, but let it grow with what they type
+    if (!own) inp.value = txt;
+    if ('small' in inp.dataset) inp.size = Math.max(2, t.length);
+    else { const size = Math.min(80, Math.floor(600 / Math.max(1, t.length) / 4) * 4); inp.style.fontSize = size + 'px'; inp.style.width = (Math.max(2, t.length) + 0.1) + 'ch';   /* ch = one tabular digit in this font, so the box never clips the last digit */ }
   });
 }
 function refreshMain() {           // update the answer without touching the control being used
