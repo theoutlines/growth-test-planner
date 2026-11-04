@@ -48,15 +48,18 @@ export const IDEAS = {
 // the metric each decision reads, so ideas measured on it rank first
 export const DECIDE_METRIC = { money: 'arpu', paid: 'conv', trials: 'trials' };
 export const IDEAS_SRC = {
-  paywall: 'Each range is a band from Adapty’s A/B library, many tests. Tap an idea for the single published tests and their links. Not a forecast for yours.',
-  onboarding: 'Each number is what other apps saw in published tests, on the metric its row shows. Where a test split by market, the chart uses the lower figure. A single test’s own uncertainty is rarely published: a dot is one result, not a precise effect. Results with no control group sit below the rest. Tap an idea for the published tests and their links. Not a forecast for yours.',
+  paywall: 'Ranges from Adapty’s A/B library. Not a forecast for your test.',
+  onboarding: 'From other apps’ published tests, the lower figure where a test split by market. Results with no control group sit lower. Not a forecast for your test.',
 };
 
 export const CHIPS = {
+  views30: [[40000, '40k', 'small app'], [200000, '200k', 'mid'], [1000000, '1M', 'large']],
+  users30: [[20000, '20k', 'small app'], [90000, '90k', 'mid'], [400000, '400k', 'large']],
   views: [[10000, '10k', 'small app'], [50000, '50k', 'mid'], [250000, '250k', 'large']],
   users: [[5000, '5k', 'small app'], [20000, '20k', 'mid'], [100000, '100k', 'large']],
-  conv: [[2.75, '2.75%', 'US median, per view'], [1.38, '1.38%', 'Europe median, per view']],                 // Adapty, State of Paywalls 2026
-  trialView: [[6.94, '6.94%', 'US median, per view'], [4.62, '4.62%', 'Europe median, per view']],           // Adapty, State of Paywalls 2026, view → trial start
+  conv: [[2.75, '2.75%', 'US'], [1.38, '1.38%', 'Europe']],                 // Adapty, State of Paywalls 2026
+  trialView: [[6.94, '6.94%', 'US'], [4.62, '4.62%', 'Europe']],
+  paidRate: [[2.0, '2.0%', 'all apps']],   // RevenueCat SOSA 2026, install → paid           // Adapty, State of Paywalls 2026, view → trial start
   trialRate: [[5.8, '5.8%', 'all apps'], [6.9, '6.9%', 'Health & Fitness'], [6.5, '6.5%', 'Education'], [5.2, '5.2%', 'Photo & Video']],   // RevenueCat SOSA 2026, install → trial
 };
 
