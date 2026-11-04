@@ -295,7 +295,7 @@ function dateBlock(p) {     // optional (owner, 2026-11-02: “feels optional, M
     if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Drop C: ${f.traffic}% for ${S.weeks} weeks`); }
     if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50');
     if (!alt.length) alt.push('Aim for a bigger change, or test where more people pass');
-    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches ${t1(r.best)}% and up. Try:</p><ul class="bdalt">${alt.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches ${t1(r.best)}% and up.</p><div class="bdalt"><span>Try</span>${alt.map((x) => `<p>${x}</p>`).join('')}</div>`;
   }
   if (!(S.target > 0)) { S.target = tg; UI.targetFrom = '~'; }   // the slider shows a real value; '~' = still the suggestion
   return `<section class="card bydate open">${head}<div class="bdbody">${railSlider('Smallest change to catch', 'target')}${src ? `<span class="bdsrc">${src}</span>` : ''}${body}</div></section>`;
@@ -347,8 +347,8 @@ function ideaCard(p) {
   const catches = it.lost ? 'This lost in published tests. Don’t run it hoping for a win.' : S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
   const range = (it.about ? 'about ' : '') + (it.lo === it.hi ? `${sgn(it.lo)}%` : `${sgn(it.lo)}% to ${sgn(it.hi)}%`);
   const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}${S.area === 'onboarding' && (COUNT[it.id] || {})[k] === 0 ? ' in Adapty’s library' : ''}`).join(', ');
-  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:20px;font-weight:500;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
-  <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>${!it.lost && it.same && S.goal !== 'notworse' && it.lo > 0 ? `<button class="btn sec2" data-plan-idea="${it.id}">Plan for this idea: catch +${it.lo}%</button>` : ''}`;
+  return `<div class="ihead"><b>${it.t}</b><button class="icon-btn" data-close aria-label="Close">${I.x}</button></div>
+  <div class="igrp"><p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p></div>${testsList(it.id)}<p class="para icare">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>${!it.lost && it.same && S.goal !== 'notworse' && it.lo > 0 ? `<button class="btn sec2" data-plan-idea="${it.id}">Plan for this idea: catch +${it.lo}%</button>` : ''}`;
 }
 // Plans inside the form (owner, 2026-11-02): they shape the answer only when deciding on money, so they sit in the form then;
 // otherwise one Free trial control does the job (it sets every plan's trial).
@@ -422,7 +422,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
     <div class="plrow"><label class="rr"><span>Price</span><div style="grid-template-columns:1fr"><label><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label></div></label>
     ${x.t === 'once' ? '' : pseg('Free trial', i, 'tr', [[0, 'None'], [3, '3'], [7, '7'], [14, '14+']])}</div>
     ${many ? railSlider('Buyers who pick it', 'sh' + i, true) : ''}</section>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${I.x}</button></div>
   ${S.plans.map(one).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}`;
 }
 function testScreen() {
