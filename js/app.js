@@ -71,21 +71,21 @@ const t1 = (x) => x.toFixed(1);
 
 // ------------------------------------------------------------------ icons (filled where they are pictures)
 const I = {
-  back: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  back: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chev: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" class="chev" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',   // chevrons (owner, 2026-11-02): one shape, stroke 2, 60% white; 16 trailing a row, 14 inline after text
-  ext: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M8 4h8v8M16 4 7 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  chevS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  up: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 12.5l6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  down: '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7.5l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ext: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M8 4h8v8M16 4 7 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevS: '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  up: '<svg width="24" height="24" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 12.5l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  down: '<svg width="24" height="24" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7.5l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   minus: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   chevD: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevU: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 12 10 7.5 14.5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  chevDS: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevDS: '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex:none;opacity:.6"><path d="M5.5 8 10 12.5 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   x: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-  share: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3.5M6.5 7l3.5-3.5L13.5 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10.5v4.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
-  copy: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M13 4.5v-.5A1.5 1.5 0 0 0 11.5 2.5h-7A1.5 1.5 0 0 0 3 4v7a1.5 1.5 0 0 0 1.5 1.5H5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
-  money: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path fill-rule="evenodd" d="M1 5h20v12H1zM11 7.5l3.5 3.5-3.5 3.5-3.5-3.5z" fill="#FFFFFF"/></svg>',
-  flag: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 1h3v20H3zM6 2h13l-4 5 4 5H6z" fill="#FFFFFF"/></svg>',
+  share: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3.5M6.5 7l3.5-3.5L13.5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10.5v4.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  copy: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M13 4.5v-.5A1.5 1.5 0 0 0 11.5 2.5h-7A1.5 1.5 0 0 0 3 4v7a1.5 1.5 0 0 0 1.5 1.5H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  money: '<svg width="24" height="24" viewBox="0 0 22 22" aria-hidden="true"><path fill-rule="evenodd" d="M1 5h20v12H1zM11 7.5l3.5 3.5-3.5 3.5-3.5-3.5z" fill="#FFFFFF"/></svg>',
+  flag: '<svg width="24" height="24" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 1h3v20H3zM6 2h13l-4 5 4 5H6z" fill="#FFFFFF"/></svg>',
 };
 const ACC = '#FF4C00';
 const G = {
@@ -347,7 +347,7 @@ function ideaCard(p) {
   const catches = it.lost ? 'This lost in published tests. Don’t run it hoping for a win.' : S.goal === 'notworse' ? 'This test is sized to rule out harm, not to find it.' : !it.same ? `Measured on ${METRIC[it.m]}, not on ${p.metricName}, so compare with care.` : it.lo >= p.thr ? 'Your test catches it.' : it.hi >= p.thr ? 'Your test may catch the high end.' : 'Too small for this test alone.';
   const range = (it.about ? 'about ' : '') + (it.lo === it.hi ? `${sgn(it.lo)}%` : `${sgn(it.lo)}% to ${sgn(it.hi)}%`);
   const other = Object.entries(it.r).filter(([k]) => k !== it.m).map(([k, [lo, hi]]) => `${pctR(lo, hi)} ${METRIC[k]}${S.area === 'onboarding' && (COUNT[it.id] || {})[k] === 0 ? ' in Adapty’s library' : ''}`).join(', ');
-  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:21px;font-weight:500;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><b style="font-size:20px;font-weight:500;letter-spacing:-.02em;line-height:1.2">${it.t}</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
   <p class="para">${it.what}</p><p class="para">${seenBy(it)} ${range} ${METRIC[it.m]}${other ? ` (and ${other})` : ''}. ${catches}</p>${testsList(it.id)}<p class="para">Careful: ${it.trap[0].toLowerCase() + it.trap.slice(1)}</p>${!it.lost && it.same && S.goal !== 'notworse' && it.lo > 0 ? `<button class="btn sec2" data-plan-idea="${it.id}">Plan for this idea: catch +${it.lo}%</button>` : ''}`;
 }
 // Plans inside the form (owner, 2026-11-02): they shape the answer only when deciding on money, so they sit in the form then;
@@ -409,7 +409,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
     <div class="plrow"><label class="rr"><span>Price</span><div style="grid-template-columns:1fr"><label><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[x.t][1]} plan"></label></div></label>
     ${x.t === 'once' ? '' : pseg('Free trial', i, 'tr', [[0, 'None'], [3, '3'], [7, '7'], [14, '14+']])}</div>
     ${many ? railSlider('Buyers who pick it', 'sh' + i, true) : ''}</section>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:21px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
+  return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px;font-weight:500">Plans</b><button class="icon-btn" data-close aria-label="Close">${wide() ? I.x : I.down}</button></div>
   ${S.plans.map(one).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}`;
 }
 function testScreen() {
