@@ -22,9 +22,9 @@ const POWER = 0.8, ALPHA = 0.05, WATCH_DAYS = 7, NOT_WORSE_MARGIN = 0.05;
 
 export const DEFAULTS = {
   area: 'paywall',        // paywall | onboarding
-  views: 50000,           // people who see the paywall a week (the test splits people, not views)
+  views: 215000 * 7 / 30,           // people who see the paywall a week (the test splits people, not views)
   conv: 2.75,             // % of paywall views that end in a payment
-  users: 20000,           // new users a week (onboarding)
+  users: 86000 * 7 / 30,           // new users a week (onboarding)
   trialRate: 5.8,         // % of new users who start a trial
   paidRate: 2.0,          // % of new users who make a first payment (onboarding, decided on paid)
   trialView: 6.94,        // % of paywall views that start a trial (paywall, decided on trial starts)
