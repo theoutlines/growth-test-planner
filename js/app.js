@@ -222,7 +222,7 @@ function trialScreen() {
   if (!onb) {        // paywall: what it sells comes before the counts, so we know whether to ask about trials
     const lt = longestTrial(S.plans);
     return top() + `<main class="page q">${heading('What does this paywall sell?', 'Tick the plans it shows, then each one’s price and free trial.')}
-  ${plansPick()}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill` : 'No trial: no extra wait'}</span>
+  ${plansPick()}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill.` : 'No trial, so no extra wait.'}</span>
   <div class="grow"></div>${nav(hasTrial() ? 'Next: how many start a trial' : 'Next: how many pay', 3, hasTrial() ? 'starts' : 'conv', 'traffic')}</main>`;
   }
   const tiles = TRIALS.map(([d, sub]) => `<button class="tile" data-set="trial" data-val="${d}" aria-pressed="${S.trial === d}"><span class="n"><b>${d === 0 ? 'None' : d >= 14 ? '14+' : d}</b>${d ? '<span>days</span>' : ''}</span><span class="days" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i${i < d ? ' class="on"' : ''}></i>`).join('')}</span><em>${sub}</em></button>`).join('');
