@@ -167,7 +167,7 @@ const heading = (h, sub) => `<div class="heading"><h1>${h}</h1>${sub ? `<p class
 const sec = (t, sub) => `<div class="sec"><b>${t}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
 // questions follow the funnel (draft facts30): what you test → what it sells → people → trial starts (only with a trial) → paid
 const hasTrial = () => (S.area === 'onboarding' ? S.trial > 0 : S.plans.some((x) => planTrial(x) > 0));
-const STEPS = () => ['area', 'trial', 'traffic', ...(hasTrial() ? ['starts'] : []), 'conv'];
+const STEPS = () => ['area', 'traffic', 'trial', ...(hasTrial() ? ['starts'] : []), 'conv'];
 const nav = (label, step, next, back) => { const of = STEPS().length, u = 100 / of; return `<div class="nav"><button class="back" data-go="${back}" aria-label="Back to the previous question">${I.back}</button><button class="next${step >= of ? ' full' : ''}" data-go="${next}" aria-label="${label} (question ${step} of ${of} answered)">${step < of ? `<i style="width:${step * u}%;--fill-from:${Math.max(0, (UI.lastStep ?? step - 1)) * u}%"></i>` : ''}<span>${label}</span></button></div>`; };
 const pick = (glyph, t, sub, goTo) => `<button class="pick" data-go="${goTo}"><span>${glyph}</span><span><b>${t}</b><em>${sub}</em></span>${I.chev}</button>`;
 
@@ -203,32 +203,32 @@ function areaScreen() {
 function trafficScreen() {
   const onb = S.area === 'onboarding', t = hasTrial();
   return top() + `<main class="page q">${onb ? heading('How many new users started onboarding in the last 30 days?', 'Count people, not screens.') : heading('How many people saw this paywall in the last 30 days?', 'Count people, not views: the test splits people.')}
-  ${bigValue(onb ? 'users30' : 'views30')}${chips(onb ? 'users30' : 'views30')}<div class="grow"></div>${nav(t ? 'Next: how many start a trial' : 'Next: how many pay', 3, t ? 'starts' : 'conv', 'trial')}</main>`;
+  ${bigValue(onb ? 'users30' : 'views30')}${chips(onb ? 'users30' : 'views30')}<div class="grow"></div>${nav(onb ? 'Next: free trial' : 'Next: what it sells', 2, 'trial', 'area')}</main>`;
 }
 function startsScreen() {
   const onb = S.area === 'onboarding';
   return top() + `<main class="page q">${heading('How many of them started a free trial?', 'The same 30 days.')}
-  ${bigValue(onb ? 'otrial30' : 'trial30')}<div style="display:flex;flex-direction:column;gap:8px">${chips(onb ? 'otrial30' : 'trial30', 'No numbers yet? Start from a typical app')}</div>
-  <div class="grow"></div>${nav('Next: how many pay', 4, 'conv', 'traffic')}</main>`;
+  ${bigValue(onb ? 'otrial30' : 'trial30')}<div class="hintgroup">${chips(onb ? 'otrial30' : 'trial30', 'No numbers yet? Start from a typical app')}</div>
+  <div class="grow"></div>${nav('Next: how many pay', 4, 'conv', 'trial')}</main>`;
 }
 function convScreen() {
   const onb = S.area === 'onboarding', t = hasTrial();
   return top() + `<main class="page q">${heading('How many of them paid?', t ? 'The same 30 days, payments after the free trial included.' : 'The same 30 days.')}
-  ${bigValue(onb ? 'opaid30' : 'paid30')}<div style="display:flex;flex-direction:column;gap:8px">${chips(onb ? 'opaid30' : 'paid30', 'No numbers yet? Start from a typical app')}</div>
-  <div class="grow"></div>${nav('Show my test', STEPS().length, 'test', t ? 'starts' : 'traffic')}</main>`;
+  ${bigValue(onb ? 'opaid30' : 'paid30')}<div class="hintgroup">${chips(onb ? 'opaid30' : 'paid30', 'No numbers yet? Start from a typical app')}</div>${!onb && S.plans.length > 1 ? `<div class="nextq">${mixBlock('Which plans they bought')}</div>` : ''}
+  <div class="grow"></div>${nav('Show my test', STEPS().length, 'test', t ? 'starts' : 'trial')}</main>`;
 }
 function trialScreen() {
   const onb = S.area === 'onboarding';
   if (!onb) {        // paywall: what it sells comes before the counts, so we know whether to ask about trials
     const lt = longestTrial(S.plans);
-    return top() + `<main class="page q">${heading('What does this paywall sell?', 'Each plan’s price, free trial and share of sales. They set how long the test waits and how noisy revenue is.')}
-  ${plansInline(true)}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill` : 'No trial: no extra wait'}</span>
-  <div class="grow"></div>${nav('Next: people who see it', 2, 'traffic', 'area')}</main>`;
+    return top() + `<main class="page q">${heading('What does this paywall sell?', 'Tick the plans it shows, then each one’s price and free trial.')}
+  ${plansPick()}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill` : 'No trial: no extra wait'}</span>
+  <div class="grow"></div>${nav(hasTrial() ? 'Next: how many start a trial' : 'Next: how many pay', 3, hasTrial() ? 'starts' : 'conv', 'traffic')}</main>`;
   }
   const tiles = TRIALS.map(([d, sub]) => `<button class="tile" data-set="trial" data-val="${d}" aria-pressed="${S.trial === d}"><span class="n"><b>${d === 0 ? 'None' : d >= 14 ? '14+' : d}</b>${d ? '<span>days</span>' : ''}</span><span class="days" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i${i < d ? ' class="on"' : ''}></i>`).join('')}</span><em>${sub}</em></button>`).join('');
   return top() + `<main class="page q">${heading('How long is the free trial?', 'People who start a trial pay only when it ends, so the test waits for them.')}
   <div class="tiles">${tiles}</div><p class="note">Judged on trial starts, the test doesn’t wait for the trial. Judged on paid, it waits for it.</p>
-  <div class="grow"></div>${nav('Next: new users', 2, 'traffic', 'area')}</main>`;
+  <div class="grow"></div>${nav(hasTrial() ? 'Next: how many start a trial' : 'Next: how many pay', 3, hasTrial() ? 'starts' : 'conv', 'traffic')}</main>`;
 }
 
 function thresholdBlock(p) {
@@ -354,6 +354,19 @@ function ideaCard(p) {
 // otherwise one Free trial control does the job (it sets every plan's trial).
 const PLAN_ORDER = { week: 0, month: 1, year: 2, once: 3 };
 const sortPlans = () => S.plans.sort((a, b) => PLAN_ORDER[a.t] - PLAN_ORDER[b.t]);   // rows and the share bar read short to long (owner, 2026-11-02)
+function mixBlock(label) {     // one bar for all plans, a segment per plan, drag a divider (owner, 2026-11-02)
+  const w = shares(S.plans);
+  return `<div class="mix"><span class="mixlab">${label}</span><div class="mixnames" aria-hidden="true">${S.plans.map((x, i) => `<span>${PLAN_TYPES[x.t][0]} <b>${Math.round(w[i] * 100)}%</b></span>`).join('')}</div><div class="mixbar" data-mixbar>${S.plans.map((x, i) => `<span class="mseg" style="flex:${Math.max(0.001, w[i])} 0 0"></span>${i < S.plans.length - 1 ? `<span class="mh" data-mix-handle="${i}" role="slider" tabindex="0" aria-label="Between ${PLAN_TYPES[x.t][0]} and ${PLAN_TYPES[S.plans[i + 1].t][0]}" aria-valuetext="${PLAN_TYPES[x.t][0]} ${Math.round(w[i] * 100)}%, ${PLAN_TYPES[S.plans[i + 1].t][0]} ${Math.round(w[i + 1] * 100)}%"></span>` : ''}`).join('')}</div></div>`;
+}
+// the plans question (owner, 2026-11-04, variant B3): tick the plans it shows; each ticked plan gets its own price and trial
+const PLAN_DEF = { week: 6.99, month: 14.99, year: 39.99, once: 29.99 };
+function plansPick() {
+  return `<div class="pp">${['week', 'month', 'year', 'once'].map((t) => { const i = S.plans.findIndex((x) => x.t === t), on = i >= 0, x = S.plans[i];
+    const box = `<button class="pp-tog" data-plan-toggle="${t}" aria-pressed="${on}"><span class="pp-box" aria-hidden="true">${on ? '<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10.5l3.2 3L15 6.5" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span>${PLAN_TYPES[t][0]}</button>`;
+    if (!on) return `<div class="pp-row">${box}</div>`;
+    const tr = t === 'once' ? '<span class="pi-f pp-f pi-na">No trial</span>' : `<div class="pi-f pp-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[t][1]} plan">${[[0, 'No trial'], [3, '3-day trial'], [7, '7-day trial'], [14, '14-day trial']].map(([d, l]) => `<option value="${d}"${planTrial(x) === d ? ' selected' : ''}>${l}</option>`).join('')}</select>${I.chevD}</div>`;
+    return `<div class="pp-row on">${box}<div class="pp-fields"><label class="pi-f pp-f pp-price"><span>$</span><input data-plan-price="${i}" inputmode="decimal" value="${x.p}" aria-label="Price, ${PLAN_TYPES[t][1]} plan"></label>${tr}</div></div>`; }).join('')}</div>`;
+}
 function plansInline(step) {
   const many = S.plans.length > 1, w = shares(S.plans), open = step || UI.plansOpen;
   const sum = S.plans.map((x) => `$${x.p} ${PLAN_TYPES[x.t][2]}`).join(' · ');
@@ -367,7 +380,7 @@ function plansInline(step) {
     ${x.t === 'once' ? '<span class="pi-f pi-na">—</span>' : `<div class="pi-f dd"><select data-plan-trial="${i}" aria-label="Free trial, ${PLAN_TYPES[x.t][1]} plan">${trials(x)}</select>${I.chevD}</div>`}
     ${mixCol ? `<label class="pi-f pi-sh"><input data-plan-share="${i}" inputmode="numeric" value="${Math.round(w[i] * 100)}" aria-label="Share of sales, ${PLAN_TYPES[x.t][1]} plan"><span>%</span></label>` : ''}</div>`;
   // share of sales: one bar for all plans, a segment per plan in the same order as the rows; drag a divider (owner, 2026-11-02: a lone slider read as “50% of what?”)
-  const mix = many ? `<div class="mix"><span class="mixlab">Share of sales</span><div class="mixnames" aria-hidden="true">${S.plans.map((x, i) => `<span>${PLAN_TYPES[x.t][0]} <b>${Math.round(w[i] * 100)}%</b></span>`).join('')}</div><div class="mixbar" data-mixbar>${S.plans.map((x, i) => `<span class="mseg" style="flex:${Math.max(0.001, w[i])} 0 0"></span>${i < S.plans.length - 1 ? `<span class="mh" data-mix-handle="${i}" role="slider" tabindex="0" aria-label="Between ${PLAN_TYPES[x.t][0]} and ${PLAN_TYPES[S.plans[i + 1].t][0]}" aria-valuetext="${PLAN_TYPES[x.t][0]} ${Math.round(w[i] * 100)}%, ${PLAN_TYPES[S.plans[i + 1].t][0]} ${Math.round(w[i + 1] * 100)}%"></span>` : ''}`).join('')}</div></div>` : '';
+  const mix = many ? mixBlock('Share of sales') : '';
   const body = `<div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}`;
   if (step) return `<div class="plans-inline plans-step" id="plans-inline">${body}</div>`;   // the wizard's plans question: the same editor, always open
   return `<div class="plans-inline open" id="plans-inline"><span class="lab">Plans</span><div class="pi-box open">${head}<div class="pi-body"><div class="pi-head${mixCol ? ' mix' : ''}"><span>Plan</span><span>Price</span><span>Trial</span>${mixCol ? '<span>Mix</span>' : ''}</div>${S.plans.map(row).join('')}${S.plans.length < 4 ? '<button class="addplan" data-plan-add>+ Add a plan</button>' : ''}${mix}</div></div></div>`;
@@ -801,12 +814,12 @@ function set(key, raw) {
 function planChanged() { save(); const { r } = route(); if (['test', 'results', 'verdict'].includes(r)) history.replaceState(null, '', '#/' + r + '?' + toQuery(r === 'verdict')); render(); }
 app.addEventListener('click', (e) => { const pr = e.target.closest('[data-promo]'); if (pr) count('promo', pr.dataset.promo); });
 app.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-bd-toggle],[data-plan-idea],[data-next-from],[data-plans-toggle],[data-facts-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
+  const el = e.target.closest('[data-bd-toggle],[data-plan-idea],[data-next-from],[data-plans-toggle],[data-facts-toggle],[data-plans-go],[data-bydate],[data-more-ideas],[data-go],[data-set],[data-plan],[data-plan-del],[data-plan-add],[data-plan-toggle],[data-idea],[data-overlay],[data-close],[data-tone],[data-copy],[data-native-share],[data-billed],[data-toggle-plan],[data-read-go]');
   if (!el) return;
   if (el.dataset.go) {
     const [r, arg] = el.dataset.go.split(':');
     if (arg === 'read') return go(r, true);                 // back to the numbers, with them in the link
-    if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('trial'); }
+    if (r === 'area' && arg) { S.area = arg; if (!decideOptions(S.area).includes(S.decide)) S.decide = decideOptions(S.area)[0]; save(); return go('traffic'); }
     if (document.querySelector('.modal')) return closeThen(() => go(r));   // the share modal leaves before the page underneath updates
     return go(r);
   }
@@ -841,6 +854,10 @@ app.addEventListener('click', (e) => {
   if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
+  if (el.dataset.planToggle) { const t = el.dataset.planToggle, i = S.plans.findIndex((x) => x.t === t);
+    if (i >= 0) { if (S.plans.length === 1) return; S.plans.splice(i, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); }
+    else { S.plans.push({ t, p: PLAN_DEF[t], s: 0, tr: 0 }); setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); sortPlans(); }
+    return planChanged(); }
   if ('planAdd' in el.dataset) { const used = S.plans.map((x) => x.t), t = ['month', 'year', 'week', 'once'].find((k) => !used.includes(k)) || 'month'; S.plans.push({ t, p: { week: 6.99, month: 14.99, year: 39.99, once: 29.99 }[t], s: 0, tr: 0 }); /* a new plan starts without a trial */ setShare(S.plans.length - 1, Math.round(100 / S.plans.length)); sortPlans(); return planChanged(); }
   if ('moreIdeas' in el.dataset) { UI.allIdeas = !UI.allIdeas; return render(); }
   if (el.dataset.idea) { count('idea', el.dataset.idea); UI.overlay = 'idea'; UI.idea = el.dataset.idea; return render(); }
