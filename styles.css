@@ -56,7 +56,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .sec { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; }
 .sec b { font-size: 20px; font-weight: 500; letter-spacing: -.02em; line-height: 24px; }
 .sec span { font-size: 16px; line-height: 24px; color: var(--t60); }
-.tiles + .tilehint { margin-top: -16px; }   /* a hint sits 8 px under its control, like every hint */
+.tiles + .tilehint { margin-top: -8px; }   /* on a step a hint sits 16 px under its control (the “No numbers yet?” gap) */
 .fine { font-size: 12px; line-height: 16px; color: var(--t45); }
 .card { background: var(--card); border-radius: 20px; }
 
@@ -570,7 +570,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 
 .rng { font-size: 12px; line-height: 16px; color: var(--acc); }
 .rng:empty { display: none; }
-.big .rng { text-align: left; margin-top: -8px; }   /* left like every hint, close to its slider */
+.big .rng { text-align: left; }   /* left like every hint, 16 px under its slider like every hint on a step */
 
 /* plan card: what changes in B (travels into share text and the verdict) */
 .plan .what { display: flex; flex-direction: column; gap: 8px; margin-top: -8px; }   /* sits at the same rhythm as the rows above */
