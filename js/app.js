@@ -152,7 +152,7 @@ const rangeText = (k) => (COUNTS[k] ? (S[k] > S[COUNTS[k][0]] * D30 ? `More than
 const rangeNote = (k) => (RATE[k] ? `<span class="rng" data-rng-of="${k}">${rangeText(k)}</span>` : '');
 function track(k, sm) {
   const p = pctOf(k, S[k]);
-  return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" style="--p:${p}" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="fill"></div><div class="handle"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
+  return `<div class="track${sm ? ' sm' : ''}" data-slide="${k}" role="slider" tabindex="0" style="--p:${p}" aria-valuetext="${SL[k].fmt(S[k])}${SL[k].unit || ''}"><div class="clip"><div class="fill"></div></div><div class="handle"></div><span class="end l">${SL[k].l}</span><span class="end r">${SL[k].h}</span></div>`;
 }
 const TYPICAL = { paid30: 'conv', trial30: 'trialView', otrial30: 'trialRate', opaid30: 'paidRate' };
 const chipList = (k) => (TYPICAL[k] ? CHIPS[TYPICAL[k]].map(([r, a, b]) => [Math.round(S[COUNTS[k][0]] * D30 * r / 100), a, b]) : CHIPS[k]);
@@ -264,7 +264,7 @@ function whatField(p) {
   const id = S.whatId === 'other' || IDEAS[S.area].some((x) => x.id === S.whatId) ? S.whatId : (S.what ? 'other' : '');
   const opts = whatOptions(p).map((x) => `<option value="${x.id}"${id === x.id ? ' selected' : ''}>${esc(x.t)}</option>`).join('');
   return `<div class="what"><span>What changes in B</span><div class="dd${id ? '' : ' empty'}"><select data-what-pick aria-label="What changes in B"><option value=""${id ? '' : ' selected'} disabled>Pick what B changes</option>${opts}<option value="other"${id === 'other' ? ' selected' : ''}>Something else</option></select>${I.chevD}</div>
-  ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}<span class="whatnote">We count which idea is picked, with no names or cookies. What you type stays on this page.</span></div>`;
+  ${id === 'other' ? `<input data-what maxlength="120" placeholder="Describe the change (stays on this page)" value="${esc(S.what)}" aria-label="Describe the change in B">` : ''}<p class="whatnote">Only the pick is counted, anonymously.</p></div>`;
 }
 const counted = new Set();
 const countOnce = (e, v) => { const k = e + ':' + v + ':' + S.area; if (counted.has(k)) return; counted.add(k); count(e, v); };   // once per page load
