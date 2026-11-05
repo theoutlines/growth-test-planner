@@ -7,6 +7,7 @@ PAGES = [
  ('free-trial-ab-test', 'A/B testing a paywall with a free trial: when can you decide?'),
  ('minimum-detectable-effect', 'Minimum detectable effect for subscription app A/B tests'),
  ('onboarding-ab-test', 'Onboarding A/B test: decide on trial starts or paid conversion?'),
+ ('subscription-conversion-benchmarks', 'Why RevenueCat and Adapty conversion numbers don’t match'),
 ]
 
 def table(head, rows):
@@ -31,6 +32,36 @@ PLAN_PW = '/#/test?a=paywall'
 PLAN_ONB = '/#/test?a=onboarding'
 
 BODY = {
+'subscription-conversion-benchmarks': f'''
+<p class="lead">“Conversion” means a different thing in each report. RevenueCat counts per install or per trial start. Adapty’s paywall report counts per paywall view. Adapty’s subscriptions report counts per install. Compare your number only with one that has the same thing below the line.</p>
+<h2>The same word, three denominators</h2>
+{table(['Step, counted per', 'Median', 'Report'], [
+ ['Install → trial, in 30 days', '5.8%', 'RevenueCat'],
+ ['Trial start → paid', '32.2%', 'RevenueCat'],
+ ['Install → paid, by day 35', '2.0%', 'RevenueCat'],
+ ['Install → trial', '10.92%', 'Adapty SOIS'],
+ ['Trial start → paid', '25.59%', 'Adapty SOIS'],
+ ['Install → paid, no trial', '3.71%', 'Adapty SOIS'],
+ ['Paywall view → trial, US', '6.94%', 'Adapty SOP'],
+ ['Paywall view → paid, US', '2.75%', 'Adapty SOP'],
+])}
+<p class="note">Medians across apps, all categories; RevenueCat’s install → trial counts only apps that offer a trial. SOIS = State of In-App Subscriptions, SOP = State of Paywalls. Sources: <a href="https://www.revenuecat.com/state-of-subscription-apps">RevenueCat, State of Subscription Apps 2026</a>; <a href="https://adapty.io/state-of-in-app-subscriptions-report/">Adapty, State of In-App Subscriptions 2026</a>; <a href="https://adapty.io/state-of-paywalls/">Adapty, State of Paywalls 2026</a>. Each report also splits these by category and region.</p>
+<h2>Where people mix them up</h2>
+<ul>
+<li><b>Per view is not per install.</b> A paywall where 2.75% of viewers pay is a typical US paywall. An app where 2.75% of installs pay is above RevenueCat’s 2.0% median. Same number, different stories, because many installs never see a paywall and some see it several times.</li>
+<li><b>Trial → paid differs between reports.</b> 32.2% at RevenueCat, 25.59% at Adapty. Different customers, different samples. Neither is wrong; pick one and stay with it.</li>
+<li><b>Hard paywalls sit in another league.</b> In RevenueCat’s data, apps with a hard paywall convert 10.7% of installs to paid by day 35, against 2.1% for freemium. Compare a hard-paywall app with the 10.7%, not the overall median.</li>
+<li><b>Read the chart, not only the summary.</b> RevenueCat’s AI chapter calls 8.5% vs 5.6% “trial-to-paid”. The charts show it is the trial start rate.</li>
+</ul>
+<h2>How to compare your number</h2>
+<ul>
+<li>Write down what is below the line: installs, trial starts, paywall views, or people who saw the paywall.</li>
+<li>Pick the report that counts the same way, then the closest category and region.</li>
+<li>Place your number against the median and the top quartile, not against one figure from a blog post.</li>
+</ul>
+<p>The planner works per person who saw the paywall, so its defaults come from Adapty’s per-view medians.</p>
+<a class="cta" href="{PLAN_PW}">Plan a paywall test with your numbers</a>
+''',
 'paywall-ab-test-duration': f'''
 <p class="lead">Long enough for the change you expect to be bigger than the noise, in whole weeks, plus the longest free trial and about a week for refunds before you decide. For most subscription apps that is 4 to 8 weeks of traffic, and the smaller your traffic, the bolder the change has to be.</p>
 <h2>What a test can catch, by traffic and weeks</h2>
@@ -103,6 +134,7 @@ DESC = {
 'paywall-ab-test-duration': 'How long to run a paywall A/B test in a subscription app: what a test can catch by weekly traffic and weeks, plus the free trial and refunds before you decide.',
 'free-trial-ab-test': 'When to decide a paywall A/B test with a free trial: wait for the longest trial to bill and a week for refunds. Decision days for 3, 7 and 14-day trials.',
 'minimum-detectable-effect': 'Minimum detectable effect for subscription app A/B tests: typical MDEs for paywall and onboarding tests by traffic and weeks, how it is worked out, and what to do when it is high.',
+'subscription-conversion-benchmarks': 'Conversion benchmarks for subscription apps from RevenueCat and Adapty, side by side with what each one counts: per install, per trial start or per paywall view. Which number to compare yours with.',
 'onboarding-ab-test': 'Should an onboarding A/B test decide on trial starts or paid conversion? What each can catch by traffic, and which to choose for which change.',
 }
 
