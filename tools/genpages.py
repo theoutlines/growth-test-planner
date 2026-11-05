@@ -7,6 +7,8 @@ PAGES = [
  ('free-trial-ab-test', 'A/B testing a paywall with a free trial: when can you decide?'),
  ('minimum-detectable-effect', 'Minimum detectable effect for subscription app A/B tests'),
  ('onboarding-ab-test', 'Onboarding A/B test: decide on trial starts or paid conversion?'),
+ ('ab-test-split-90-10', 'A/B test split: 90/10, 80/20 or 50/50?'),
+ ('abc-test', 'A/B/C test: how much longer than an A/B test?'),
  ('paywall-ab-test-sample-size', 'How many users do you need for a paywall A/B test?'),
  ('ab-tests-that-lost', 'Paywall and onboarding A/B tests that lost'),
  ('subscription-conversion-benchmarks', 'Why RevenueCat and Adapty conversion numbers don’t match'),
@@ -34,6 +36,36 @@ PLAN_PW = '/#/test?a=paywall'
 PLAN_ONB = '/#/test?a=onboarding'
 
 BODY = {
+'ab-test-split-90-10': f'''
+<p class="lead">An even split is the fastest way to an answer. Every step away from 50/50 costs people: 80/20 needs about 1.6 times as many people (or weeks) to catch the same change, and 90/10 almost 2.8 times. Use an uneven split when B could hurt revenue and you would rather wait longer than risk it.</p>
+<h2>What each split catches</h2>
+<p>A paywall with 50,000 people a week (about 214,000 in 30 days), 2.75% paying, weekly $6.99 and annual $39.99 sold half and half. The smallest change in revenue per viewer the test can catch (95% confidence, 80% power):</p>
+{table(['Split', 'People needed', 'Catches in 4 wk', '8 wk'], [["50/50", "1×", "+9.1%", "+6.5%"], ["60/40", "1.04×", "+9.3%", "+6.6%"], ["70/30", "1.19×", "+10.0%", "+7.1%"], ["80/20", "1.56×", "+11.4%", "+8.1%"], ["90/10", "2.78×", "+15.2%", "+10.8%"]])}
+<p class="note">“People needed” is how many people the test needs, against a 50/50 split, to catch the same change. It works out as (1/A share + 1/B share) / 4.</p>
+<h2>When to split unevenly</h2>
+<ul>
+<li><b>B touches the price, the plans or the trial.</b> A bad price can cost real money for weeks. 80/20 limits the damage; plan the longer run up front.</li>
+<li><b>B changes copy or layout.</b> Little risk. Split 50/50 and get the answer sooner.</li>
+<li><b>You want to protect A but have little traffic.</b> 90/10 on a small paywall often can’t catch anything a design change will do. Test something bolder, or wait for more traffic.</li>
+<li><b>Don’t change the split mid-test.</b> People who arrived under one split and people under another aren’t comparable; restart instead.</li>
+</ul>
+<a class="cta" href="{PLAN_PW}">Plan your split</a>
+''',
+'abc-test': f'''
+<p class="lead">About 1.8 times as long for the same change. Each version gets a third of the traffic instead of half, and comparing B and C with A means two comparisons, so each one needs a slightly wider margin to stay at 95% confidence.</p>
+<h2>What A/B and A/B/C catch</h2>
+<p>The same paywall: 50,000 people a week (about 214,000 in 30 days), 2.75% paying, weekly $6.99 and annual $39.99 sold half and half. The smallest change each version must make to be caught:</p>
+{table(['Test', 'Decide on', '4 wk', '8 wk'], [["A/B", "Revenue", "+9.1%", "+6.5%"], ["A/B/C", "Revenue", "+12.3%", "+8.7%"], ["A/B", "Paid", "+7.5%", "+5.3%"], ["A/B/C", "Paid", "+10.0%", "+7.1%"]])}
+<p class="note">With three versions, each of B and C is compared with A, with the margin split between the two comparisons (Bonferroni). The planner reads A/B/C results the same way.</p>
+<h2>When a third version is worth it</h2>
+<ul>
+<li><b>Both B and C are bold.</b> On the paywall above, each version has to move revenue by about +12% to show up in 4 weeks. Two small tweaks won’t.</li>
+<li><b>You would ship either one.</b> If you only care about one of them, test that one against A and get the answer sooner.</li>
+<li><b>Don’t compare B with C.</b> The test is sized for each one against A. If B and C both win, pick on the range, not on which number is higher.</li>
+<li><b>Short on traffic?</b> Run A/B first, then test the next idea against the winner.</li>
+</ul>
+<a class="cta" href="{PLAN_PW}">Plan an A/B/C test</a>
+''',
 'paywall-ab-test-sample-size': f'''
 <p class="lead">It depends on the change you want to catch more than on anything else. Halve the change and you need four times the people. For a typical paywall, catching +10% in paid conversion takes about 56,000 people in each version; catching +5% takes about 220,000.</p>
 <h2>Paywall: people per version</h2>
@@ -172,6 +204,8 @@ DESC = {
 'paywall-ab-test-duration': 'How long to run a paywall A/B test in a subscription app: what a test can catch by weekly traffic and weeks, plus the free trial and refunds before you decide.',
 'free-trial-ab-test': 'When to decide a paywall A/B test with a free trial: wait for the longest trial to bill and a week for refunds. Decision days for 3, 7 and 14-day trials.',
 'minimum-detectable-effect': 'Minimum detectable effect for subscription app A/B tests: typical MDEs for paywall and onboarding tests by traffic and weeks, how it is worked out, and what to do when it is high.',
+'ab-test-split-90-10': 'How an uneven A/B split changes what a subscription paywall test can catch and how long it runs: 50/50 vs 60/40, 70/30, 80/20 and 90/10, with numbers.',
+'abc-test': 'How much longer an A/B/C test on a subscription paywall runs than an A/B test, why, and when a third version is worth it.',
 'paywall-ab-test-sample-size': 'Sample size for subscription paywall and onboarding A/B tests: people per version needed to catch a +5% to +30% change in revenue per viewer, paid conversion or trial starts, at typical app conversion rates.',
 'ab-tests-that-lost': 'Published paywall and onboarding A/B tests from subscription apps that lost: price raises, discounts, longer trials, more plans, removed close buttons and extra onboarding steps, with the numbers and sources.',
 'subscription-conversion-benchmarks': 'Conversion benchmarks for subscription apps from RevenueCat and Adapty, side by side with what each one counts: per install, per trial start or per paywall view. Which number to compare yours with.',
