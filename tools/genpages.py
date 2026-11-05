@@ -7,6 +7,8 @@ PAGES = [
  ('free-trial-ab-test', 'A/B testing a paywall with a free trial: when can you decide?'),
  ('minimum-detectable-effect', 'Minimum detectable effect for subscription app A/B tests'),
  ('onboarding-ab-test', 'Onboarding A/B test: decide on trial starts or paid conversion?'),
+ ('paywall-ab-test-sample-size', 'How many users do you need for a paywall A/B test?'),
+ ('ab-tests-that-lost', 'Paywall and onboarding A/B tests that lost'),
  ('subscription-conversion-benchmarks', 'Why RevenueCat and Adapty conversion numbers don’t match'),
 ]
 
@@ -32,6 +34,42 @@ PLAN_PW = '/#/test?a=paywall'
 PLAN_ONB = '/#/test?a=onboarding'
 
 BODY = {
+'paywall-ab-test-sample-size': f'''
+<p class="lead">It depends on the change you want to catch more than on anything else. Halve the change and you need four times the people. For a typical paywall, catching +10% in paid conversion takes about 56,000 people in each version; catching +5% takes about 220,000.</p>
+<h2>Paywall: people per version</h2>
+<p>People who see the paywall, in each version, to catch a change in revenue per viewer, paid conversion or trial starts (95% confidence, 80% power, split 50/50):</p>
+{table(['Change', 'Revenue', 'Paid', 'Trials'], [["+5%", "330,000", "220,000", "84,000"], ["+10%", "84,000", "56,000", "21,000"], ["+15%", "37,000", "25,000", "9,400"], ["+20%", "21,000", "14,000", "5,300"], ["+30%", "9,300", "6,200", "2,300"]])}
+<p class="note">Assumes 2.75% of viewers pay and 6.94% start a trial (US medians per paywall view, <a href="https://adapty.io/state-of-paywalls/">Adapty State of Paywalls 2026</a>), with buyers split half and half between weekly $6.99 and annual $39.99. Revenue needs the most people because the price mix adds noise on top of who pays.</p>
+<h2>Onboarding: new users per version</h2>
+{table(['Change', 'Trials', 'Paid'], [["+5%", "100,000", "310,000"], ["+10%", "25,000", "77,000"], ["+15%", "11,000", "34,000"], ["+20%", "6,400", "19,000"], ["+30%", "2,800", "8,500"]])}
+<p class="note">Assumes 5.8% of new users start a trial and 2.0% pay (medians from <a href="https://www.revenuecat.com/state-of-subscription-apps">RevenueCat State of Subscription Apps 2026</a>).</p>
+<h2>When the number is out of reach</h2>
+<ul>
+<li><b>Test a bolder change.</b> A +20% change needs a sixteenth of the people a +5% change does. Copy tweaks rarely move revenue that much; plans, prices and the trial offer can.</li>
+<li><b>Decide on trial starts first.</b> They need about 40% of the people that paid conversion does; check paid once the last trials bill.</li>
+<li><b>Keep it to two versions and split 50/50.</b> A third version or an 80/20 split costs people you may not have.</li>
+<li><b>Run longer, in whole weeks.</b> Divide the people you need by the people who see the paywall each week.</li>
+</ul>
+<p>Your own conversion, prices and trial change these numbers. The planner works them out from your last 30 days.</p>
+<a class="cta" href="{PLAN_PW}">Work out your sample size</a>
+''',
+'ab-tests-that-lost': f'''
+<p class="lead">Most teams publish their wins. These are published tests from subscription apps where B lost: higher prices, discounts, longer trials, more plans, a paywall you can’t close, one more onboarding step. Each one is a test somebody already paid for, so you don’t have to.</p>
+<h2>Tests that lost, with what happened</h2>
+<ul class="lost"><li><b>Raise both prices for owners of expensive iPhones ($59.99 → $79.99 a year, $8.99 → $11.99 a week).</b> Conversion 2.55% → 2.09%, revenue per user flat. <a href="https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/">Glam AI, Adapty</a></li><li><b>Raise the price by 30%.</b> Conversion −5%. <a href="https://adapty.io/case-studies/travel-app/">Travel app, Adapty</a></li><li><b>Intro offer: a year for $59 against the standing $79.</b> 0 yearly purchases out of 2,500 people. <a href="https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/">Glam AI, Adapty</a></li><li><b>50% coupon on the Business plan.</b> Placement revenue per user down 5×. <a href="https://web.archive.org/web/20260909143308/https://adapty.io/blog/glam-ai-paywall-tests/">Glam AI, Adapty</a></li><li><b>Extra phone number field before web payment.</b> About 30% fewer people reached payment. <a href="https://community.web2wave.com/t/what-tiny-onboarding-change-stopped-30-of-our-signups-after-moving-paywall-to-web/3488">web2wave forum</a></li><li><b>Add web checkout next to in-app purchase.</b> Paying conversion 7.8% → 7.4%. <a href="https://www.revenuecat.com/blog/growth/why-you-shouldnt-use-app-to-web">RevenueCat</a></li><li><b>Remove the close button so people must start a trial.</b> More trial starts, then more refunds than the gain. <a href="https://www.revenuecat.com/blog/growth/anada-lakra-boldvoice-sub-club-podcast-2026">BoldVoice, Sub Club</a></li><li><b>Trial 7 → 14 days.</b> Slightly more trials, fewer paid; went back to 7 days. <a href="https://www.revenuecat.com/blog/growth/7-day-trial-subscription-app">Wellness app, RevenueCat</a></li><li><b>Several prices on the paywall instead of one.</b> Lower conversion; a single weekly price “always won”. <a href="https://adapty.io/case-studies/glowup/">GlowUp, Adapty</a></li><li><b>Weekly + monthly or weekly + annual instead of monthly + annual.</b> Both weekly pairs lost on revenue per user and total revenue. <a href="https://adapty.io/case-studies/travel-app/">Travel app, Adapty</a></li><li><b>A “set a carb goal” step added to onboarding.</b> “Lost quite badly”. <a href="https://subclub.com/episode/achieving-mission-profit-with-freemium-erin-webster-shaller-and-paul-apollo-lose-it">Lose It!, Sub Club</a></li><li><b>A red brand-promise banner above the plan cards.</b> Conversion “dropped drastically”. <a href="https://blog.funnelfox.com/cracking-the-app-paywall-playbook/">The Economist, FunnelFox</a></li></ul>
+<p class="note">The first six have numbers. The rest come from interviews and case studies that say B lost without a figure. A loss in one app is a warning for yours, not a forecast. All of them are in the open <a href="https://github.com/theoutlines/growth-skills/blob/main/evidence/tests.csv">base of 390 published tests</a> behind Growth Skills, 33 of which lost.</p>
+<h2>What the losses have in common</h2>
+<ul>
+<li><b>Trial starts went up, money went down.</b> Forcing a trial or pushing an unclosable offer lifted trial starts, and refunds took it back. Decide on paid or revenue per viewer, not on trial starts alone.</li>
+<li><b>A discount next to the full price teaches people to wait.</b> The intro year at $59 sold zero against a standing $79, and a 50% coupon cut revenue per user five times.</li>
+<li><b>More choice, less buying.</b> Extra price points and extra plan pairs lowered conversion in more than one app.</li>
+<li><b>Every extra field and step costs people.</b> A phone number field before payment lost about 30% of people on the way to it.</li>
+<li><b>The same change flips by market.</b> A weekly price rise that worked in Europe failed in the UK for <a href="https://adapty.io/case-studies/appdevlabs/">the same company</a>. Read results by country.</li>
+</ul>
+<h2>Before you run one of these</h2>
+<p>Check whether your test can even see the change you hope for. The planner shows what your traffic can catch in 2 to 8 weeks, and next to it the ideas that lost in other apps.</p>
+<a class="cta" href="{PLAN_PW}">Plan your test</a>
+''',
 'subscription-conversion-benchmarks': f'''
 <p class="lead">“Conversion” means a different thing in each report. RevenueCat counts per install or per trial start. Adapty’s paywall report counts per paywall view. Adapty’s subscriptions report counts per install. Compare your number only with one that has the same thing below the line.</p>
 <h2>The same word, three denominators</h2>
@@ -134,6 +172,8 @@ DESC = {
 'paywall-ab-test-duration': 'How long to run a paywall A/B test in a subscription app: what a test can catch by weekly traffic and weeks, plus the free trial and refunds before you decide.',
 'free-trial-ab-test': 'When to decide a paywall A/B test with a free trial: wait for the longest trial to bill and a week for refunds. Decision days for 3, 7 and 14-day trials.',
 'minimum-detectable-effect': 'Minimum detectable effect for subscription app A/B tests: typical MDEs for paywall and onboarding tests by traffic and weeks, how it is worked out, and what to do when it is high.',
+'paywall-ab-test-sample-size': 'Sample size for subscription paywall and onboarding A/B tests: people per version needed to catch a +5% to +30% change in revenue per viewer, paid conversion or trial starts, at typical app conversion rates.',
+'ab-tests-that-lost': 'Published paywall and onboarding A/B tests from subscription apps that lost: price raises, discounts, longer trials, more plans, removed close buttons and extra onboarding steps, with the numbers and sources.',
 'subscription-conversion-benchmarks': 'Conversion benchmarks for subscription apps from RevenueCat and Adapty, side by side with what each one counts: per install, per trial start or per paywall view. Which number to compare yours with.',
 'onboarding-ab-test': 'Should an onboarding A/B test decide on trial starts or paid conversion? What each can catch by traffic, and which to choose for which change.',
 }
