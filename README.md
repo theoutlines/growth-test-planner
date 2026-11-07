@@ -13,10 +13,9 @@ What you type stays on the page (the only thing sent is an anonymous daily count
 ## How the numbers work
 
 - Plan: per-version sample size `n = 2·(z₁₋α/₂ + z₁₋β)²·CV² / MDE²` at 95% confidence and 80% power, solved for the change a given number of people can see. Money per paywall view uses `CV² = (σ²/μ² + 1)/p − 1` from the price mix; conversion uses `(1 − p)/p`. Three versions use a Bonferroni-corrected α. “Prove it’s not worse” is a one-sided test with a 5% margin.
-- Read: the same rules as the [`test-readout`](https://github.com/theoutlines/growth-skills) skill: chi-square sample-ratio check (p < 0.001), delta-method 95% range for money per person, log-ratio range for proportions, refunds as a two-proportion test, and a split of the change into how many paid vs which plans they chose.
+- Read: the same rules as the `test-readout` skill in Growth Skills: chi-square sample-ratio check (p < 0.001), delta-method 95% range for money per person, log-ratio range for proportions, refunds as a two-proportion test, and a split of the change into how many paid vs which plans they chose.
 - Benchmarks: Adapty State of Paywalls 2026 (paywall conversion), RevenueCat State of Subscription Apps 2026 (install → trial). Test ideas: Adapty A/B test library and State of In-App Subscriptions 2026; the onboarding-teardown evidence library. Ranges are what other apps saw, not a forecast for yours.
 
-Want the read done from your analytics instead of typing? The [Growth Skills](https://github.com/theoutlines/growth-skills) Claude plugin pulls the test from Amplitude, Mixpanel, RevenueCat or Adapty.
 
 ## Run locally
 
