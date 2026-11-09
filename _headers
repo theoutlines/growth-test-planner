@@ -11,5 +11,7 @@
   Cache-Control: no-cache
 /page.css
   Cache-Control: no-cache
+/page.js
+  Cache-Control: no-cache
 /
   Cache-Control: no-cache

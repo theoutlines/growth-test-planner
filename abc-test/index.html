@@ -16,6 +16,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/UncutSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/page.css">
+<script src="/page.js" defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "A/B/C test: how much longer than an A/B test?", "description": "How much longer an A/B/C test on a subscription paywall runs than an A/B test, why, and when a third version is worth it.", "url": "https://planner.theoutlines.xyz/abc-test/", "author": {"@type": "Person", "name": "Ivan Polushin", "url": "https://github.com/theoutlines"}, "publisher": {"@type": "Person", "name": "Ivan Polushin"}, "datePublished": "2026-11-01", "image": "https://planner.theoutlines.xyz/assets/og.png"}</script>
 </head>
 <body>
@@ -27,7 +28,7 @@
 <p class="lead">About 1.8 times as long for the same change. Each version gets a third of the traffic instead of half, and comparing B and C with A means two comparisons, so each one needs a slightly wider margin to stay at 95% confidence.</p>
 <h2>What A/B and A/B/C catch</h2>
 <p>The same paywall: 50,000 people a week (about 214,000 in 30 days), 2.75% paying, weekly $6.99 and annual $39.99 sold half and half. The smallest change each version must make to be caught:</p>
-<div class="tbl"><table><thead><tr><th>Test</th><th>Decide on</th><th>4 wk</th><th>8 wk</th></tr></thead><tbody><tr><td>A/B</td><td>Revenue</td><td>+9.1%</td><td>+6.5%</td></tr><tr><td>A/B/C</td><td>Revenue</td><td>+12.3%</td><td>+8.7%</td></tr><tr><td>A/B</td><td>Paid</td><td>+7.5%</td><td>+5.3%</td></tr><tr><td>A/B/C</td><td>Paid</td><td>+10.0%</td><td>+7.1%</td></tr></tbody></table></div>
+<div class="tblw"><div class="tblbox"><div class="tbl"><table><thead><tr><th>Test</th><th>Decide on</th><th>4 wk</th><th>8 wk</th></tr></thead><tbody><tr><td>A/B</td><td>Revenue</td><td>+9.1%</td><td>+6.5%</td></tr><tr><td>A/B/C</td><td>Revenue</td><td>+12.3%</td><td>+8.7%</td></tr><tr><td>A/B</td><td>Paid</td><td>+7.5%</td><td>+5.3%</td></tr><tr><td>A/B/C</td><td>Paid</td><td>+10.0%</td><td>+7.1%</td></tr></tbody></table></div></div><p class="swipe">Swipe the table to see every column</p></div>
 <p class="note">With three versions, each of B and C is compared with A, with the margin split between the two comparisons (Bonferroni). The planner reads A/B/C results the same way.</p>
 <h2>When a third version is worth it</h2>
 <ul>

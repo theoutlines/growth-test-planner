@@ -16,6 +16,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/UncutSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/page.css">
+<script src="/page.js" defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "A/B test split: 90/10, 80/20 or 50/50?", "description": "How an uneven A/B split changes what a subscription paywall test can catch and how long it runs: 50/50 vs 60/40, 70/30, 80/20 and 90/10, with numbers.", "url": "https://planner.theoutlines.xyz/ab-test-split-90-10/", "author": {"@type": "Person", "name": "Ivan Polushin", "url": "https://github.com/theoutlines"}, "publisher": {"@type": "Person", "name": "Ivan Polushin"}, "datePublished": "2026-11-01", "image": "https://planner.theoutlines.xyz/assets/og.png"}</script>
 </head>
 <body>
@@ -27,7 +28,7 @@
 <p class="lead">An even split is the fastest way to an answer. Every step away from 50/50 costs people: 80/20 needs about 1.6 times as many people (or weeks) to catch the same change, and 90/10 almost 2.8 times. Use an uneven split when B could hurt revenue and you would rather wait longer than risk it.</p>
 <h2>What each split catches</h2>
 <p>A paywall with 50,000 people a week (about 214,000 in 30 days), 2.75% paying, weekly $6.99 and annual $39.99 sold half and half. The smallest change in revenue per viewer the test can catch (95% confidence, 80% power):</p>
-<div class="tbl"><table><thead><tr><th>Split</th><th>People needed</th><th>Catches in 4 wk</th><th>8 wk</th></tr></thead><tbody><tr><td>50/50</td><td>1×</td><td>+9.1%</td><td>+6.5%</td></tr><tr><td>60/40</td><td>1.04×</td><td>+9.3%</td><td>+6.6%</td></tr><tr><td>70/30</td><td>1.19×</td><td>+10.0%</td><td>+7.1%</td></tr><tr><td>80/20</td><td>1.56×</td><td>+11.4%</td><td>+8.1%</td></tr><tr><td>90/10</td><td>2.78×</td><td>+15.2%</td><td>+10.8%</td></tr></tbody></table></div>
+<div class="tblw"><div class="tblbox"><div class="tbl"><table><thead><tr><th>Split</th><th>People needed</th><th>Catches in 4 wk</th><th>8 wk</th></tr></thead><tbody><tr><td>50/50</td><td>1×</td><td>+9.1%</td><td>+6.5%</td></tr><tr><td>60/40</td><td>1.04×</td><td>+9.3%</td><td>+6.6%</td></tr><tr><td>70/30</td><td>1.19×</td><td>+10.0%</td><td>+7.1%</td></tr><tr><td>80/20</td><td>1.56×</td><td>+11.4%</td><td>+8.1%</td></tr><tr><td>90/10</td><td>2.78×</td><td>+15.2%</td><td>+10.8%</td></tr></tbody></table></div></div><p class="swipe">Swipe the table to see every column</p></div>
 <p class="note">“People needed” is how many people the test needs, against a 50/50 split, to catch the same change. It works out as (1/A share + 1/B share) / 4.</p>
 <h2>When to split unevenly</h2>
 <ul>

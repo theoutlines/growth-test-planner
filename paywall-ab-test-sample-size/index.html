@@ -16,6 +16,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/UncutSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/page.css">
+<script src="/page.js" defer></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How many users do you need for a paywall A/B test?", "description": "Sample size for subscription paywall and onboarding A/B tests: people per version needed to catch a +5% to +30% change in revenue per viewer, paid conversion or trial starts, at typical app conversion rates.", "url": "https://planner.theoutlines.xyz/paywall-ab-test-sample-size/", "author": {"@type": "Person", "name": "Ivan Polushin", "url": "https://github.com/theoutlines"}, "publisher": {"@type": "Person", "name": "Ivan Polushin"}, "datePublished": "2026-11-01", "image": "https://planner.theoutlines.xyz/assets/og.png"}</script>
 </head>
 <body>
@@ -27,10 +28,10 @@
 <p class="lead">It depends on the change you want to catch more than on anything else. Halve the change and you need four times the people. For a typical paywall, catching +10% in paid conversion takes about 56,000 people in each version; catching +5% takes about 220,000.</p>
 <h2>Paywall: people per version</h2>
 <p>People who see the paywall, in each version, to catch a change in revenue per viewer, paid conversion or trial starts (95% confidence, 80% power, split 50/50):</p>
-<div class="tbl"><table><thead><tr><th>Change</th><th>Revenue</th><th>Paid</th><th>Trials</th></tr></thead><tbody><tr><td>+5%</td><td>330,000</td><td>220,000</td><td>84,000</td></tr><tr><td>+10%</td><td>84,000</td><td>56,000</td><td>21,000</td></tr><tr><td>+15%</td><td>37,000</td><td>25,000</td><td>9,400</td></tr><tr><td>+20%</td><td>21,000</td><td>14,000</td><td>5,300</td></tr><tr><td>+30%</td><td>9,300</td><td>6,200</td><td>2,300</td></tr></tbody></table></div>
+<div class="tblw"><div class="tblbox"><div class="tbl"><table><thead><tr><th>Change</th><th>Revenue</th><th>Paid</th><th>Trials</th></tr></thead><tbody><tr><td>+5%</td><td>330,000</td><td>220,000</td><td>84,000</td></tr><tr><td>+10%</td><td>84,000</td><td>56,000</td><td>21,000</td></tr><tr><td>+15%</td><td>37,000</td><td>25,000</td><td>9,400</td></tr><tr><td>+20%</td><td>21,000</td><td>14,000</td><td>5,300</td></tr><tr><td>+30%</td><td>9,300</td><td>6,200</td><td>2,300</td></tr></tbody></table></div></div><p class="swipe">Swipe the table to see every column</p></div>
 <p class="note">Assumes 2.75% of viewers pay and 6.94% start a trial (US medians per paywall view, <a href="https://adapty.io/state-of-paywalls/">Adapty State of Paywalls 2026</a>), with buyers split half and half between weekly $6.99 and annual $39.99. Revenue needs the most people because the price mix adds noise on top of who pays.</p>
 <h2>Onboarding: new users per version</h2>
-<div class="tbl"><table><thead><tr><th>Change</th><th>Trials</th><th>Paid</th></tr></thead><tbody><tr><td>+5%</td><td>100,000</td><td>310,000</td></tr><tr><td>+10%</td><td>25,000</td><td>77,000</td></tr><tr><td>+15%</td><td>11,000</td><td>34,000</td></tr><tr><td>+20%</td><td>6,400</td><td>19,000</td></tr><tr><td>+30%</td><td>2,800</td><td>8,500</td></tr></tbody></table></div>
+<div class="tblw"><div class="tblbox"><div class="tbl"><table><thead><tr><th>Change</th><th>Trials</th><th>Paid</th></tr></thead><tbody><tr><td>+5%</td><td>100,000</td><td>310,000</td></tr><tr><td>+10%</td><td>25,000</td><td>77,000</td></tr><tr><td>+15%</td><td>11,000</td><td>34,000</td></tr><tr><td>+20%</td><td>6,400</td><td>19,000</td></tr><tr><td>+30%</td><td>2,800</td><td>8,500</td></tr></tbody></table></div></div><p class="swipe">Swipe the table to see every column</p></div>
 <p class="note">Assumes 5.8% of new users start a trial and 2.0% pay (medians from <a href="https://www.revenuecat.com/state-of-subscription-apps">RevenueCat State of Subscription Apps 2026</a>).</p>
 <h2>When the number is out of reach</h2>
 <ul>

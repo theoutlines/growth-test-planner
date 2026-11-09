@@ -17,7 +17,8 @@ PAGES = [
 def table(head, rows):
     h = ''.join(f'<th>{x}</th>' for x in head)
     b = ''.join('<tr>' + ''.join(f'<td>{x}</td>' for x in r) + '</tr>' for r in rows)
-    return f'<div class="tbl"><table><thead><tr>{h}</tr></thead><tbody>{b}</tbody></table></div>'
+    # Wide tables scroll sideways on a phone: the first column stays, a fade and a hint show there is more (page.js adds .has-more only when it overflows).
+    return f'<div class="tblw"><div class="tblbox"><div class="tbl"><table><thead><tr>{h}</tr></thead><tbody>{b}</tbody></table></div></div><p class="swipe">Swipe the table to see every column</p></div>'
 
 def pct(s): return ['+' + x.strip() + '%' for x in s.split('/')]
 
@@ -29,7 +30,7 @@ WK = ['2 wk', '4 wk', '6 wk', '8 wk']
 
 def k30(k):   # the planner asks for the last 30 days; the tables keep weekly rows and show the 30-day count next to them
     n = round(int(k.replace(',', '')) * 30 / 7, -3)
-    return f'{k} <small>({n / 1e6:.2f}M in 30 days)</small>'.replace('.00M', 'M') if n >= 1e6 else f'{k} <small>({int(n):,} in 30 days)</small>'
+    return f'{k} <small>{n / 1e6:.2f}M in 30 days</small>'.replace('.00M', 'M') if n >= 1e6 else f'{k} <small>{int(n):,} in 30 days</small>'
 def t(label, d): return table([label] + WK, [[k30(k)] + pct(v) for k, v in d.items()])
 
 PLAN_PW = '/#/test?a=paywall'
@@ -235,6 +236,7 @@ def page(slug, h1):
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/UncutSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/page.css">
+<script src="/page.js" defer></script>
 <script type="application/ld+json">{ld}</script>
 </head>
 <body>

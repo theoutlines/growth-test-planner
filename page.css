@@ -12,12 +12,22 @@ h2 { font-size: 20px; line-height: 24px; letter-spacing: -.02em; font-weight: 50
 p, li { color: var(--m); } p b, li b { color: var(--t); font-weight: 500; }
 .lead { font-size: 20px; line-height: 28px; letter-spacing: -.01em; color: var(--t); }
 ul { padding-left: 20px; } li { margin: 8px 0; }
-.tbl { overflow-x: auto; margin: 16px 0; background: var(--card); border-radius: 20px; padding: 8px 0; }
-table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 16px; }
+/* Tables: values 16/24, column heads and the 30-day counts 12/16. On a phone a wide table scrolls sideways inside its card:
+   the first column stays put, and while there is more to the right a fade covers the edge and a hint sits under the card (page.js). */
+.tblw { margin: 16px 0; }
+.tblbox { position: relative; border-radius: 20px; overflow: hidden; background: var(--card); }
+.tbl { overflow-x: auto; padding: 8px 0; overscroll-behavior-x: contain; }
+.tblbox::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 32px; background: linear-gradient(to right, transparent, var(--card)); pointer-events: none; opacity: 0; transition: opacity .25s cubic-bezier(.22,1,.36,1); }
+.tblw.has-more:not(.at-end) .tblbox::after { opacity: 1; }
+.swipe { display: none; margin: 8px 0 0; font-size: 12px; line-height: 16px; color: var(--dim); }
+.tblw.has-more .swipe { display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 24px; }
 th, td { text-align: right; padding: 12px 8px; white-space: nowrap; }
 th:first-child, td:first-child { padding-left: 16px; } th:last-child, td:last-child { padding-right: 16px; }
-th:first-child, td:first-child { text-align: left; }
-th { color: var(--m); font-weight: 500; } td { border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; z-index: 1; background: var(--card); }
+th { color: var(--m); font-weight: 500; font-size: 12px; line-height: 16px; } td { border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+td small { display: block; font-size: 12px; line-height: 16px; color: var(--dim); }
+@media (prefers-reduced-motion: reduce) { .tblbox::after { transition: none; } }
 .note { font-size: 12px; line-height: 16px; color: var(--dim); }
 .cta { display: inline-flex; align-items: center; justify-content: center; height: 52px; padding: 0 24px; border-radius: 16px; background: var(--t); color: var(--bg); font-weight: 500; text-decoration: none; margin: 24px 0 8px; }
 .more { display: grid; gap: 8px; margin-top: 12px; }
