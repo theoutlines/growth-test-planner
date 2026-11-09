@@ -13,8 +13,8 @@
   /* motion tokens — transitions.dev */
   --duration-quick: 150ms; --duration-fast: 250ms; --duration-medium: 350ms; --duration-slow: 400ms;
   --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1); --ease-in-out: ease-in-out;
-  --blur-small: 2px; --blur-medium: 3px; --distance-base: 8px; --distance-medium: 12px;
-  --text-soft-dur: 200ms; --text-soft-blur: 2px; --text-soft-ease: ease-in-out; --text-soft-resize-dur: 240ms; --text-soft-resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --blur-small: 2px; --blur-medium: 4px; --distance-base: 8px; --distance-medium: 12px;
+  --text-soft-dur: 200ms; --text-soft-blur: 2px; --text-soft-ease: ease-in-out;
   --tabs-dur: 250ms; --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 * { box-sizing: border-box; }
