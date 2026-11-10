@@ -191,7 +191,7 @@ function summary(p) {
 function startScreen() {
   return top() + `<main class="page">
   <section class="hero"><svg class="hero-art" viewBox="0 0 358 300" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><defs><filter id="heroNoise" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/><feColorMatrix in="n" type="saturate" values="0" result="m"/><feComponentTransfer in="m" result="a"><feFuncA type="linear" slope="0.4" intercept="0"/></feComponentTransfer><feComposite in="a" in2="SourceGraphic" operator="in" result="g"/><feBlend in="SourceGraphic" in2="g" mode="overlay"/></filter><linearGradient id="heroBlk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0466BB"/><stop offset="1" stop-color="#000"/></linearGradient><linearGradient id="heroMix" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0466BB"/><stop offset="1" stop-color="#FF4710"/></linearGradient></defs><rect x="196" y="132" width="162" height="168" fill="#0466BB"/><rect x="196" y="144" width="112" height="20" fill="#EA6905"/><rect x="196" y="184" width="112" height="20" fill="#EA6905"/><rect x="196" y="224" width="112" height="20" fill="#EA6905"/><rect x="196" y="264" width="112" height="20" fill="#EA6905"/><rect x="308" y="132" width="50" height="168" fill="url(#heroBlk)" filter="url(#heroNoise)"/><rect x="132" y="216" width="64" height="84" fill="url(#heroMix)" filter="url(#heroNoise)"/></svg><div><small>For designers who ship onboarding and paywalls</small><strong>Will your test see your change?</strong></div></section>
-  <div class="stack">${pick(G.plan, 'Plan a test', 'How bold your change must be to show up, how long the test runs, the day you decide. Four questions.', 'area')}
+  <div class="stack">${pick(G.plan, 'Plan a test', 'How bold your change must be to show up, how long the test runs, the day you decide. A few questions.', 'area')}
   ${pick(G.read, 'Read a finished test', 'Win, loss or too early to tell, with the likely range. Same terms as the plan.', 'results')}</div>
   <p class="fine" style="text-align:center;margin:0">Free. What you type stays on this page.</p></main>`;
 }
@@ -234,15 +234,15 @@ function trialScreen() {
 function thresholdBlock(p) {
   if (p.notWorse) return `<section class="thr"><h1>To show B is no more than <span>5% worse</span>, run ${p.notWorse.weeks} weeks</h1><p class="sub">Proving “not worse” takes ${t1(p.notWorse.times)}× the people of catching a 10% win. Use it when the change has to ship anyway and you only need to know it doesn’t hurt.</p></section>`;
   const abs = p.unit === 'money'
-    ? `Revenue per paywall viewer: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
+    ? `Revenue per viewer: $${p.today.toFixed(2)} today, $${(p.today * (1 + p.thr / 100)).toFixed(2)} or more to show up. Smaller changes look like noise.`
     : (() => { const onb = S.area === 'onboarding', ppl = onb ? S.users30 : S.views30, ck = onb ? (S.decide === 'paid' ? 'opaid30' : 'otrial30') : (S.decide === 'trials' ? 'trial30' : 'paid30'), verb = /trial/.test(ck) ? 'start a trial' : 'pay';
       return `Today ${n0(S[ck])} of ${n0(ppl)} ${onb ? 'new users' : 'viewers'} ${verb} in 30 days. B needs about ${n0(Math.round(S[ck] * (1 + p.thr / 100)))} from as many people to show up. Smaller changes look like noise.`; })();
   return `<section class="thr"><h1>Your test catches changes of <span data-swap>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
-  <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">≥${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
+  <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">+${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
 }
 function planBlock(p) {
   const legs = [[`${p.collect} days of traffic`, '#FFFFFF']];
-  if (p.wait) legs.push([`${p.wait} days for the last trials`, ACC]);
+  if (p.wait) legs.push([`${p.wait} days for the last trials`, 'rgba(255,255,255,.6)']);   // orange only on what the screen answers
   if (p.watch) legs.push([`${p.watch} days to watch refunds`, 'rgba(255,255,255,.28)']);
   const unitP = p.onb ? ' new users' : '';
   const rows = [S.versions === 2 && S.split !== 50 ? ['People', `A ${k100(p.perVersion * p.split[0] * 2)} · B ${k100(p.perVersion * p.split[1] * 2)}`] : ['People per version', k100(p.perVersion) + unitP]];
@@ -250,7 +250,7 @@ function planBlock(p) {
   rows.push(['Also watch', p.onb ? (p.decide === 'trials' ? 'paid conversions, refunds' : 'trial starts, refunds') : (p.decide === 'money' ? 'refunds, trial to paid' : 'revenue per viewer, refunds')]);
   const prices = '';
   return `<section class="card plan"><span class="dates"><label class="startbtn" aria-label="Change start date">Start ${day(p.start)}${I.chevDS}<input type="date" data-date value="${iso(p.start)}" min="${iso(new Date())}"></label><br>Decision day <span class="acc" data-swap>${day(p.decideDate)}</span>${p.checkPaid ? `<br><small class="chk">Check paid <span data-swap>${day(p.checkPaid)}</span>, once the last trials bill</small>` : ''}</span>
-  <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, ACC], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
+  <div style="display:flex;flex-direction:column;gap:8px" role="img" aria-label="${legs.map((l) => l[0]).join(' + ')}"><div class="phases">${[[p.collect, '#FFFFFF'], [p.wait, 'rgba(255,255,255,.6)'], [p.watch, 'rgba(255,255,255,.28)']].filter((x) => x[0]).map(([d, c]) => `<span style="flex:${d} 0 0;background:${c}"></span>`).join('')}</div>
   <div class="legend">${legs.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div></div>
   <div class="rows">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}${prices}</div></section>`;
 }
@@ -295,7 +295,7 @@ function dateBlock(p) {     // optional (owner, 2026-11-02: “feels optional, M
     if (S.versions === 3) { const f = planOf({ ...S, versions: 2 }).byDate(tg).find((x) => x.weeks === S.weeks); if (f && f.traffic) alt.push(`Drop C: ${f.traffic}% for ${S.weeks} weeks`); }
     if (S.versions === 2 && S.split !== 50) alt.push('Split 50/50');
     if (!alt.length) alt.push('Aim for a bigger change, or test where more people pass');
-    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches ${t1(r.best)}% and up.</p><div class="bdalt"><span>Try</span>${alt.map((x) => `<p>${x}</p>`).join('')}</div>`;
+    body = `<p class="bdans">Out of reach in ${S.weeks} weeks: even 100% of traffic catches only +${t1(r.best)}% or more.</p><div class="bdalt"><span>Try</span>${alt.map((x) => `<p>${x}</p>`).join('')}</div>`;
   }
   if (!(S.target > 0)) { S.target = tg; UI.targetFrom = '~'; }   // the slider shows a real value; '~' = still the suggestion
   return `<section class="card bydate open">${head}<div class="bdbody">${railSlider('Smallest change to catch', 'target')}${src ? `<span class="bdsrc">${src}</span>` : ''}${body}</div></section>`;
@@ -308,15 +308,22 @@ function ideasFor(p) {
   const want = DECIDE_METRIC[p.decide];
   return IDEAS[S.area].filter((it) => it.fits(c)).map((it) => {
     const m = it.r[want] ? want : Object.keys(it.r)[0], [lo, hi] = it.r[m];
-    return { ...it, m, lo, hi, same: m === want, weak: !!(it.weak || {})[m] };
+    return { ...it, m, lo, hi, same: m === want, weak: !!(it.weak || {})[m] || noControl(it) };
   }).sort((a, b) => (!!a.lost - !!b.lost) || (b.same - a.same) || (a.weak - b.weak) || ((b.lo + b.hi) - (a.lo + a.hi)));   // no-control results sit below controlled ones (owner, 2026-10-31)
 }
 // Where a row's number comes from: onboarding ranges are single tests (counted on the row's metric); paywall ranges are Adapty bands, said once in the footnote.
+// every published test behind an idea ran without a control group: the row says so and sorts below controlled ones (DESIGN_RULES §2.4)
+const NOCTRL = /no control group|method not stated|no method given|founder report|staged rollout|before\/after/i;
+function noControl(it) {
+  const list = (TESTS[S.area] || {})[it.id] || [];
+  return list.length > 0 && list.every((t) => NOCTRL.test(t[2] || ''));
+}
 function srcLine(r) {
   return '';   // owner, 2026-10-31: no test counts on the chart; the idea card lists the tests
 }
 function seenBy(it) {
   if (it.id === 'copy') return 'Adapty’s expected effect for copy-only changes:';
+  if (/^One test behind/.test(it.trap || '')) return 'One published test:';   // the source line never claims more tests than there are
   if (S.area === 'paywall' && !it.lost) return 'Adapty’s library, many tests:';
   return (COUNT[it.id] || {})[it.m] === 0 ? 'Adapty’s library, many tests:' : 'Other apps saw';
 }
@@ -328,17 +335,17 @@ function testsList(id) {
   return `<div class="tests"><span class="th">Single published tests</span><span class="tn">${n > 3 ? `Latest 3 of ${n}` : `${n} in total`}</span>${shown.map(([app, num, what, url]) => `<a class="test" href="${url}" target="_blank" rel="noopener"><span><b>${app} · ${num}</b><small>${what}</small></span>${I.ext}</a>`).join('')}</div>`;
 }
 const sgn = (v) => (v < 0 ? `−${-v}` : `+${v}`);
-const pctR = (lo, hi) => (lo === hi ? sgn(lo) : `${sgn(lo)}–${hi}`) + '%';
+const pctR = (lo, hi) => (lo === hi ? `${sgn(lo)}%` : `${sgn(lo)}% to ${sgn(hi)}%`);   // one range format everywhere (DESIGN_RULES §3)
 function ideasBlock(p) {
   const every = ideasFor(p), all = every.filter((r) => !r.lost), lost = every.filter((r) => r.lost), rows = UI.allIdeas ? all : all.slice(0, 6), thr = p.thr, nw = S.goal === 'notworse';
   const max = Math.max(45, ...rows.map((r) => Math.max(r.hi, ((r.split || {})[r.m] || {}).to || 0) + 3)), step = max > 60 ? 20 : 10, x = (v) => Math.max(0, Math.min(100, v / max * 100));
   const col = (pc) => `calc(var(--lc) + (100% - var(--lc)) * ${pc / 100})`;
   const ticks = []; for (let v = 0; v <= max - step / 2; v += step) ticks.push(v);
-  return `<section class="card ideas"><span class="kick">Lift in ${METRIC[DECIDE_METRIC[p.decide]]}, B against A</span><span class="head">${nw ? 'Sized to rule out harm, not to find these' : `Your test catches +${t1(thr)}% and up`}</span><div class="fp">
+  return `<section class="card ideas"><span class="kick">Lift in ${METRIC[DECIDE_METRIC[p.decide]]}, B against A</span><span class="head">${nw ? 'Sized to rule out harm, not to find these' : `Your test catches +${t1(thr)}% or more`}</span><div class="fp">
   ${nw ? '' : `<span class="zone" style="width:calc((100% - var(--lc)) * ${x(thr) / 100})"></span><span class="line" style="left:${col(x(thr))}"></span>`}
   <div class="axis"><span></span><span>${ticks.map((v) => `<span class="tick" style="left:${x(v)}%;transform:translateX(${v ? '-50%' : '0'})">${v ? `+${v}%` : '0'}</span>`).join('')}</span></div>
   ${rows.map((r) => { const ok = !nw && r.same && r.lo >= thr, sp = (r.split || {})[r.m], src = sp ? sp.note : srcLine(r), one = r.lo === r.hi;
-    return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${src || !r.same ? `<small>${[src, r.same ? '' : `on ${METRIC[r.m]}`].filter(Boolean).join(' · ')}</small>` : ''}</span><span class="bar"><i class="${one ? 'dot' : ''}" style="left:${one ? `calc(${x(r.lo)}% - 7px)` : `${x(r.lo)}%`};width:${one ? '14px' : `${Math.max(3, x(r.hi) - x(r.lo))}%`};background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i>${sp && sp.to ? `<b class="ext" style="left:${x(r.hi)}%;width:${x(sp.to) - x(r.hi)}%"></b><b class="ring" style="left:calc(${x(sp.to)}% - 6px)"></b>` : ''}</span></button>`; }).join('')}
+    return `<button class="row${ok ? '' : ' dim'}" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${pctR(r.lo, r.hi)}${I.chevS}</span>${src || !r.same || r.weak ? `<small>${[src, r.weak ? 'No control group' : '', r.same ? '' : `on ${METRIC[r.m]}`].filter(Boolean).join(' · ')}</small>` : ''}</span><span class="bar"><i class="${one ? 'dot' : ''}" style="left:${one ? `calc(${x(r.lo)}% - 7px)` : `${x(r.lo)}%`};width:${one ? '14px' : `${Math.max(3, x(r.hi) - x(r.lo))}%`};background:${ok ? '#FFFFFF' : 'rgba(255,255,255,.3)'}"></i>${sp && sp.to ? `<b class="ext" style="left:${x(r.hi)}%;width:${x(sp.to) - x(r.hi)}%"></b><b class="ring" style="left:calc(${x(sp.to)}% - 6px)"></b>` : ''}</span></button>`; }).join('')}
   </div><span class="legend"><span><i class="lb"></i>Lowest to highest result</span><span><i class="ld"></i>One number (one test, or a band given as one figure)</span>${rows.some((r) => ((r.split || {})[r.m] || {}).to) ? '<span><i class="le"></i><i class="lr"></i>Same test, another market</span>' : ''}</span>${UI.allIdeas && lost.length ? `<div class="lost"><span class="lh">Lost in published tests</span>${lost.map((r) => `<button class="row" data-idea="${r.id}"><span class="t"><b>${r.t}</b><span>${r.about ? 'about ' : ''}${pctR(r.lo, r.hi)}${I.chevS}</span>${r.same ? '' : `<small>on ${METRIC[r.m]}</small>`}</span></button>`).join('')}</div>` : ''}${every.length > 6 ? `<button class="more" data-more-ideas>${UI.allIdeas ? 'Show fewer' : `Show all ${every.length}`}</button>` : ''}<span class="src">${IDEAS_SRC[S.area]}</span></section>`;
 }
 function ideaCard(p) {
@@ -387,7 +394,7 @@ function plansInline(step) {
 }
 // the hint speaks only about the metric picked (owner, 2026-11-02)
 const DECIDE_HINT = {
-  paywall: { money: 'Revenue per paywall viewer. Use it for changes to prices, plans or the trial offer.', paid: 'Share of viewers who pay. Answers faster for copy and layout changes.', trials: 'Trial start rate. Answers fastest, but a trial isn’t revenue yet.' },
+  paywall: { money: 'Revenue per viewer (per person who saw the paywall). Use it for changes to prices, plans or the trial offer.', paid: 'Share of viewers who pay. Answers faster for copy and layout changes.', trials: 'Trial start rate. Answers fastest, but a trial isn’t revenue yet.' },
   onboarding: { trials: 'Trial start rate. Answers in weeks.', paid: 'Share of new users who pay. Waits for the trial to end.' },
 };
 function facts30() {
@@ -427,7 +434,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${wide() ? '' : `<div class="share-row"><button class="btn" data-go="share">${I.share}<span>Share plan</span></button></div>`}${sec('What usually moves it that much')}${ideasBlock(p)}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -441,7 +448,7 @@ function testScreen() {
   else if (UI.overlay === 'idea') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in text"><span class="grab"></span>${ideaCard(p)}</div></div>`;
   else if (UI.overlay === 'prices') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in"><span class="grab"></span>${pricesCard()}</div></div>`;
   const peek = `<div class="peek"><div><span class="grab"></span><button class="sumrow" data-overlay="edit" aria-label="Change your test"><span><small>Your test</small><em>${summary(p)}</em></span></button></div></div>`;   // no arrow: the grabber and the whole row say it opens, like iOS mini-players (owner, 2026-11-04)
-  return top(shareBtn) + main + peek + overlay;
+  return top() + main + peek + overlay;   // Share never in the top bar (DESIGN_RULES §2.7)
 }
 
 // ------------------------------------------------------------------ share
@@ -460,7 +467,7 @@ function planTones(p) {
     };
   }
   return {
-    Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${day(p.start)} → ${day(p.decideDate)}.\nSees changes ≥ ${t1(p.thr)}% in ${p.metricName}. Copy tweaks won’t show.\nNo early stop unless something breaks. ${link}`,
+    Short: `${cap(what)} test${b ? ` (B: ${lcFirst(b)})` : ''}: ${day(p.start)} → ${day(p.decideDate)}.\nCatches changes of +${t1(p.thr)}% or more in ${p.metricName}. Copy tweaks won’t show.\nNo early stop unless something breaks. ${link}`,
     Friendly: `Hey team, here’s the plan for the ${what} test.${b ? ` B tries ${lcFirst(b)}, A stays as it is.` : ''}\nWe start ${day(p.start)} and call it on ${day(p.decideDate)}. That’s ${p.weeks} weeks of traffic${p.wait ? ' plus time for the last trials to bill and refunds to show' : ''}.\nWith our ${vol} it only sees changes of ${t1(p.thr)}% or more, so let’s test something bold, not a copy tweak.\nWe judge on ${p.metricName} and only stop early if something breaks. ${link}`,
     Detailed: `${cap(what)} test plan\n${b ? `A: current ${what}. B: ${b}.\n` : ''}Start ${day(p.start)}, decide ${day(p.decideDate)}: ${p.weeks} weeks of traffic${p.wait ? `, ${p.wait} days for the last trials to bill` : ''}${p.watch ? `, ${p.watch} days to watch refunds` : ''}.\n${k100(p.perVersion)} per version. The test sees changes of ${t1(p.thr)}% or more in ${p.metricName}.\nStop early only for harm.\n${link}`,
   };
@@ -548,17 +555,17 @@ function verdictOf(p) {
   const inp = readInputs(p); if (!inp) return null;
   const r = readOf(S, inp, p), m = r.metric;
   const range = `${sign(m.lo)} to ${sign(m.hi)}`;
-  const tag = `Decision day · ${S.goal === 'notworse' ? 'goal: not worse than A by 5%' : (p.decide === 'money' ? 'revenue per paywall viewer' : 'decided on ' + p.metricName)}`;
+  const tag = `Decision day · ${S.goal === 'notworse' ? 'goal: not worse than A by 5%' : (p.decide === 'money' ? 'revenue per viewer' : 'decided on ' + p.metricName)}`;
   const paidBad = p.decide === 'trials' && r.checks.some((c) => c.label.startsWith('Paid') && !c.ok);
   const early = p.decide === 'trials' && !inp[LETTERS()[1]].paid.some((n) => n > 0) && r.verdict.startsWith('win');
   const L = r.lead, three = r.versions.length > 1, other = three ? r.versions.find((x) => x.v !== L) : null;
   const both = (vd) => three && r.versions.every((x) => x.verdict === vd);
   const also = three && r.verdict.startsWith('win') && other.verdict === 'win' ? ` ${other.v} won too (${sign(other.metric.lift)}), ${L} by more.` : '';
   const V = {
-    win: [`${L} wins ${sign(m.lift)}`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}. Plan on ${sign(m.lo)}.${also}`, `Ship ${L} and make it the new control`, 'Wins usually shrink after launch, so expect the low end.'],
-    win_with_cost: [`${L} wins ${sign(m.lift)}, with a cost`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}. ${r.checks.filter((c) => !c.ok).map((c) => c.label).join(', ')} went the wrong way.`, 'Fix what broke before you ship', `A win that costs refunds isn’t a win yet. Fix it and run ${L} again.`],
-    loss: three ? ['B and C both lose', `Best of them, ${L}, is most likely between ${sign(m.lo)} and ${sign(m.hi)}.`, 'Keep A', 'Both made things worse. Keep what you learned and try a different idea.']
-      : [`B loses ${sign(m.lift)}`, `Most likely between ${sign(m.lo)} and ${sign(m.hi)}.`, 'Keep A', 'B made things worse. Keep what you learned and try a different idea.'],
+    win: [`${L} wins ${sign(m.lift)}`, `Most likely ${sign(m.lo)} to ${sign(m.hi)}. Plan on ${sign(m.lo)}.${also}`, `Ship ${L} and make it the new control`, 'Wins usually shrink after launch, so expect the low end.'],
+    win_with_cost: [`${L} wins ${sign(m.lift)}, with a cost`, `Most likely ${sign(m.lo)} to ${sign(m.hi)}. ${r.checks.filter((c) => !c.ok).map((c) => c.label).join(', ')} went the wrong way.`, 'Fix what broke before you ship', `A win that costs refunds isn’t a win yet. Fix it and run ${L} again.`],
+    loss: three ? ['B and C both lose', `Best of them, ${L}, is most likely ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A', 'Both made things worse. Keep what you learned and try a different idea.']
+      : [`B loses ${sign(m.lift)}`, `Most likely ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A', 'B made things worse. Keep what you learned and try a different idea.'],
     cant_tell: three ? ['Can’t tell yet', `Neither B nor C clearly beats A. Best guess: ${L} ${sign(m.lift)}, but anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, `Keep A. Try a bolder version of ${L}`, `This test could only see changes of ${t1(p.thr)}% or more. Shipping either now is a coin toss.`]
       : ['Can’t tell yet', `B looks ${sign(m.lift)} ${m.lift >= 0 ? 'better' : 'worse'}, but the real change could be anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A. Try a bolder version of B', `This test could only see changes of ${t1(p.thr)}% or more. Shipping B now is a coin toss.`],
     not_worse: both('not_worse') ? ['Both safe to ship', `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, both inside your −5% limit.`, 'Ship the one you prefer', 'You only had to show they don’t hurt, and they don’t. Don’t present either as a win: the test wasn’t sized to find one.']
@@ -617,7 +624,7 @@ function verdictScreen() {
   const body = card + vs + checks + (wide() ? '' : numbersRow()) + (v.source ? info(I.money, v.srcLabel, v.source) : '') + info(I.flag, 'What to do', v.small, v.next) + next;   // mobile: the numbers sit right under the answer they produce (owner, 2026-11-04)   // mobile: the numbers can be fixed from here (desktop has them in the rail)   // desktop: bottom-left, like Share plan
   const rail = `<aside class="rail"><section class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px"><small style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5)">Your numbers · change any, the answer updates</small>${readRows(p).map(readRow).join('')}</section></aside>`;
   const share = wide() ? `<button class="share-float" data-go="share-result">${I.share}<span>Share result</span></button>`
-    : `<div class="dock"><button class="btn sec2" data-go="share-result">${I.share}<span>Share result</span></button></div>`;   // mobile: pinned to the bottom of the screen (owner, 2026-11-02)
+    : `<div class="dock"><button class="btn" data-go="share-result">${I.share}<span>Share result</span></button></div>`;   // mobile: pinned to the bottom of the screen (owner, 2026-11-02)
   return top() + `<main class="page${wide() ? '' : ' docked'}" id="main">${body}</main>` + share + rail;
 }
 

@@ -78,7 +78,7 @@ export function planOf(s) {
       const w = shares(s.plans), mu = s.plans.reduce((a, x, i) => a + w[i] * x.p, 0);
       const v = s.plans.reduce((a, x, i) => a + w[i] * x.p ** 2, 0) - mu * mu;
       cv2 = (v / mu ** 2 + 1) / p - 1;
-      metricName = 'revenue per paywall viewer'; today = mu * p; unit = 'money';
+      metricName = 'revenue per viewer'; today = mu * p; unit = 'money';
     } else { cv2 = (1 - p) / p; metricName = 'paid conversion'; today = p; unit = 'rate'; }
   } else {
     p = decide === 'trials' ? s.trialRate / 100 : s.paidRate / 100;
