@@ -160,7 +160,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-
 .fp .row .t { display: flex; flex-direction: column; gap: 2px; padding-right: 12px; }
 .fp .row .t b { font-size: 16px; font-weight: 500; line-height: 20px; }
 .fp .row .t span { display: flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 500; line-height: 16px; }
-.fp .row .t > span { font-family: var(--mono); font-weight: 400; }   /* numbers by a chart: mono (DESIGN_RULES §2.3) */
 .fp .row .bar { position: relative; height: 16px; }
 .fp .row .bar i { position: absolute; top: 0; height: 16px; }
 .fp .row.dim .t { color: var(--t50); }
