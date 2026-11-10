@@ -394,7 +394,7 @@ function plansInline(step) {
 }
 // the hint speaks only about the metric picked (owner, 2026-11-02)
 const DECIDE_HINT = {
-  paywall: { money: 'Revenue per viewer (per person who saw the paywall). Use it for changes to prices, plans or the trial offer.', paid: 'Share of viewers who pay. Answers faster for copy and layout changes.', trials: 'Trial start rate. Answers fastest, but a trial isn’t revenue yet.' },
+  paywall: { money: 'Revenue per viewer. Use it for changes to prices, plans or the trial offer.', paid: 'Share of viewers who pay. Answers faster for copy and layout changes.', trials: 'Trial start rate. Answers fastest, but a trial isn’t revenue yet.' },
   onboarding: { trials: 'Trial start rate. Answers in weeks.', paid: 'Share of new users who pay. Waits for the trial to end.' },
 };
 function facts30() {
