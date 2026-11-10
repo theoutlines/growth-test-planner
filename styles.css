@@ -640,3 +640,6 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 .vhead { display: flex; flex-direction: column; gap: 4px; margin-bottom: -4px; }
 .vhead .vtag { font-size: 12px; line-height: 16px; color: var(--t60); }
 .vhead .vwhat { font-size: 16px; line-height: 24px; color: var(--t85); margin: 0; opacity: 1; }
+
+/* version letter chip in running text (owner, 2026-11-10): sized by the text around it */
+.vl { display: inline-block; min-width: 1.4em; padding: .15em .3em; box-sizing: border-box; border-radius: .35em; background: var(--s14); color: var(--w); font-weight: 500; font-size: .8em; line-height: 1; text-align: center; vertical-align: .1em; }
