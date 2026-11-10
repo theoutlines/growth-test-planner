@@ -21,10 +21,11 @@ Do not set your own width, header, footer or section order. If no frame fits, st
 5. The answer comes first: result above explanation and inputs.
 6. Plans update live. Readings of real numbers wait for "Read my result", then stay live.
 7. One CTA per screen. White = the screen's main action. Grey = the rest. Orange = only the landing's "Plan a test". Share result is white in the bottom dock (phone) or bottom-left float (desktop); Share plan is the top-bar icon on the phone.
-8. Every number has a source, says "example", or says how we worked it out.
+8. Every number has a source, says "example", or says how we worked it out. Example inputs come from `DEFAULTS.md`, per area.
 9. States: a plan is never empty (it starts from typical-app numbers labelled “example”); a reading before “Read my result” shows the inputs only; nothing loads. Errors are calm: orange "!" or note + one line under the field; the result says "Check your numbers". Never blocking.
 10. 4px grid. Type sizes 10/12/16/20/24/28/32/40/44; weights 400/500; lines 1/2/4 px.
 11. Version letters A, B, C in running text are grey chips (VersionChip: 14% fill, white, 0.8em, radius .35em), so they never read as the article "a". Not in headlines, buttons, segmented controls or charts.
+12. Footer, everywhere: “© 2026 Ivan Polushin” + a “Source” link (https://github.com/theoutlines/growth-test-planner), 12/16 at 50%; centred in the tools, left in the 680 column on static pages, which add a “Growth Test Planner” link. No other lines.
 
 ## 3. Numbers (one format per kind; in the planner `sign()` in js/math.js and `pctR()` in js/app.js produce them)
 | Kind | Format | Example |
@@ -34,7 +35,7 @@ Do not set your own width, header, footer or section order. If no frame fits, st
 | Range | "lo to hi", both signed | +5% to +21% |
 | Verdict sub line | range + plan on the low end | Most likely +5% to +21%. Plan on +5%. |
 | Rate | 2 decimals | 2.75% |
-| Count | thousands commas; "about" + 3 significant figures in prose | 85,700; about 214,000 |
+| Count | typed counts exact with commas; worked-out counts (30-day equivalents, people per version, “about N”) to 3 significant figures | 85,700; 43,000; 1.07M; 40,100 |
 | Money per viewer | $, 2 decimals | $0.65 |
 | Date | weekday, month, day; never “day 42” | Mon, Dec 28 |
 | Published result | as the source wrote it, with its metric | +25% to +40% revenue per viewer |
@@ -46,6 +47,9 @@ Never: "–" ranges, "…", "between", "≥", "and up", a change without its sig
 - Sentence case, no exclamation marks, no emoji, English.
 
 ## 5. Evidence
+- Static pages (answer pages) show up to 3 ideas per group; tools show 6 that fit, then “Show all N”. Within a group, sort by the middle of the range, highest first.
+- StrengthTag: “Many tests” = 3 or more published tests behind the range, “One test” = 1, “2 tests” = 2; plus “No control group” and “Lost”.
+- The Reader (a verdict) shows no evidence: published results live in the plan.
 - Cite only `evidence/ideas.json` (or a source named on the page). No placeholder sources, no invented ranges.
 - EvidenceList / IdeasChart order: Tested against a control group → No control group → Lost. First 6 that fit, then "Show all N".
 - Every item: what changed, result with metric, StrengthTag (Many tests · One test · No control group · Lost), source link.
