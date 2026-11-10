@@ -434,7 +434,7 @@ function pricesCard() {           // the paywall's plans: type, price, free tria
 }
 function testScreen() {
   const p = planOf(S);
-  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${wide() ? '' : `<div class="share-row"><button class="btn" data-go="share">${I.share}<span>Share plan</span></button></div>`}${sec('What usually moves it that much')}${ideasBlock(p)}<div class="spacer-peek mobile-only"></div></main>`;
+  const main = `<main class="page" id="main">${thresholdBlock(p)}${dateBlock(p)}${sec('Your plan')}${planBlock(p)}${sec('What usually moves it that much')}${ideasBlock(p)}<div class="spacer-peek mobile-only"></div></main>`;
   let overlay = '';
   if (wide()) {
     // details float in the bottom-left corner: the rail on the right is for controls, and a fixed card can't scroll away
@@ -448,7 +448,7 @@ function testScreen() {
   else if (UI.overlay === 'idea') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in text"><span class="grab"></span>${ideaCard(p)}</div></div>`;
   else if (UI.overlay === 'prices') overlay = `<div class="scrim" data-close></div><div class="sheet"><div class="sheet-in"><span class="grab"></span>${pricesCard()}</div></div>`;
   const peek = `<div class="peek"><div><span class="grab"></span><button class="sumrow" data-overlay="edit" aria-label="Change your test"><span><small>Your test</small><em>${summary(p)}</em></span></button></div></div>`;   // no arrow: the grabber and the whole row say it opens, like iOS mini-players (owner, 2026-11-04)
-  return top() + main + peek + overlay;   // Share never in the top bar (DESIGN_RULES §2.7)
+  return top(shareBtn) + main + peek + overlay;
 }
 
 // ------------------------------------------------------------------ share
