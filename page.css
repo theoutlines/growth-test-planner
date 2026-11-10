@@ -1,6 +1,6 @@
 @font-face { font-family: 'Uncut Sans'; src: url('/fonts/UncutSans-Variable.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
 /* Answer pages on The Outlines system: sizes on the 4px grid, type from the scale (12, 16, 20, 24, 28, 32, 44), text steps white / 60% / 50%. */
-:root { --bg: #151515; --card: #212121; --t: #FFFFFF; --m: rgba(255,255,255,.6); --dim: rgba(255,255,255,.5); --line: rgba(255,255,255,.1); --o: #FF4C00; }
+:root { --bg: #151515; --card: #212121; --t: #FFFFFF; --t85: rgba(255,255,255,.85); --m: rgba(255,255,255,.6); --dim: rgba(255,255,255,.5); --line: rgba(255,255,255,.1); --f06: rgba(255,255,255,.06); --f10: rgba(255,255,255,.1); --o: #FF4C00; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--t); font: 400 16px/24px 'Uncut Sans', system-ui, sans-serif; }
@@ -12,6 +12,28 @@ h2 { font-size: 20px; line-height: 24px; letter-spacing: -.02em; font-weight: 50
 p, li { color: var(--m); } p b, li b { color: var(--t); font-weight: 500; }
 .lead { font-size: 20px; line-height: 28px; letter-spacing: -.01em; color: var(--t); }
 ul { padding-left: 20px; } li { margin: 8px 0; }
+/* AnswerPageFrame B (owner, 2026-11-10): the formula card carries the answer, so the lead above it steps down */
+.lead:has(+ .formula) { font-size: 16px; line-height: 24px; letter-spacing: 0; color: var(--t85); }
+.formula { margin: 20px 0 0; background: var(--card); border-radius: 20px; padding: 16px; }
+.formula ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.formula li { display: grid; grid-template-columns: 24px 1fr; gap: 12px; margin: 0; }
+.formula li b { display: block; }
+.formula li > span, .steps li::before { width: 24px; height: 24px; border-radius: 8px; background: var(--f10); color: var(--t); font-size: 12px; line-height: 24px; text-align: center; font-weight: 500; }
+.formula .sum { border-top: 1px solid var(--line); margin: 12px 0 0; padding-top: 12px; color: var(--t); }
+.formula .sum em { font-style: normal; color: var(--o); }
+.steps { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 16px; counter-reset: s; }
+.steps li { margin: 0; padding-left: 36px; position: relative; counter-increment: s; }
+.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; }
+.plink { margin: 24px 0 0; background: var(--card); border-radius: 20px; padding: 16px; display: grid; gap: 12px; }
+.plink b { color: var(--t); font-weight: 500; } .plink p { margin: 0; }
+.plink .cta { margin: 0; justify-self: start; }
+.ev { display: grid; gap: 8px; margin-top: 16px; }
+.ev-group { font-size: 12px; line-height: 16px; font-weight: 500; margin: 16px 0 0; } .ev-group:first-child { margin-top: 0; }
+.ev-item { background: var(--card); border-radius: 16px; padding: 16px; display: grid; gap: 4px; }
+.ev-item .what { color: var(--t); } .ev-item .res { color: var(--t85); }
+.ev-item .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; line-height: 16px; color: var(--dim); margin-top: 8px; }
+.ev-item .meta a { color: var(--m); }
+.tag { display: inline-flex; height: 24px; align-items: center; padding: 0 8px; border-radius: 8px; background: var(--f06); color: var(--t85); }
 /* Tables: values 16/24, column heads and the 30-day counts 12/16. On a phone a wide table scrolls sideways inside its card:
    the first column stays put, and while there is more to the right a fade covers the edge and a hint sits under the card (page.js). */
 .tblw { margin: 16px 0; }
@@ -29,10 +51,11 @@ th { color: var(--m); font-weight: 500; font-size: 12px; line-height: 16px; } td
 td small { display: block; font-size: 12px; line-height: 16px; color: var(--dim); }
 @media (prefers-reduced-motion: reduce) { .tblbox::after { transition: none; } }
 .note { font-size: 12px; line-height: 16px; color: var(--dim); }
+.more svg { flex: none; color: var(--m); }
 .cta { display: inline-flex; align-items: center; justify-content: center; height: 52px; padding: 0 24px; border-radius: 16px; background: var(--t); color: var(--bg); font-weight: 500; text-decoration: none; margin: 24px 0 8px; }
 .more { display: grid; gap: 8px; margin-top: 12px; }
-.more a { display: block; padding: 16px; background: var(--card); border-radius: 16px; color: var(--t); text-decoration: none; font-weight: 500; }
+.more a { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px; background: var(--card); border-radius: 16px; color: var(--t); text-decoration: none; font-weight: 500; }
 a { color: var(--t); }
 footer { margin-top: 48px; font-size: 12px; line-height: 16px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 8px 16px; }
 footer a { color: var(--m); text-decoration: none; }
-@media (min-width: 720px) { h1 { font-size: 44px; line-height: 48px; letter-spacing: -.04em; } .wrap { padding-top: 24px; } }
+@media (min-width: 720px) { h1 { font-size: 44px; line-height: 48px; letter-spacing: -.04em; } .wrap { padding-top: 24px; } .more { grid-template-columns: 1fr 1fr; } }

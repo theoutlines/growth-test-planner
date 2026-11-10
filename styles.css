@@ -643,3 +643,7 @@ button.bdrow:hover { background: var(--s07); box-shadow: none; }
 
 /* version letter chip in running text (owner, 2026-11-10): sized by the text around it */
 b.vl.vl { display: inline-block; letter-spacing: 0; min-width: 1.4em; padding: .15em .3em; box-sizing: border-box; border-radius: .35em; background: var(--s14); color: var(--w); font-weight: 500; font-size: .8em; line-height: 1; text-align: center; vertical-align: .1em; }
+
+/* Out-of-reach line under the weeks cards (owner, 2026-11-10): orange ! = look here, one line, 12 under the cards */
+.thr .reach { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 0; font-size: 16px; line-height: 24px; color: var(--t85); }
+.thr .reach .ri { flex: none; width: 20px; height: 20px; margin-top: 2px; border-radius: 50%; background: var(--acc); color: var(--w); font: 500 12px/20px var(--ui); text-align: center; }

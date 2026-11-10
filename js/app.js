@@ -238,7 +238,12 @@ function thresholdBlock(p) {
     : (() => { const onb = S.area === 'onboarding', ppl = onb ? S.users30 : S.views30, ck = onb ? (S.decide === 'paid' ? 'opaid30' : 'otrial30') : (S.decide === 'trials' ? 'trial30' : 'paid30'), verb = /trial/.test(ck) ? 'start a trial' : 'pay';
       return `Today ${n0(S[ck])} of ${n0(ppl)} ${onb ? 'new users' : 'viewers'} ${verb} in 30 days. B needs about ${n0(Math.round(S[ck] * (1 + p.thr / 100)))} from as many people to show up. Smaller changes look like noise.`; })();
   return `<section class="thr"><h1>Your test catches changes of <span data-swap>+${t1(p.thr)}%</span> or more</h1><p class="sub">${abs}</p>
-  <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">+${t1(o.thr)}%</span></button>`).join('')}</div></section>`;
+  <div class="weeks" role="radiogroup" aria-label="How long the test runs">${p.options.map((o) => `<button role="radio" aria-checked="${o.weeks === S.weeks}" data-set="weeks" data-val="${o.weeks}"><b>${o.weeks} wk</b><span data-swap="center">+${t1(o.thr)}%</span></button>`).join('')}</div>${reachNote(p)}</section>`;
+}
+// Too little traffic for any length (owner, 2026-11-10, variant A under the weeks): one line, only when even 8 weeks miss what most ideas lift.
+function reachNote(p) {
+  const w8 = p.options[p.options.length - 1].thr;
+  return w8 > suggestedTarget(p) ? `<p class="reach"><span class="ri">!</span>Even 8 weeks catch only +${t1(w8)}%, more than most ideas below lift.</p>` : '';
 }
 function planBlock(p) {
   const legs = [[`${p.collect} days of traffic`, '#FFFFFF']];
