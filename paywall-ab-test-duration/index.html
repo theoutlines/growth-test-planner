@@ -25,25 +25,44 @@
 <article>
 <h1>How long should a paywall A/B test run?</h1>
 
-<p class="lead">Long enough for the change you expect to be bigger than the noise, in whole weeks, plus the longest free trial and about a week for refunds before you decide. For most subscription apps that is 4 to 8 weeks of traffic, and the smaller your traffic, the bolder the change has to be.</p>
+<p class="lead">Whole weeks of traffic until your test can see the change you expect, then the longest free trial, then a week for refunds. For most subscription apps that is 4 to 8 weeks of traffic.</p>
+<div class="formula">
+<ol>
+<li><span>1</span><div><b>Traffic: 2 to 8 whole weeks</b>Until the smallest change your test can catch is smaller than the change you expect.</div></li>
+<li><span>2</span><div><b>Plus the longest free trial</b>People who start a trial on the last day pay only when it ends.</div></li>
+<li><span>3</span><div><b>Plus about 7 days for refunds</b>A win on first payments can still lose once refunds land.</div></li>
+</ol>
+<p class="sum">4 weeks of traffic with a 7-day trial: start Mon, Nov 16, decide <em>Mon, Dec 28</em>.</p>
+</div>
 <h2>What a test can catch, by traffic and weeks</h2>
-<p>The smallest change in revenue per paywall viewer an A/B test can tell apart from chance (95% confidence, 80% power), for a paywall where 2.75% of the people who see it pay and buyers split half and half between weekly $6.99 and annual $39.99:</p>
+<p>The smallest change in revenue per viewer a test can tell apart from chance.</p>
 <div class="tblw"><div class="tblbox"><div class="tbl"><table><thead><tr><th>People who see it a week</th><th>2 wk</th><th>4 wk</th><th>6 wk</th><th>8 wk</th></tr></thead><tbody><tr><td>10,000 <small>43,000 in 30 days</small></td><td>+28.9%</td><td>+20.5%</td><td>+16.7%</td><td>+14.5%</td></tr><tr><td>25,000 <small>107,000 in 30 days</small></td><td>+18.3%</td><td>+12.9%</td><td>+10.6%</td><td>+9.1%</td></tr><tr><td>50,000 <small>214,000 in 30 days</small></td><td>+12.9%</td><td>+9.1%</td><td>+7.5%</td><td>+6.5%</td></tr><tr><td>100,000 <small>429,000 in 30 days</small></td><td>+9.1%</td><td>+6.5%</td><td>+5.3%</td><td>+4.6%</td></tr><tr><td>250,000 <small>1.07M in 30 days</small></td><td>+5.8%</td><td>+4.1%</td><td>+3.3%</td><td>+2.9%</td></tr></tbody></table></div></div><p class="swipe">Swipe the table to see every column</p></div>
-<p class="note">Judged on paid conversion instead, the same paywall catches a little less: 50,000 people a week catch +7.5% in 4 weeks (+9.1% on revenue per viewer). Your own numbers change these figures; the planner works them out for your traffic, conversion, prices and trial.</p>
+<p class="note">Assumes 2.75% of viewers pay, buyers split half and half between weekly $6.99 and annual $39.99, 95% confidence, 80% power, split 50/50. Conversion: <a href="https://adapty.io/state-of-paywalls/">Adapty State of Paywalls 2026</a>, US median per paywall view.</p>
+<div class="plink"><b>Your traffic and prices are different</b><p>The planner works this out from your last 30 days and gives you the decision day.</p><a class="cta" href="/#/area?a=paywall">Plan your paywall test</a></div>
 <h2>How to pick the length</h2>
-<ul>
-<li><b>Start from what you expect the change to do.</b> A headline or button tweak rarely moves revenue by more than a few percent. Making the annual plan the hero has moved revenue per user by +25% to +40% in Adapty's A/B test library. If your test only catches +9%, test the bolder change.</li>
+<ol class="steps">
+<li><b>Start from the change you expect.</b> If your test only catches +9.1% or more, a headline tweak won’t show. Test a bolder change.</li>
 <li><b>Run whole weeks.</b> Weekdays and weekends convert differently; a test that stops mid-week reads that as an effect.</li>
-<li><b>Add the trial and the refunds.</b> People who start a trial on the last day pay only when it ends, and refunds arrive in the days after. With a 3-day trial, decide 3 + 7 days after the traffic stops.</li>
-<li><b>Don't stop early on a good day.</b> Peeking and stopping the moment B looks ahead turns noise into wins. Pick the length first, then wait.</li>
-</ul>
+<li><b>Add the trial and the refunds.</b> With a 3-day trial, decide 3 + 7 days after the traffic stops.</li>
+<li><b>Don’t stop early on a good day.</b> Pick the length first, then wait.</li>
+</ol>
 <h2>Judge on revenue or on conversion?</h2>
-<p>Prices, plans or trial changes: revenue per paywall viewer, because conversion can fall while revenue rises. Copy and layout changes: paid conversion answers faster.</p>
-<a class="cta" href="/#/test?a=paywall">Plan your paywall test</a>
+<p>Prices, plans or trial changes: revenue per viewer, because conversion can fall while revenue rises. Copy and layout changes: paid conversion answers faster, and catches +7.5% in 4 weeks where revenue catches +9.1%.</p>
+<h2>What changes have moved revenue</h2>
+<p>Published paywall tests, so you can see whether your test is big enough for them.</p>
+<div class="ev">
+<p class="ev-group">Tested against a control group</p>
+<div class="ev-item"><span class="what">Make the annual plan the hero</span><span class="res">+25% to +40% revenue per viewer</span><span class="meta"><span class="tag">Many tests</span>Adapty A/B test library</span></div>
+<div class="ev-item"><span class="what">Show the annual price as a monthly price</span><span class="res">+8% revenue per viewer, US</span><span class="meta"><span class="tag">One test</span><a href="https://www.revenuecat.com/blog/growth/mojo-60-percent-arpu-growth-five-months/">Mojo, RevenueCat</a></span></div>
+<p class="ev-group">No control group</p>
+<div class="ev-item"><span class="what">Two-step paywall with the trial as a timeline</span><span class="res">+50% lifetime value</span><span class="meta"><span class="tag">No control group</span><a href="https://superwall.com/case-studies/pepper">Pepper, Superwall</a></span></div>
+<p class="ev-group">Lost</p>
+<div class="ev-item"><span class="what">Trial 7 → 14 days</span><span class="res">Slightly more trials, fewer paid; went back to 7 days</span><span class="meta"><span class="tag">Lost</span><a href="https://www.revenuecat.com/blog/growth/7-day-trial-subscription-app">Wellness app, RevenueCat</a></span></div>
+</div>
 
 </article>
 <h2>More answers</h2>
-<div class="more"><a href="/free-trial-ab-test/">A/B testing a paywall with a free trial: when can you decide?</a><a href="/minimum-detectable-effect/">Minimum detectable effect for subscription app A/B tests</a><a href="/onboarding-ab-test/">Onboarding A/B test: decide on trial starts or paid conversion?</a><a href="/ab-test-split-90-10/">A/B test split: 90/10, 80/20 or 50/50?</a><a href="/abc-test/">A/B/C test: how much longer than an A/B test?</a><a href="/paywall-ab-test-sample-size/">How many users do you need for a paywall A/B test?</a><a href="/ab-tests-that-lost/">Paywall and onboarding A/B tests that lost</a><a href="/subscription-conversion-benchmarks/">Why RevenueCat and Adapty conversion numbers don’t match</a></div>
+<div class="more"><a href="/free-trial-ab-test/">A/B testing a paywall with a free trial: when can you decide?<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a><a href="/minimum-detectable-effect/">Minimum detectable effect for subscription app A/B tests<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a><a href="/onboarding-ab-test/">Onboarding A/B test: decide on trial starts or paid conversion?<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a><a href="/ab-test-split-90-10/">A/B test split: 90/10, 80/20 or 50/50?<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a><a href="/abc-test/">A/B/C test: how much longer than an A/B test?<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a><a href="/paywall-ab-test-sample-size/">How many users do you need for a paywall A/B test?<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a><a href="/ab-tests-that-lost/">Paywall and onboarding A/B tests that lost<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a><a href="/subscription-conversion-benchmarks/">Why RevenueCat and Adapty conversion numbers don’t match<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a></div>
 <footer><span>© 2026 Ivan Polushin</span><a href="/">Growth Test Planner</a><a href="https://github.com/theoutlines/growth-test-planner">Source</a></footer>
 </div>
 </body>
