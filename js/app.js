@@ -615,7 +615,7 @@ function verdictScreen() {
   if (!v) return resultsScreen();
   const win = v.kind === 'win';
   countOnce('verdict', v.r.verdict.replace(/[^A-Za-z]/g, '') || 'none');
-  const card = `<section class="verdict${win ? ' win' : ''}"><span class="tag">${v.tag}</span>${S.what ? `<span class="vwhat">B: ${esc(S.what)}</span>` : ''}<span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
+  const card = `<div class="vhead"><span class="vtag">${v.tag}</span>${S.what ? `<span class="vwhat">B: ${esc(S.what)}</span>` : ''}</div><section class="verdict${win ? ' win' : ''}"><span class="title">${v.title}</span><span class="vsub">${v.sub}</span>${v.showBar ? rangeBar(v.r.metric, win, S.goal === 'notworse' ? -5 : null) : ''}</section>`;
   const checks = `<div class="checks"><div>${v.r.checks.map((c) => `<span class="ck${c.ok ? (c.warn ? ' warn' : '') : ' bad'}" title="${esc(c.detail)}">${c.ok && !c.warn ? '' : '<b>!</b>'}${c.label}</span>`).join('')}</div><span>${v.note}</span></div>`;
   const info = (icon, label, text, line) => `<section class="card info"><span class="ic">${icon}</span><span><small>${label}</small>${line ? `<b>${line}.</b>` : ''}<p>${text}</p></span></section>`;
   const vs = v.versions ? vsPlot(v.versions, v.r.lead, S.goal === 'notworse' ? -5 : null) : '';
