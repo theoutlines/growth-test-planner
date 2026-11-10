@@ -26,7 +26,7 @@ Do not set your own width, header, footer or section order. If no frame fits, st
 10. 4px grid. Type sizes 10/12/16/20/24/28/32/40/44; weights 400/500; lines 1/2/4 px.
 11. Version letters A, B, C in running text are grey chips (VersionChip: 14% fill, white, 0.8em, radius .35em), so they never read as the article "a". Not in headlines, buttons, segmented controls or charts.
 
-## 3. Numbers (use Num, RangeReadout, Catch — never format by hand)
+## 3. Numbers (one format per kind; in the planner `sign()` in js/math.js and `pctR()` in js/app.js produce them)
 | Kind | Format | Example |
 | --- | --- | --- |
 | What a test can catch | signed, 1 decimal | +9.1% |
