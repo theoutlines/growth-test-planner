@@ -566,8 +566,8 @@ function verdictOf(p) {
     win_with_cost: [`${L} wins ${sign(m.lift)}, with a cost`, `Most likely ${sign(m.lo)} to ${sign(m.hi)}. ${r.checks.filter((c) => !c.ok).map((c) => c.label).join(', ')} went the wrong way.`, 'Fix what broke before you ship', `A win that costs refunds isn’t a win yet. Fix it and run ${L} again.`],
     loss: three ? ['B and C both lose', `Best of them, ${L}, is most likely ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A', 'Both made things worse. Keep what you learned and try a different idea.']
       : [`B loses ${sign(m.lift)}`, `Most likely ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A', 'B made things worse. Keep what you learned and try a different idea.'],
-    cant_tell: three ? ['Can’t tell yet', `Neither B nor C clearly beats A. Best guess: ${L} ${sign(m.lift)}, but anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, `Keep A. Try a bolder version of ${L}`, `This test could only see changes of ${t1(p.thr)}% or more. Shipping either now is a coin toss.`]
-      : ['Can’t tell yet', `B looks ${sign(m.lift)} ${m.lift >= 0 ? 'better' : 'worse'}, but the real change could be anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A. Try a bolder version of B', `This test could only see changes of ${t1(p.thr)}% or more. Shipping B now is a coin toss.`],
+    cant_tell: three ? ['Can’t tell yet', `Neither B nor C clearly beats A. Best guess: ${L} ${sign(m.lift)}, but anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, `Keep A. Try a bolder version of ${L}`, `This test could only see changes of +${t1(p.thr)}% or more. Shipping either now is a coin toss.`]
+      : ['Can’t tell yet', `B looks ${sign(m.lift)} ${m.lift >= 0 ? 'better' : 'worse'}, but the real change could be anywhere from ${sign(m.lo)} to ${sign(m.hi)}.`, 'Keep A. Try a bolder version of B', `This test could only see changes of +${t1(p.thr)}% or more. Shipping B now is a coin toss.`],
     not_worse: both('not_worse') ? ['Both safe to ship', `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, both inside your −5% limit.`, 'Ship the one you prefer', 'You only had to show they don’t hurt, and they don’t. Don’t present either as a win: the test wasn’t sized to find one.']
       : [three ? `${L} is safe to ship` : 'Safe to ship', `At worst ${L} is ${sign(m.lo)}, inside your −5% limit. Most likely ${sign(m.lift)}.${three ? ` ${other.v} can’t rule out harm (at worst ${sign(other.metric.lo)}).` : ''}`, `Ship ${L}`, 'You only had to show it doesn’t hurt, and it doesn’t. Don’t present it as a win: the test wasn’t sized to find one.'],
     maybe_worse: ['Can’t rule out harm', three ? `At worst B is ${sign(r.versions[0].metric.lo)} and C ${sign(r.versions[1].metric.lo)}, past your −5% limit.` : `At worst B is ${sign(m.lo)}, past your −5% limit. Most likely ${sign(m.lift)}.`, 'Keep A, or run it longer', `More people would narrow the range. Until then, ${three ? 'either' : 'B'} might cost more than 5%.`],
@@ -767,6 +767,22 @@ function closeThen(after) {                            // overlays leave before 
 // ------------------------------------------------------------------ render + events
 const app = document.getElementById('app');
 document.getElementById('about')?.remove();   // the plain-text description is for readers without JavaScript (and agents); the app replaces it
+// Version letters A, B, C inside running text get a grey chip, so "B" never reads as an article (owner, 2026-11-10, option 2).
+// Skipped: headlines, controls, typed text, share messages, charts, and idea text (idea titles start with the article "A").
+const VL_SKIP = 'script,style,svg,input,textarea,select,option,button.pill,.seg,[contenteditable],.title,h1,.msg,.rb,.fp,.ideas,.ihead,.float,.text,.vl';
+function markVersions(root) {
+  const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.parentElement.closest(VL_SKIP) || !/(^|[\s(])[ABC](?=$|[\s’'·:.,)])/.test(n.data) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+  const nodes = []; while (walk.nextNode()) nodes.push(walk.currentNode);
+  for (const n of nodes) {
+    const frag = document.createDocumentFragment(); let last = 0;
+    n.data.replace(/(^|[\s(])([ABC])(?=$|[\s’'·:.,)])/g, (m, pre, v, i) => {
+      frag.append(n.data.slice(last, i) + pre);
+      const b = document.createElement('b'); b.className = 'vl'; b.textContent = v; frag.append(b);
+      last = i + m.length; return m;
+    });
+    frag.append(n.data.slice(last)); n.replaceWith(frag);
+  }
+}
 function render() {
   const { r } = route();
   const sheet = document.getElementById('sheet'), st = sheet ? sheet.scrollTop : 0;
@@ -775,6 +791,7 @@ function render() {
   const page = PAGE(r);
   const tmp = document.createElement('div'); tmp.innerHTML = html;
   addFooter(tmp.querySelector('main.page:not(.q)'));               // the footer closes every content page, not the four questions
+  markVersions(tmp);
   if (page === lastPage && app.firstChild && UI.areaSwap && !reduced()) {
     // a different set of inputs, not new values: swap the content in one soft fade instead of morphing each piece
     const fake = document.createElement('div'); fake.append(...tmp.childNodes); fake.id = 'app';
