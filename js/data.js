@@ -7,7 +7,7 @@
 // r: { arpu | conv | trials | ltv: [low, high] }  ·  fits(c): c = { trial (any plan has one), year, multi, once, onbTrial }
 // Paywall: Adapty's A/B test library (as summarised in the paywall-ab-test-assistant skill). Onboarding: the onboarding-teardown
 // ranges (theoutlines/growth-skills), test numbers in brackets; aggregate rows are Adapty's library.
-export const METRIC = { arpu: 'revenue per user', conv: 'paid conversion', trials: 'trial starts', ltv: 'LTV' };
+export const METRIC = { arpu: 'revenue per viewer', conv: 'paid conversion', trials: 'trial starts', ltv: 'LTV' };
 export const IDEAS = {
   paywall: [
     { id: 'annual', t: 'Make annual the hero', r: { arpu: [25, 40] }, fits: (c) => c.year && c.multi, what: 'Annual preselected, trial on annual, weekly price shown per week.', trap: 'Conversion can drop while revenue rises. Judge by revenue.' },
