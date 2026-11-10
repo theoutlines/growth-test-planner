@@ -1,7 +1,7 @@
 # growth-test-planner — project memory
 
 The live Growth Test Planner: https://planner.theoutlines.xyz. Author: Ivan Polushin (theoutlines). Public repo; code MIT.
-Design source of truth: the Claude Design canvas https://claude.ai/artifact/FDAgypvxoZ6MnD4w8D3urr (page "System (v5): current flow", editable layouts generated from the code; System (v4) is history), and the design notes in the owner's paywall-test-planner project memory.
+Design source of truth: the Claude Design canvas https://claude.ai/artifact/FDAgypvxoZ6MnD4w8D3urr (page "System (v6): current flow", editable layouts generated from the code by the capture tool, live since 2026-11-10; System (v5) and (v4) are history; page "Drift test 2" compares agents built from DESIGN_RULES.md with the live frames). Decisions for any new page: `DESIGN_RULES.md` here, plus `STATS.md`, `evidence/ideas.json` and the five frames in the design system, and the design notes in the owner's paywall-test-planner project memory.
 
 ## Layout
 - Static site, no build: `index.html`, `styles.css`, `js/math.js` (plan + read, pure), `js/data.js` (ideas, chips, trial tiles), `js/app.js` (hash router, screens, sliders, sheet/rail, share).
