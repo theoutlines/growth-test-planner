@@ -647,3 +647,23 @@ b.vl.vl { display: inline-block; letter-spacing: 0; min-width: 1.4em; padding: .
 /* Out-of-reach line under the weeks cards (owner, 2026-11-10): orange ! = look here, one line, 12 under the cards */
 .thr .reach { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 0; font-size: 16px; line-height: 24px; color: var(--t85); }
 .thr .reach .ri { flex: none; width: 20px; height: 20px; margin-top: 2px; border-radius: 50%; background: var(--acc); color: var(--w); font: 500 12px/20px var(--ui); text-align: center; }
+
+/* Metaphor sliders on the question steps (draft, branch sliders-proto) */
+.mt { position: relative; }
+.track.mtr { height: 64px; background: none; border-radius: 0; }
+.mtr svg { position: absolute; bottom: 8px; width: 24px; height: 24px; margin-left: -12px; display: block; }
+.mtr .grow-off, .mtr .grow-on { position: absolute; inset: 0; pointer-events: none; }
+.mtr .grow-off { fill: var(--s16); } .mtr .grow-on { fill: var(--w); }
+.mtr .grow-on { clip-path: inset(0 calc(100% - var(--p, 0) * 1%) 0 0); }
+.mtr svg .cut { fill: var(--bg); font: 500 16px/1 'Uncut Sans', system-ui, sans-serif; }
+.track.mtr .handle { top: 4px; height: 52px; transform: none; box-shadow: 0 2px 8px rgba(0,0,0,.6), 0 0 2px rgba(0,0,0,.6); }
+.mchips { position: relative; height: 48px; }
+.mtick { position: absolute; top: 0; width: 1px; height: 12px; margin-left: -.5px; background: var(--s32); }
+.chip.mchip { position: absolute; top: 12px; height: 32px; padding: 0 12px; gap: 4px; font-size: 12px; line-height: 16px; font-weight: 400; color: var(--t75); white-space: nowrap; }
+.chip.mchip b { font-weight: 500; color: inherit; }
+.chip.mchip.on { background: var(--w); color: var(--bg); }
+.mend { position: absolute; top: 20px; font-family: var(--mono); font-size: 12px; line-height: 16px; color: var(--t50); }
+.mend.l { left: 0; } .mend.r { right: 0; }
+.mtr .grow-on { transition: clip-path var(--duration-fast) var(--ease-smooth-out); }
+.track.mtr.dragging .grow-on { transition: none; }
+@media (prefers-reduced-motion: reduce) { .mtr .grow-on { transition: none; } }

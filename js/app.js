@@ -116,13 +116,13 @@ for (let i = 0; i < 4; i++) {
 const D30 = 30 / 7, kfmt = (x) => (x >= 1e6 ? +(x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? +(x / 1e3).toFixed(x < 1e5 ? 1 : 0) + 'k' : String(Math.round(x)));
 const roundCount = (v) => (v < 1000 ? Math.round(v) : v < 10000 ? Math.round(v / 10) * 10 : Math.round(v / 100) * 100);
 const COUNTS = {   // count key: [people key (weekly), rate key, slider range as % of people]
-  paid30: ['views', 'conv', 0.5, 10], trial30: ['views', 'trialView', 0.5, 40],
-  otrial30: ['users', 'trialRate', 0.5, 25], opaid30: ['users', 'paidRate', 0.2, 15],
+  paid30: ['views', 'conv', 0.4, 6], trial30: ['views', 'trialView', 0.2, 30],
+  otrial30: ['users', 'trialRate', 0.5, 25], opaid30: ['users', 'paidRate', 0.2, 8],
 };
 const PEOPLE = { views30: ['views', ['paid30', 'trial30']], users30: ['users', ['otrial30', 'opaid30']] };
 Object.entries(PEOPLE).forEach(([k, [base, deps]]) => {
   Object.defineProperty(S, k, { enumerable: false, configurable: true, get: () => Math.round(S[base] * D30), set: (v) => { v = Number(v); if (!(v > 0)) return; const keep = deps.map((d) => S[d]); S[base] = v / D30; deps.forEach((d, i) => { S[COUNTS[d][1]] = keep[i] / v * 100; }); } });
-  SL[k] = { lo: 4000, hi: base === 'views' ? 4000000 : 2000000, l: '4k', h: base === 'views' ? '4M' : '2M', fmt: n0, round: roundCount };
+  SL[k] = base === 'views' ? { lo: 5000, hi: 3000000, l: '5k', h: '3M', fmt: n0, round: roundCount } : { lo: 4000, hi: 1500000, l: '4k', h: '1.5M', fmt: n0, round: roundCount };   // ends picked so every typical chip lands on the middle of a figure
 });
 Object.entries(COUNTS).forEach(([k, [base, rate, lo, hi]]) => {
   const people = () => S[base] * D30;
@@ -141,10 +141,37 @@ function setShare(i, v) {
 const pctOf = (k, v) => SL[k].linear ? Math.max(0, Math.min(100, (v - SL[k].lo) / (SL[k].hi - SL[k].lo) * 100)) : Math.max(0, Math.min(100, Math.log(v / SL[k].lo) / Math.log(SL[k].hi / SL[k].lo) * 100));
 const valOf = (k, pct) => SL[k].round(SL[k].linear ? SL[k].lo + (SL[k].hi - SL[k].lo) * pct / 100 : SL[k].lo * Math.pow(SL[k].hi / SL[k].lo, pct / 100));
 
+// Metaphor sliders (draft, branch sliders-proto): on the question steps the fill is the thing counted, square glyphs on a 24 px grid
+// with one 6 px gap (20 people, 12 clocks, 12 coins); the glyph under the handle fills up to it; typical values are chips on the scale,
+// their tick on the middle of a glyph; a haptic tick each time the handle reaches the next glyph. Sheet and rail keep the standard track.
+const GLYPH = {
+  person: [20, '<rect x="8" y="0" width="8" height="8"/><rect x="6" y="10" width="12" height="14"/>'],
+  clock: [12, '<path fill-rule="evenodd" d="M2 0h20a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zM11 5v8h7v-2h-5V5z"/>'],
+  coin: [12, '<path fill-rule="evenodd" d="M2 0h20a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/><text x="12" y="17.5" text-anchor="middle" class="cut">$</text>'],
+};
+const GLYPH_OF = { views30: 'person', users30: 'person', trial30: 'clock', otrial30: 'clock', paid30: 'coin', opaid30: 'coin' };
+const gRow = (g) => { const [n, svg] = GLYPH[g]; return Array.from({ length: n }, (_, i) => `<svg viewBox="0 0 24 24" style="left:${(i + .5) / n * 100}%">${svg}</svg>`).join(''); };
+function mtrack(k) {
+  const g = GLYPH_OF[k], n = GLYPH[g][0], p = pctOf(k, S[k]), cnt = COUNTS[k];
+  const ends = cnt ? [cnt[2] + '%', cnt[3] + '%'] : [SL[k].l, SL[k].h];
+  // one row of chips on the scale: added in data order (the main benchmark first); a chip may slide sideways off its tick to make room,
+  // as long as the tick stays under it; a chip that can't fit is left out (all of them still sit in the sheet's chip list)
+  const W = 358, short = (b) => b.replace(/ app$/, '').replace('Europe', 'EU').replace('Health & Fitness', 'Health').replace('Photo & Video', 'Photo');
+  const fit = (set) => { const s = [...set].sort((x, y) => x.t - y.t); s.forEach((c) => { c.l = c.t - c.w / 2; });
+    for (let it = 0; it < 80; it++) { s.forEach((c) => { c.l = Math.max(32, Math.min(W - 32 - c.w, c.l)); }); let moved = false; for (let i = 1; i < s.length; i++) { const o = s[i - 1].l + s[i - 1].w + 4 - s[i].l; if (o > 0) { s[i - 1].l -= o / 2; s[i].l += o / 2; moved = true; } } s.forEach((c) => { c.l = Math.max(32, Math.min(W - 32 - c.w, c.l)); }); if (!moved) break; }
+    for (let i = 1; i < s.length; i++) if (s[i - 1].l + s[i - 1].w + 4 > s[i].l + .5) return null;
+    return s.every((c) => c.t >= c.l + 8 && c.t <= c.l + c.w - 8) ? s : null; };
+  let placed = [];
+  chipList(k).forEach(([v, a, b]) => { const q = pctOf(k, v), t = q / 100 * W, bb = short(b), w = (a.length + bb.length + 1) * 6.8 + 24;
+    const tryS = fit([...placed.map((c) => ({ ...c })), { v, a, b: bb, q, t, w }]); if (tryS) placed = tryS; });
+  const chipsOn = placed.map((c) => `<i class="mtick" style="left:${c.t / W * 100}%"></i><button class="chip mchip${Math.abs(c.q - p) < .5 ? ' on' : ''}" data-set="${k}" data-val="${c.v}" style="left:${c.l / W * 100}%"><b>${c.a}</b> ${c.b}</button>`).join('');
+  return `<div class="mt"><div class="track mtr" data-slide="${k}" data-n="${n}" role="slider" tabindex="0" style="--p:${p}" aria-valuetext="${SL[k].fmt(S[k])}"><div class="grow-off">${gRow(g)}</div><div class="grow-on">${gRow(g)}</div><div class="handle"></div></div>
+  <div class="mchips" data-mchips="${k}"><span class="mend l">${ends[0]}</span><span class="mend r">${ends[1]}</span>${chipsOn}</div></div>`;
+}
 function bigValue(k) {
   const v = S[k], txt = SL[k].fmt(v), size = Math.min(80, Math.floor(600 / txt.length / 4) * 4);
   return `<div class="big"><label class="num"><span class="sr">Value</span><input data-type="${k}" inputmode="decimal" value="${txt}" style="font-size:${size}px;width:${Math.max(2, txt.length) + 0.1}ch">${SL[k].unit ? `<span class="unit">${SL[k].unit}</span>` : ''}</label>
-  ${track(k)}${rangeNote(k)}</div>`;
+  ${GLYPH_OF[k] ? mtrack(k) : track(k)}${rangeNote(k)}</div>`;
 }
 // a typed rate above the slider's top is almost always a typo (2.75 → 32.75): say so, softly, next to the number
 const RATE = { conv: 1, trialRate: 1, paidRate: 1, trialView: 1, paid30: 1, trial30: 1, otrial30: 1, opaid30: 1 };
@@ -203,18 +230,18 @@ function areaScreen() {
 function trafficScreen() {
   const onb = S.area === 'onboarding', t = hasTrial();
   return top() + `<main class="page q">${onb ? heading('How many new users started onboarding in the last 30 days?', 'Count people, not screens.') : heading('How many people saw this paywall in the last 30 days?', 'Count people, not views: the test splits people.')}
-  ${bigValue(onb ? 'users30' : 'views30')}${chips(onb ? 'users30' : 'views30')}<div class="grow"></div>${nav(onb ? 'Next: free trial' : 'Next: what it sells', 2, 'trial', 'area')}</main>`;
+  ${bigValue(onb ? 'users30' : 'views30')}<div class="grow"></div>${nav(onb ? 'Next: free trial' : 'Next: what it sells', 2, 'trial', 'area')}</main>`;
 }
 function startsScreen() {
   const onb = S.area === 'onboarding';
   return top() + `<main class="page q">${heading('How many of them started a free trial?', 'The same 30 days.')}
-  ${bigValue(onb ? 'otrial30' : 'trial30')}<div class="hintgroup">${chips(onb ? 'otrial30' : 'trial30', 'No numbers yet? Start from a typical app')}</div>
+  ${bigValue(onb ? 'otrial30' : 'trial30')}
   <div class="grow"></div>${nav('Next: how many pay', 4, 'conv', 'trial')}</main>`;
 }
 function convScreen() {
   const onb = S.area === 'onboarding', t = hasTrial();
   return top() + `<main class="page q">${heading('How many of them paid?', t ? 'The same 30 days, payments after the free trial included.' : 'The same 30 days.')}
-  ${bigValue(onb ? 'opaid30' : 'paid30')}<div class="hintgroup">${chips(onb ? 'opaid30' : 'paid30', 'No numbers yet? Start from a typical app')}</div>${!onb && S.plans.length > 1 ? `<div class="nextq">${mixBlock('Which plans they bought')}</div>` : ''}
+  ${bigValue(onb ? 'opaid30' : 'paid30')}
   <div class="grow"></div>${nav('Show my test', STEPS().length, 'test', t ? 'starts' : 'trial')}</main>`;
 }
 function trialScreen() {
@@ -222,7 +249,7 @@ function trialScreen() {
   if (!onb) {        // paywall: what it sells comes before the counts, so we know whether to ask about trials
     const lt = longestTrial(S.plans);
     return top() + `<main class="page q">${heading('What does this paywall sell?', 'Tick the plans it shows, then each one’s price and free trial.')}
-  ${plansPick()}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill.` : 'No trial, so no extra wait.'}</span>
+  ${plansPick()}<span class="wait">${lt ? `You decide ${lt >= 14 ? '14+' : lt} days after the test stops, when the last trials bill.` : 'No trial, so no extra wait.'}</span>${S.plans.length > 1 ? `<div class="nextq">${mixBlock('Share of sales')}</div>` : ''}
   <div class="grow"></div>${nav(hasTrial() ? 'Next: how many start a trial' : 'Next: how many pay', 3, hasTrial() ? 'starts' : 'conv', 'traffic')}</main>`;
   }
   const tiles = TRIALS.map(([d, sub]) => `<button class="tile" data-set="trial" data-val="${d}" aria-pressed="${S.trial === d}"><span class="n"><b>${d === 0 ? 'None' : d >= 14 ? '14+' : d}</b>${d ? '<span>days</span>' : ''}</span><span class="days" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i${i < d ? ' class="on"' : ''}></i>`).join('')}</span><em>${sub}</em></button>`).join('');
@@ -882,7 +909,7 @@ app.addEventListener('click', (e) => {
     UI.overlay = 'edit'; render(); setTimeout(() => document.getElementById('plans-inline')?.scrollIntoView({ block: 'center' }), 60); return;
   }
   if (el.dataset.bydate) { count('bydate', 'set'); const [w, t] = el.dataset.bydate.split('.').map(Number); S.weeks = w; S.traffic = t; syncTrack('traffic'); return planChanged(); }
-  if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
+  if (el.dataset.set) { if (el.classList.contains('mchip')) haptic(); return set(el.dataset.set, el.dataset.val); }
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
   if (el.dataset.planToggle) { const t = el.dataset.planToggle, i = S.plans.findIndex((x) => x.t === t);
@@ -948,9 +975,10 @@ app.addEventListener('keydown', (e) => {
   if (tr && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const k = tr.dataset.slide; const p = pctOf(k, S[k]) + (e.key === 'ArrowRight' ? 2 : -2); S[k] = valOf(k, Math.max(0, Math.min(100, p))); save(); syncTrack(k); refreshMain(); e.preventDefault(); }
 });
 function syncTrack(k, except) {
-  if (PEOPLE[k]) PEOPLE[k][1].forEach((d) => document.querySelectorAll(`[data-slide="${d}"]`).forEach((tr) => { tr.querySelector('.end.l').textContent = SL[d].l; tr.querySelector('.end.r').textContent = SL[d].h; tr.style.setProperty('--p', pctOf(d, S[d])); }));
+  if (PEOPLE[k]) PEOPLE[k][1].forEach((d) => document.querySelectorAll(`[data-slide="${d}"]`).forEach((tr) => { const el = tr.querySelector('.end.l'), er = tr.querySelector('.end.r'); if (el) el.textContent = SL[d].l; if (er) er.textContent = SL[d].h; tr.style.setProperty('--p', pctOf(d, S[d])); }));
   if (/^sh\d$/.test(k) && !syncTrack.busy) { syncTrack.busy = true; S.plans.forEach((_, i) => { if ('sh' + i !== k) syncTrack('sh' + i); }); syncTrack.busy = false; }
   document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { tr.style.setProperty('--p', pctOf(k, S[k])); tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
+  document.querySelectorAll(`[data-mchips="${k}"] .mchip`).forEach((ch) => ch.classList.toggle('on', Math.abs(pctOf(k, +ch.dataset.val) - pctOf(k, S[k])) < .5));
   document.querySelectorAll(`[data-val-of="${k}"]`).forEach((el) => { el.textContent = SL[k].fmt(S[k]) + (SL[k].unit || ''); });
   document.querySelectorAll(`[data-rng-of="${k}"]`).forEach((el) => { el.textContent = rangeText(k); });
   const txt = SL[k].fmt(S[k]);
@@ -969,6 +997,14 @@ function refreshMain() {           // update the answer without touching the con
 }
 // dragging a track
 let drag = null;
+// one light tick: Android has navigator.vibrate; iOS Safari (18+) gives a system tick when a switch checkbox toggles
+let hapEl = null;
+function haptic() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (navigator.vibrate) { try { navigator.vibrate(8); } catch {} return; }
+  if (!hapEl) { hapEl = document.createElement('label'); hapEl.setAttribute('aria-hidden', 'true'); hapEl.style.cssText = 'position:fixed;left:-100px;top:0;opacity:0;pointer-events:none'; hapEl.innerHTML = '<input type="checkbox" switch tabindex="-1">'; document.body.appendChild(hapEl); }
+  hapEl.click();
+}
 // share-of-sales bar: a divider moves sales between the two plans it sits between
 let mixDrag = null;
 function mixSet(i, boundary) {      // boundary: % from the bar's left edge
@@ -988,13 +1024,14 @@ app.addEventListener('pointerdown', (e) => {
   }
   if (h) { mixDrag = { i: +h.dataset.mixHandle, bar: h.closest('[data-mixbar]') }; h.setPointerCapture(e.pointerId); UI.instant = true; e.preventDefault(); return; }
   const tr = e.target.closest('[data-slide]'); if (!tr) return;
-  drag = { tr, k: tr.dataset.slide }; tr.classList.add('dragging'); UI.instant = true; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
+  drag = { tr, k: tr.dataset.slide }; if (tr.dataset.n) haptic(); tr.classList.add('dragging'); UI.instant = true; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
 });
 app.addEventListener('pointermove', (e) => { if (mixDrag) { const b = mixDrag.bar.getBoundingClientRect(); mixSet(mixDrag.i, (e.clientX - b.left) / b.width * 100); return; } if (drag) move(e); });
 app.addEventListener('pointerup', () => { if (mixDrag) { mixDrag = null; UI.instant = false; planChanged(); return; } if (drag) { drag.tr.classList.remove('dragging'); drag = null; UI.instant = false; save(); if (route().r !== 'test') render(); } });
 function move(e) {
   const b = drag.tr.getBoundingClientRect();
   const p = Math.max(0, Math.min(100, (e.clientX - b.left) / b.width * 100));
+  if (drag.tr.dataset.n) { const u = Math.min(+drag.tr.dataset.n - 1, Math.floor(p / 100 * +drag.tr.dataset.n)); if (drag.u != null && u !== drag.u) haptic(); drag.u = u; }
   S[drag.k] = valOf(drag.k, p); syncTrack(drag.k);
   refreshMain();
 }
