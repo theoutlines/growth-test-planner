@@ -58,7 +58,7 @@ Never: "–" ranges, "…", "between", "≥", "and up", a change without its sig
 Plan and read with the methods in `STATS.md` (95%, 80% power, Bonferroni for C, decision day, verdict thresholds, split check). Never pick your own.
 
 ## 7. Frames in brief
-- QuestionFrame: one question, h1 28/32 + one line, input centred, back + Next pinned bottom; progress from the real step count.
+- QuestionFrame: one question, h1 28/32 + one line, input centred, back + Next pinned bottom; progress from the real step count. A count (people, trial starts, payments) is a BigValue over a MetaphorSlider with its typical values as chips on the scale; one question per step, so nothing else sits under it. MetaphorSlider lives only on these steps; sheet and rail keep the standard Slider.
 - CalculatorFrame: ResultBlock → PlanTimeline → EvidenceList/IdeasChart. Inputs only in ControlsPanel (sheet on phone, rail on desktop), fixed order. Live.
 - ReaderFrame: inputs + "Read my result" → VerdictBanner → ChecksRow → DesignPair? → numbers → NextSteps (max 3). Only a win is orange.
 - AnswerPageFrame: question h1 → ShortAnswer → DataTable + SourceLine → PlannerLink (opens the first question) → steps → EvidenceList → More answers → footer. No inputs, no rail.

@@ -7,7 +7,7 @@
   --s05: rgba(255,255,255,.05); --s06: rgba(255,255,255,.06); --s07: rgba(255,255,255,.07); --s08: rgba(255,255,255,.08); --s10: rgba(255,255,255,.1); --s14: rgba(255,255,255,.14);
   --acc: #FF4C00; --on-acc: #FFFFFF;
   --s16: rgba(255,255,255,.16); --s24: rgba(255,255,255,.24); --s32: rgba(255,255,255,.32); --frame: #2C2C2C; --range: #525252; --scrim: rgba(0,0,0,.55);
-  --shadow-sheet: 0 -12px 32px rgba(0,0,0,.45); --shadow-modal: 0 32px 80px rgba(0,0,0,.6); --shadow-float: 0 24px 64px rgba(0,0,0,.55); --shadow-share: 0 12px 32px rgba(0,0,0,.4);
+  --shadow-sheet: 0 -12px 32px rgba(0,0,0,.45); --shadow-modal: 0 32px 80px rgba(0,0,0,.6); --shadow-float: 0 24px 64px rgba(0,0,0,.55); --shadow-share: 0 12px 32px rgba(0,0,0,.4); --shadow-handle: 0 2px 8px rgba(0,0,0,.6), 0 0 2px rgba(0,0,0,.6);
   --orange: radial-gradient(120% 100% at 50% 100%, #FF7A2E 0%, #F5340E 55%, #E8290A 100%);
   --ui: 'Uncut Sans', system-ui, -apple-system, sans-serif;
   --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -648,7 +648,7 @@ b.vl.vl { display: inline-block; letter-spacing: 0; min-width: 1.4em; padding: .
 .thr .reach { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 0; font-size: 16px; line-height: 24px; color: var(--t85); }
 .thr .reach .ri { flex: none; width: 20px; height: 20px; margin-top: 2px; border-radius: 50%; background: var(--acc); color: var(--w); font: 500 12px/20px var(--ui); text-align: center; }
 
-/* Metaphor sliders on the question steps (draft, branch sliders-proto) */
+/* Metaphor sliders on the question steps (live 2026-11-11) */
 .mt { position: relative; }
 .track.mtr { height: 64px; background: none; border-radius: 0; }
 .mtr svg { position: absolute; bottom: 8px; width: 24px; height: 24px; margin-left: -12px; display: block; }
@@ -656,7 +656,7 @@ b.vl.vl { display: inline-block; letter-spacing: 0; min-width: 1.4em; padding: .
 .mtr .grow-off { fill: var(--s16); } .mtr .grow-on { fill: var(--w); }
 .mtr .grow-on { clip-path: inset(0 calc(100% - var(--p, 0) * 1%) 0 0); }
 .mtr svg .cut { fill: var(--bg); font: 500 16px/1 'Uncut Sans', system-ui, sans-serif; }
-.track.mtr .handle { top: 4px; height: 52px; transform: none; box-shadow: 0 2px 8px rgba(0,0,0,.6), 0 0 2px rgba(0,0,0,.6); }
+.track.mtr .handle { top: 4px; height: 52px; transform: none; box-shadow: var(--shadow-handle); }
 .mchips { position: relative; height: 48px; }
 .mtick { position: absolute; top: 0; width: 1px; height: 12px; margin-left: -.5px; background: var(--s32); }
 .chip.mchip { position: absolute; top: 12px; height: 32px; padding: 0 12px; gap: 4px; font-size: 12px; line-height: 16px; font-weight: 400; color: var(--t75); white-space: nowrap; }
