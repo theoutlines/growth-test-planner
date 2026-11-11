@@ -116,13 +116,13 @@ for (let i = 0; i < 4; i++) {
 const D30 = 30 / 7, kfmt = (x) => (x >= 1e6 ? +(x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? +(x / 1e3).toFixed(x < 1e5 ? 1 : 0) + 'k' : String(Math.round(x)));
 const roundCount = (v) => (v < 1000 ? Math.round(v) : v < 10000 ? Math.round(v / 10) * 10 : Math.round(v / 100) * 100);
 const COUNTS = {   // count key: [people key (weekly), rate key, slider range as % of people]
-  paid30: ['views', 'conv', 0.2, 8], trial30: ['views', 'trialView', 0.5, 25],
+  paid30: ['views', 'conv', 0.4, 6], trial30: ['views', 'trialView', 0.2, 30],
   otrial30: ['users', 'trialRate', 0.5, 25], opaid30: ['users', 'paidRate', 0.2, 8],
 };
 const PEOPLE = { views30: ['views', ['paid30', 'trial30']], users30: ['users', ['otrial30', 'opaid30']] };
 Object.entries(PEOPLE).forEach(([k, [base, deps]]) => {
   Object.defineProperty(S, k, { enumerable: false, configurable: true, get: () => Math.round(S[base] * D30), set: (v) => { v = Number(v); if (!(v > 0)) return; const keep = deps.map((d) => S[d]); S[base] = v / D30; deps.forEach((d, i) => { S[COUNTS[d][1]] = keep[i] / v * 100; }); } });
-  SL[k] = { lo: 5000, hi: 3000000, l: '5k', h: '3M', fmt: n0, round: roundCount };
+  SL[k] = base === 'views' ? { lo: 5000, hi: 3000000, l: '5k', h: '3M', fmt: n0, round: roundCount } : { lo: 4000, hi: 1500000, l: '4k', h: '1.5M', fmt: n0, round: roundCount };   // ends picked so every typical chip lands on the middle of a figure
 });
 Object.entries(COUNTS).forEach(([k, [base, rate, lo, hi]]) => {
   const people = () => S[base] * D30;
@@ -162,9 +162,9 @@ function mtrack(k) {
     for (let i = 1; i < s.length; i++) if (s[i - 1].l + s[i - 1].w + 4 > s[i].l + .5) return null;
     return s.every((c) => c.t >= c.l + 8 && c.t <= c.l + c.w - 8) ? s : null; };
   let placed = [];
-  chipList(k).forEach(([v, a, b]) => { const q = pctOf(k, v), t = (Math.min(n - 1, Math.floor(q / 100 * n)) + .5) / n * W, bb = short(b), w = (a.length + bb.length + 1) * 6.8 + 24;
+  chipList(k).forEach(([v, a, b]) => { const q = pctOf(k, v), t = q / 100 * W, bb = short(b), w = (a.length + bb.length + 1) * 6.8 + 24;
     const tryS = fit([...placed.map((c) => ({ ...c })), { v, a, b: bb, q, t, w }]); if (tryS) placed = tryS; });
-  const chipsOn = placed.map((c) => `<i class="mtick" style="left:${c.t / W * 100}%"></i><button class="chip mchip${Math.abs(c.q - p) < 2 ? ' on' : ''}" data-set="${k}" data-val="${c.v}" style="left:${c.l / W * 100}%"><b>${c.a}</b> ${c.b}</button>`).join('');
+  const chipsOn = placed.map((c) => `<i class="mtick" style="left:${c.t / W * 100}%"></i><button class="chip mchip${Math.abs(c.q - p) < .5 ? ' on' : ''}" data-set="${k}" data-val="${c.v}" style="left:${c.l / W * 100}%"><b>${c.a}</b> ${c.b}</button>`).join('');
   return `<div class="mt"><div class="track mtr" data-slide="${k}" data-n="${n}" role="slider" tabindex="0" style="--p:${p}" aria-valuetext="${SL[k].fmt(S[k])}"><div class="grow-off">${gRow(g)}</div><div class="grow-on">${gRow(g)}</div><div class="handle"></div></div>
   <div class="mchips" data-mchips="${k}"><span class="mend l">${ends[0]}</span><span class="mend r">${ends[1]}</span>${chipsOn}</div></div>`;
 }
@@ -909,7 +909,7 @@ app.addEventListener('click', (e) => {
     UI.overlay = 'edit'; render(); setTimeout(() => document.getElementById('plans-inline')?.scrollIntoView({ block: 'center' }), 60); return;
   }
   if (el.dataset.bydate) { count('bydate', 'set'); const [w, t] = el.dataset.bydate.split('.').map(Number); S.weeks = w; S.traffic = t; syncTrack('traffic'); return planChanged(); }
-  if (el.dataset.set) return set(el.dataset.set, el.dataset.val);
+  if (el.dataset.set) { if (el.classList.contains('mchip')) haptic(); return set(el.dataset.set, el.dataset.val); }
   if (el.dataset.plan) { const [i, f] = el.dataset.plan.split('.'); const x = S.plans[+i]; x[f] = f === 'tr' ? Number(el.dataset.val) : el.dataset.val; if (x.t === 'once') x.tr = 0; return planChanged(); }
   if (el.dataset.planDel) { S.plans.splice(+el.dataset.planDel, 1); setShare(0, S.plans.length === 1 ? 100 : S.sh0); return planChanged(); }
   if (el.dataset.planToggle) { const t = el.dataset.planToggle, i = S.plans.findIndex((x) => x.t === t);
@@ -978,7 +978,7 @@ function syncTrack(k, except) {
   if (PEOPLE[k]) PEOPLE[k][1].forEach((d) => document.querySelectorAll(`[data-slide="${d}"]`).forEach((tr) => { const el = tr.querySelector('.end.l'), er = tr.querySelector('.end.r'); if (el) el.textContent = SL[d].l; if (er) er.textContent = SL[d].h; tr.style.setProperty('--p', pctOf(d, S[d])); }));
   if (/^sh\d$/.test(k) && !syncTrack.busy) { syncTrack.busy = true; S.plans.forEach((_, i) => { if ('sh' + i !== k) syncTrack('sh' + i); }); syncTrack.busy = false; }
   document.querySelectorAll(`[data-slide="${k}"]`).forEach((tr) => { tr.style.setProperty('--p', pctOf(k, S[k])); tr.setAttribute('aria-valuetext', SL[k].fmt(S[k])); });
-  document.querySelectorAll(`[data-mchips="${k}"] .mchip`).forEach((ch) => ch.classList.toggle('on', Math.abs(pctOf(k, +ch.dataset.val) - pctOf(k, S[k])) < 2));
+  document.querySelectorAll(`[data-mchips="${k}"] .mchip`).forEach((ch) => ch.classList.toggle('on', Math.abs(pctOf(k, +ch.dataset.val) - pctOf(k, S[k])) < .5));
   document.querySelectorAll(`[data-val-of="${k}"]`).forEach((el) => { el.textContent = SL[k].fmt(S[k]) + (SL[k].unit || ''); });
   document.querySelectorAll(`[data-rng-of="${k}"]`).forEach((el) => { el.textContent = rangeText(k); });
   const txt = SL[k].fmt(S[k]);
@@ -1024,7 +1024,7 @@ app.addEventListener('pointerdown', (e) => {
   }
   if (h) { mixDrag = { i: +h.dataset.mixHandle, bar: h.closest('[data-mixbar]') }; h.setPointerCapture(e.pointerId); UI.instant = true; e.preventDefault(); return; }
   const tr = e.target.closest('[data-slide]'); if (!tr) return;
-  drag = { tr, k: tr.dataset.slide }; tr.classList.add('dragging'); UI.instant = true; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
+  drag = { tr, k: tr.dataset.slide }; if (tr.dataset.n) haptic(); tr.classList.add('dragging'); UI.instant = true; tr.setPointerCapture(e.pointerId); move(e); e.preventDefault();
 });
 app.addEventListener('pointermove', (e) => { if (mixDrag) { const b = mixDrag.bar.getBoundingClientRect(); mixSet(mixDrag.i, (e.clientX - b.left) / b.width * 100); return; } if (drag) move(e); });
 app.addEventListener('pointerup', () => { if (mixDrag) { mixDrag = null; UI.instant = false; planChanged(); return; } if (drag) { drag.tr.classList.remove('dragging'); drag = null; UI.instant = false; save(); if (route().r !== 'test') render(); } });
