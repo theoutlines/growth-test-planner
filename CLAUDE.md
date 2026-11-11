@@ -9,6 +9,7 @@ Design source of truth: the Claude Design canvas https://claude.ai/artifact/FDAg
 
 ## Rules
 - One change, every place (owner rule, 2026-10-30): any change the owner asks for is applied in the same pass to the live site, the design canvas (mobile and desktop boards, components) and the project memory. Before saying "done", check all three; never fix only one.
+- The design system is always current (owner, 2026-11-11): every change also goes into The Outlines in the same pass (repo theoutlines/design-system → ds.theoutlines.xyz, the Design System artifact, its browsing interface), and its dates are always bumped: design-system.json lastChange, tokens.json meta synced/edited, the “live” date at the top of DESIGN_RULES.md (synced into this repo).
 - Design freely, ship on approval (owner rule, 2026-10-31): new things can be drafted on the design canvas without asking, but nothing new goes into the live product until the owner says yes. Fixes he asks for go live as before.
 - Nothing typed leaves the browser: no backend, no runtime AI, no third-party requests except Cloudflare Web Analytics (page views only). Last inputs in localStorage (try/catch); share links put inputs after `#`.
 - Public sources only; never employer data. Every benchmark keeps its source.
