@@ -773,7 +773,7 @@ function closeThen(after) {                            // overlays leave before 
 const app = document.getElementById('app');
 document.getElementById('about')?.remove();   // the plain-text description is for readers without JavaScript (and agents); the app replaces it
 // Version letters A, B, C inside running text get a grey chip, so "B" never reads as an article (owner, 2026-11-10, option 2).
-// Skipped: headlines, controls, typed text, share messages, charts, and idea text (idea titles start with the article "A").
+// Skipped: headlines, controls, typed text, share messages, charts, and idea text (idea titles start with the article "A"). Anywhere else, a capital A before a lowercase word is read as the article.
 const VL_SKIP = 'script,style,svg,input,textarea,select,option,button.pill,.seg,[contenteditable],.title,h1,.msg,.rb,.fp,.ideas,.ihead,.float,.text,.vl';
 function markVersions(root) {
   const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.parentElement.closest(VL_SKIP) || !/(^|[\s(])[ABC](?=$|[\s’'·:.,)])/.test(n.data) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
@@ -781,6 +781,8 @@ function markVersions(root) {
   for (const n of nodes) {
     const frag = document.createDocumentFragment(); let last = 0;
     n.data.replace(/(^|[\s(])([ABC])(?=$|[\s’'·:.,)])/g, (m, pre, v, i) => {
+      // “A few questions”, “A plan”: a capital A before a lowercase word is the article, not version A
+      if (v === 'A' && /^\s[a-z]/.test(n.data.slice(i + m.length))) return m;
       frag.append(n.data.slice(last, i) + pre);
       const b = document.createElement('b'); b.className = 'vl'; b.textContent = v; frag.append(b);
       last = i + m.length; return m;
