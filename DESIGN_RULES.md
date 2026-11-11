@@ -51,9 +51,8 @@ Never: "–" ranges, "…", "between", "≥", "and up", a change without its sig
 - StrengthTag: “Many tests” = 3 or more published tests behind the range, “One test” = 1, “2 tests” = 2; plus “No control group” and “Lost”.
 - The Reader (a verdict) shows no evidence: published results live in the plan.
 - Cite only `evidence/ideas.json` (or a source named on the page). No placeholder sources, no invented ranges.
-- EvidenceList / IdeasChart order: Tested against a control group → No control group → Lost. First 6 that fit, then "Show all N".
-- Every item: what changed, result with metric, StrengthTag (Many tests · One test · No control group · Lost), source link.
-- A range from a library band says "Many tests" only when it is many; one test behind a range = "One test".
+- EvidenceList / IdeasChart order: Tested against a control group → No control group → Lost.
+- Every item: what changed, result with metric, StrengthTag, source link.
 
 ## 6. Statistics
 Plan and read with the methods in `STATS.md` (95%, 80% power, Bonferroni for C, decision day, verdict thresholds, split check). Never pick your own.
