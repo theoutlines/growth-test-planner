@@ -1,4 +1,4 @@
-# DESIGN_RULES.md — The Outlines (live 2026-11-10)
+# DESIGN_RULES.md — The Outlines (live 2026-11-11)
 
 Read this before building any page for theoutlines.xyz tools (Growth Test Planner, its answer pages, future planners).
 The component library gives you parts. This file gives you the decisions. The ticket decides what a page says; these rules decide how it looks and behaves.
