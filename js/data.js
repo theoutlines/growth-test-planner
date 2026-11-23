@@ -40,7 +40,7 @@ export const IDEAS = {
     { id: 'plan', t: 'Show a plan built from their answers', r: { conv: [10, 17], trials: [8.5, 8.5] }, split: { conv: { note: 'US +27% in one test', to: 27 } }, fits: () => true, what: 'A screen that repeats their goal and shows the plan made for it, before the paywall.', trap: 'A plan screen after a fake loader lost revenue by half in another app. It has to use the answers.' },
     { id: 'depth', t: 'A fuller onboarding instead of none', r: { conv: [40, 40], arpu: [20, 20] }, split: { conv: { note: 'iOS only' } }, fits: () => true, what: 'If people land straight on the paywall or the app, add a few screens that set up the value.', trap: 'From one anonymised app. Every added step has to earn its place; cutting onboarding down lost about 13% in the same app.' },
     // Lost in published tests: shown only under “Show all”, at the bottom
-    { id: 'shorter', lost: true, t: 'Shorter onboarding', r: { conv: [-13, -13], arpu: [-13, -13] }, about: true, fits: () => true, what: 'Fewer screens: cutting the steps that ask, show a result or set something up.', trap: 'Cutting those steps lost about 13% of conversion and revenue per user (#14; Adapty library). Condensing long reading screens into a short carousel is different: it won in one test (TomTom, paid +8%).' },
+    { id: 'shorter', lost: true, t: 'Shorter onboarding', r: { conv: [-13, -13], arpu: [-13, -13] }, about: true, fits: () => true, what: 'Fewer screens: cutting the steps that ask, show a result or set something up.', trap: 'Cutting those steps lost about 13% of conversion and revenue per user (#14; Adapty library). When Everlove cut questions, more people reached the paywall but fewer started a trial, and paid didn’t move. Condensing long reading screens into a short carousel is different: it won in one test (TomTom, paid +8%).' },
     { id: 'loaderPlan', lost: true, t: 'A loader, then a plan that ignores the answers', r: { arpu: [-50, -50] }, about: true, fits: () => true, what: 'A “building your plan” wait followed by a plan screen that looks the same whatever people answered.', trap: 'Lost about half of revenue per user in one flow (Adapty library). A plan that really changes with the answers is a different idea: “Show a plan built from their answers”.' },
   ],
 };
@@ -146,7 +146,8 @@ export const TESTS = {
     depth: [['Entertainment app (unnamed)', 'Payment conversion +40% (iOS), ARPU +20%', 'A long onboarding instead of none.', ADAPTY_ONB, '2025-11'], // #14
       ['Coconote', 'Trial starts +16%', 'Onboarding doubled to 15 screens, more personal. Founder report.', 'https://www.revenuecat.com/blog/growth/brett-zack-coconote-sub-club-podcast-2026', '2026-03'], // #147
       ['TomTom', 'The short one won: trial starts +2.5%, paid +8%', 'Long-form onboarding against a simple carousel. The long one lost.', 'https://www.purchasely.com/case-studies/increasing-mrr-85-percent-against-free-competitors', '']], // #140
-    shorter: [['Entertainment app (unnamed)', 'Conversion −13%', 'The long onboarding shortened.', ADAPTY_ONB, '2025-11'], // #14
+    shorter: [['Everlove', 'Paid no change; trial starts per viewer −18%', 'Questions cut, 28 → 19 steps. More people reached the paywall, fewer of them started a trial.', 'https://www.revenuecat.com/blog/growth/everlove-onboarding-experiment', '2026-11'], // #177
+      ['Entertainment app (unnamed)', 'Conversion −13%', 'The long onboarding shortened.', ADAPTY_ONB, '2025-11'], // #14
       ['TomTom', 'Trial starts +2.5%, paid +8%', 'A simple carousel beat long-form onboarding. Shorter won here.', 'https://www.purchasely.com/case-studies/increasing-mrr-85-percent-against-free-competitors', '']], // #140
   },
 };
