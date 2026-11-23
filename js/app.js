@@ -2,7 +2,7 @@ import { DEFAULTS, planOf, readOf, decideOptions, sign, PLAN_TYPES, fresh, share
 import { IDEAS, IDEAS_SRC, CHIPS, TRIALS, SKILL_URL, METRIC, DECIDE_METRIC, TESTS, COUNT } from './data.js';
 
 // ------------------------------------------------------------------ state
-// Nothing typed here leaves the browser; the only thing sent is an anonymous daily count of which idea is picked in “What changes in B” (functions/api/e.js). The last inputs are kept in localStorage (this browser only);
+// Nothing typed here leaves the browser; the only things sent are anonymous daily counts of choices from fixed lists and of which site the visit came from (functions/api/e.js, js/ref.js). The last inputs are kept in localStorage (this browser only);
 // a shared link carries them after "#", which browsers never send to the server.
 const S = fresh();
 let READ = { A: {}, B: {}, C: {}, billed: true };

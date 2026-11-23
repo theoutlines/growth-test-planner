@@ -222,8 +222,13 @@ BODY = {
 ''',
 }
 
+# Title tags that differ from the h1 (2026-11-23: Search Console shows impressions for "paywall ab testing" / "paywall a/b testing" on this page at position ~37)
+MOD = {'paywall-ab-test-duration': '2026-11-23'}
+TITLE = {
+'paywall-ab-test-duration': 'Paywall A/B testing: how long should the test run?',
+}
 DESC = {
-'paywall-ab-test-duration': 'How long to run a paywall A/B test in a subscription app: what a test can catch by weekly traffic and weeks, plus the free trial and refunds before you decide.',
+'paywall-ab-test-duration': 'Paywall A/B testing in a subscription app: how long to run the test, what it can catch by weekly traffic and weeks, plus the free trial and refunds before you decide.',
 'free-trial-ab-test': 'When to decide a paywall A/B test with a free trial: wait for the longest trial to bill and a week for refunds. Decision days for 3, 7 and 14-day trials.',
 'minimum-detectable-effect': 'Minimum detectable effect for subscription app A/B tests: typical MDEs for paywall and onboarding tests by traffic and weeks, how it is worked out, and what to do when it is high.',
 'ab-test-split-90-10': 'How an uneven A/B split changes what a subscription paywall test can catch and how long it runs: 50/50 vs 60/40, 70/30, 80/20 and 90/10, with numbers.',
@@ -236,19 +241,20 @@ DESC = {
 
 def page(slug, h1):
     more = ''.join(f'<a href="/{s}/">{t}<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"/></svg></a>' for s, t in PAGES if s != slug)
-    ld = json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": h1, "description": DESC[slug], "url": f"{SITE}/{slug}/",
+    title = TITLE.get(slug, h1)
+    ld = json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": title, "description": DESC[slug], "url": f"{SITE}/{slug}/",
                      "author": {"@type": "Person", "name": "Ivan Polushin", "url": "https://github.com/theoutlines"}, "publisher": {"@type": "Person", "name": "Ivan Polushin"},
-                     "datePublished": "2026-11-01", "image": f"{SITE}/assets/og.png"}, ensure_ascii=False)
+                     "datePublished": "2026-11-01", **({"dateModified": MOD[slug]} if slug in MOD else {}), "image": f"{SITE}/assets/og.png"}, ensure_ascii=False)
     return f'''<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{h1} | Growth Test Planner</title>
+<title>{title} | Growth Test Planner</title>
 <meta name="description" content="{DESC[slug]}">
 <link rel="canonical" href="{SITE}/{slug}/">
 <meta name="theme-color" content="#151515">
-<meta property="og:title" content="{h1}">
+<meta property="og:title" content="{title}">
 <meta property="og:description" content="{DESC[slug]}">
 <meta property="og:url" content="{SITE}/{slug}/">
 <meta property="og:type" content="article">
@@ -258,6 +264,7 @@ def page(slug, h1):
 <link rel="preload" href="/fonts/UncutSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/page.css">
 <script src="/page.js" defer></script>
+<script src="/js/ref.js" defer></script>
 <script type="application/ld+json">{ld}</script>
 </head>
 <body>

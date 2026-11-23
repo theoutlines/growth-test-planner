@@ -2,11 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://planner.theoutlines.xyz/</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://planner.theoutlines.xyz/llms.txt</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://planner.theoutlines.xyz/paywall-ab-test-duration/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://planner.theoutlines.xyz/paywall-ab-test-duration/</loc><lastmod>2026-11-23</lastmod><changefreq>monthly</changefreq></url>
   <url><loc>https://planner.theoutlines.xyz/ab-test-split-90-10/</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://planner.theoutlines.xyz/abc-test/</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://planner.theoutlines.xyz/paywall-ab-test-sample-size/</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://planner.theoutlines.xyz/ab-tests-that-lost/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://planner.theoutlines.xyz/ab-tests-that-lost/</loc><lastmod>2026-11-23</lastmod><changefreq>monthly</changefreq></url>
   <url><loc>https://planner.theoutlines.xyz/subscription-conversion-benchmarks/</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://planner.theoutlines.xyz/free-trial-ab-test/</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://planner.theoutlines.xyz/minimum-detectable-effect/</loc><changefreq>monthly</changefreq></url>
