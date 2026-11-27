@@ -27,6 +27,10 @@ python3 -m http.server 8000
 
 Deployed on Cloudflare Pages from `main`.
 
+## Code
+
+Plain ES modules in `js/`: `math.js` (plan and read, pure), `data.js` (ideas and benchmarks), `state.js` (inputs and links), `ui.js` (formatting, icons, sliders), `screens.js` (questions and the plan), `share.js`, `verdict.js` (reading a finished test), `motion.js`, and `app.js` (render and events). `tools/structure/check.py` keeps files under 500 lines and finds unused code; CI runs it with `tools/public_guard.py`.
+
 ## Licence
 
 Code: MIT. Fonts: Uncut Sans and Geist Mono, SIL Open Font License 1.1 (see `LICENSES/`). The character illustration is © Ivan Polushin, not covered by the MIT licence.

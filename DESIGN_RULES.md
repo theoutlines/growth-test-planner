@@ -27,7 +27,7 @@ Do not set your own width, header, footer or section order. If no frame fits, st
 11. Version letters A, B, C in running text are grey chips (VersionChip: 14% fill, white, 0.8em, radius .35em), so they never read as the article "a". A capital A before a lowercase word ("A few questions") is the article and stays plain. Not in headlines, buttons, segmented controls or charts.
 12. Footer, everywhere: “© 2026 Ivan Polushin” + a “Source” link (https://github.com/theoutlines/growth-test-planner), 12/16 at 50%; centred in the tools, left in the 680 column on static pages, which add a “Growth Test Planner” link. No other lines.
 
-## 3. Numbers (one format per kind; in the planner `sign()` in js/math.js and `pctR()` in js/app.js produce them)
+## 3. Numbers (one format per kind; in the planner `sign()` in js/math.js and `pctR()` in js/screens.js produce them)
 | Kind | Format | Example |
 | --- | --- | --- |
 | What a test can catch | signed, 1 decimal | +9.1% |
