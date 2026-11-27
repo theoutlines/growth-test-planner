@@ -9,7 +9,7 @@ jobs:
   guard:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: python3 tools/public_guard.py
       - name: Code stays small and clean (tools/structure/check.py)
         run: python3 tools/structure/check.py --strict
