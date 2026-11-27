@@ -3,7 +3,7 @@ import { planOf, sign } from './math.js';
 import { S, UI, toQuery, wide } from './state.js';
 import { I, day, esc, heading, k100, n0, t1, top } from './ui.js';
 import { testScreen } from './screens.js';
-import { verdictOf, verdictScreen } from './verdict.js';
+import { resultsScreen, verdictOf, verdictScreen } from './verdict.js';
 
 // ------------------------------------------------------------------ share
 export const LINK = (withRead) => `${location.origin}${location.pathname}#/${withRead ? 'verdict' : 'test'}?${toQuery(withRead)}`;
@@ -47,6 +47,7 @@ export function shareBody(texts, title, sub) {
 export function shareScreen(result) {
   const p = planOf(S);
   const v = result ? verdictOf(p) : null;
+  if (result && !v) return resultsScreen();   // no numbers to share yet: ask for them, as the verdict screen does
   const texts = result ? resultTones(p, v) : planTones(p);   // what B changes is woven into each tone
   const title = result ? 'Send the result to your team' : 'Send it to your team';
   const sub = result ? 'Pick a tone, edit if you like. Numbers come from your result.' : 'Pick a tone, edit if you like. The link opens this exact test.';
